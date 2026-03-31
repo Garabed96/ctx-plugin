@@ -80,3 +80,10 @@ This is a coach, not a cop. When you detect a red zone signal:
 4. Ask the user to recalibrate
 
 Do not block. Guide.
+
+---
+
+## Reference Material
+
+- `references/context_engineering_principles.md` — Anthropic's official techniques (hallucination reduction, output consistency, Claude 4.6 specifics)
+- `references/hidden_token_costs.md` — Background systems in Claude Code that consume tokens silently (prompt suggestions, speculative execution, memory extraction) and how to control them
