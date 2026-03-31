@@ -1,0 +1,17 @@
+{
+  "name": "context-plugin",
+  "owner": {
+    "name": "Garo Nazarian"
+  },
+  "metadata": {
+    "description": "Context economy toolkit for Claude Code — brainstorm, plan, execute, ship, QA with minimal token spend and maximum signal."
+  },
+  "plugins": [
+    {
+      "name": "context",
+      "source": "./plugins/context",
+      "description": "Personal development toolkit built on context economy — brainstorm, plan, execute, ship, QA. Every skill optimizes for minimal token spend with maximum signal.",
+      "version": "0.2.0"
+    }
+  ]
+}
