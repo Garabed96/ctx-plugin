@@ -74,6 +74,20 @@ Context is finite. Every token in a prompt either increases or decreases the pro
 - **Complexity-gated resources** — simple tasks get simple treatment. Subagents, reviewers, and multi-phase pipelines only activate when complexity tags warrant them.
 - **Session continuity** — `park` and `grab` let you carry context across sessions without re-explaining.
 
+## Recommended Settings
+
+Claude Code runs background forks that silently consume tokens (prompt suggestions, auto-dream consolidation, memory extraction). Disable them to keep your token budget under your control:
+
+```json
+// ~/.claude/settings.json
+{
+  "promptSuggestionEnabled": false,
+  "autoDreamEnabled": false
+}
+```
+
+See `context-engineering/references/hidden_token_costs.md` for the full breakdown of what each system does.
+
 ## Status
 
 **v0.2.0** — Private, actively iterating. Structure is stable but skill content is still being refined.
