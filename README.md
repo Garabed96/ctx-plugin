@@ -6,7 +6,7 @@ A Claude Code plugin built on **context economy** — every skill optimizes for 
 
 ## Why this exists
 
-The [superpowers](https://github.com/anthropics/claude-code-marketplace) plugin is excellent — disciplined workflows, strong enforcement patterns, research-backed skill design. But every skill loads at full ceremony regardless of task complexity, and background subagent dispatches add up fast.
+The [superpowers](https://github.com/obra/superpowers) plugin is excellent — disciplined workflows, strong enforcement patterns, research-backed skill design. But every skill loads at full ceremony regardless of task complexity, and background subagent dispatches add up fast.
 
 This plugin adapts the best patterns from superpowers (Iron Laws, rationalization tables, hard gates, verification enforcement) and adds **complexity gating** — simple tasks get simple treatment, heavy machinery only activates when tags warrant it. Same discipline, fraction of the tokens.
 
