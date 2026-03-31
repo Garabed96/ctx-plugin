@@ -39,7 +39,17 @@ WORKTREE_DIR="$PARENT_DIR/$PROJECT_NAME-<name>"
 
 The worktree lands as a sibling to the main project. For example, if the project is at `~/Projects/myapp`, the worktree goes to `~/Projects/myapp-fix-email-bug`.
 
-### 3. Create the worktree
+### 3. Safety check — prevent accidental commits
+
+If the worktree lands inside the repo (project-local placement), verify it's gitignored:
+
+```bash
+git check-ignore -q "$WORKTREE_DIR" 2>/dev/null || echo "$WORKTREE_DIR" >> .gitignore
+```
+
+This prevents accidentally committing the worktree directory.
+
+### 4. Create the worktree
 
 ```bash
 git fetch origin <base-branch>
@@ -90,7 +100,20 @@ fi
 
 Skip if the user says they won't need to run a dev server.
 
-### 6. Confirm and prompt to relaunch
+### 6. Verify clean baseline
+
+Run the project's test suite to ensure the worktree starts clean:
+
+```bash
+cd "$WORKTREE_DIR"
+# Discover test command from package.json, Makefile, etc.
+# pnpm test / npm test / cargo test / pytest
+```
+
+**If tests pass:** proceed to confirmation.
+**If tests fail:** report the failures to the user and ask whether to proceed or investigate. Failures here mean the base branch has issues — better to know now than after implementation.
+
+### 7. Confirm and prompt to relaunch
 
 ```
 Worktree ready:

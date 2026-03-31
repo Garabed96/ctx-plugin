@@ -1,11 +1,8 @@
 ---
 name: context-park
 description: >
-  End-of-session handoff. Scans the worktree for artifacts, distills
-  conversation-only insights, and writes a structured handoff file so a
-  new session can pick up via /context-grab. Use when closing a session,
-  when context is getting large, or when altitude oscillation suggests
-  a fresh start.
+  Use when closing a session, when context is getting large, or when
+  altitude oscillation suggests a fresh start.
 user-invocable: true
 allowed-tools: Bash, Read, Glob, Write
 ---

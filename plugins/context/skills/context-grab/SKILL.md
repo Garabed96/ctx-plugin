@@ -1,10 +1,8 @@
 ---
 name: context-grab
 description: >
-  Start-of-session context restore. Reads the handoff file left by
-  /context-park, follows artifact links, archives the handoff, and
-  runs context-engineering gates to align before work begins. Use when
-  starting a new session to continue work from a previous session.
+  Use when starting a new session to continue work from a previous session.
+  Reads the handoff file left by /context-park.
 user-invocable: true
 allowed-tools: Bash, Read, Glob, Write
 ---

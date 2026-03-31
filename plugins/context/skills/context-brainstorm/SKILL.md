@@ -21,6 +21,13 @@ Core principle: understand what to build before building it. Spend tokens on dis
 
 ---
 
+<HARD-GATE>
+Do NOT invoke any implementation skill, write any code, scaffold any project, or take any
+implementation action until you have presented a design and the user has approved it.
+Return to this skill if you catch yourself reaching for /context-plan or /context-execute
+before the spec is written and approved.
+</HARD-GATE>
+
 ## Process
 
 1. **Explore context** — check files, docs, recent commits relevant to the idea
@@ -90,8 +97,24 @@ _Built from real failures. Update this section as you hit new edge cases._
 
 ---
 
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "Too simple to need a design" | Simple is where unexamined assumptions waste the most time. The design can be short. |
+| "I already know how to build this" | You know ONE way. The design process surfaces alternatives. |
+| "Let me just start coding and see" | Exploration without design = undirected token burn. |
+| "The user seems impatient" | A 5-minute brainstorm saves a 2-hour rework. |
+| "This is just a config change" | Config changes have blast radius. Document it. |
+
+---
+
 ## Handoff
 
-When the spec is approved and tagged:
-- Suggest `/context-plan` to create the implementation plan
-- The complexity tags you set here drive the agent budget in `/context-execute`
+When the spec is approved and tagged, the ONLY next step is `/context-plan`. Do NOT invoke `/context-execute`, `/context-ship`, or any implementation skill directly from brainstorm.
+
+```
+/context-brainstorm → /context-plan (ONLY valid next skill)
+```
+
+The complexity tags you set here drive the agent budget in `/context-execute`.

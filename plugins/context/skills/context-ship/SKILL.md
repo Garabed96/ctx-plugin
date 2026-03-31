@@ -1,10 +1,8 @@
 ---
 name: context-ship
 description: >
-  Full gated development pipeline: preflight → architect → implement → verify → PR → ship.
-  Each phase ends with a gate requiring user confirmation. Uses DORA two-stage verification
-  (cheap checks first). Composes with /context-plan and /context-execute for implementation.
-  Triggers: "ship this", "full pipeline", "/ship".
+  Use when ready to take a feature from plan through to merged PR. Triggers: "ship this",
+  "full pipeline", "/ship".
 user-invocable: true
 ---
 
@@ -233,6 +231,19 @@ This skill orchestrates other context-* skills:
 ```
 
 Project-specific conventions stay in project-level skill overrides, not here.
+
+---
+
+## Rationalization Prevention
+
+| Excuse | Reality |
+|--------|---------|
+| "Just skip Gate A, the plan is obvious" | Obvious plans still have scope drift. Gate A catches it. |
+| "Tests pass, skip PR review" | Tests verify code, not intent. Review verifies intent. |
+| "It's a small change, ship directly" | Small changes still get risk-classified at Gate 0. |
+| "CI will catch it" | CI checks syntax, not architecture. Gates check architecture. |
+| "The user is waiting" | A 2-minute gate saves a 2-hour rollback. |
+| "I already verified in Phase 2" | Phase 3 re-verifies after all changes. Stale evidence is not evidence. |
 
 ---
 

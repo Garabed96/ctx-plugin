@@ -1,9 +1,8 @@
 ---
 name: context-execute
 description: >
-  Use when you have a tagged implementation plan from /context-plan. Dispatches subagents
-  per task with agent budget gated by complexity tags — [LOW] gets 1 agent, [MED] gets 2,
-  [HIGH] gets 3. Saves tokens by skipping review for simple tasks.
+  Use when you have a tagged implementation plan from /context-plan. Requires
+  an isolated worktree.
 user-invocable: true
 ---
 
@@ -32,6 +31,8 @@ Execute plans by dispatching fresh subagents per task. The complexity tag on eac
 
 ---
 
+<HARD-GATE>
+
 ## Step 0: Worktree Gate
 
 Before doing anything else, check if we're running inside a git worktree:
@@ -47,6 +48,8 @@ Before doing anything else, check if we're running inside a git worktree:
 > "You're on the main checkout. `/context-execute` requires an isolated worktree so implementation doesn't touch your main working directory. Run `/context-worktree` first, then relaunch Claude from the worktree and re-invoke `/context-execute`."
 
 **Why this is a hard gate:** Subagents write code and commit. If they do that on the main checkout, a failed or partial implementation leaves debris on `main` that's harder to clean up than deleting a worktree branch. The worktree is the undo button.
+
+</HARD-GATE>
 
 ---
 
@@ -151,6 +154,19 @@ After all tasks complete:
 ```
 
 If final verification fails, dispatch a fix agent targeting the specific failure.
+
+---
+
+## When to Stop
+
+STOP executing immediately when:
+
+- **Blocker**: implementer reports BLOCKED and you can't resolve with context alone
+- **Plan gaps**: a task references something that doesn't exist or contradicts another task
+- **Repeated verification failure**: final verification fails after 2 fix attempts
+- **Scope discovery**: implementation reveals work not covered by the plan
+
+When you stop, tell the user what happened and suggest the appropriate next step (update the plan, re-brainstorm, or investigate).
 
 ---
 

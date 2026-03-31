@@ -1,10 +1,9 @@
 ---
 name: context-brainstorm-ss
 description: >
-  Tier 2 brainstorming for complex features — subagent spec reviewer with fresh
-  context, scope decomposition, design-for-isolation principles. Use when ambiguity
-  is high, scope spans multiple systems, or you need blind-spot catching that
-  same-context self-review can't provide.
+  Use when ambiguity is high, scope spans multiple systems, or you need blind-spot
+  catching that same-context self-review can't provide. Escalation target from
+  /context-brainstorm.
 user-invocable: true
 ---
 
@@ -20,6 +19,11 @@ Same core as `/context-brainstorm` but with fresh-context review and stronger gu
 - Shared companion server: `../context-brainstorm/companion/`
 
 ---
+
+<HARD-GATE>
+Do NOT invoke any implementation skill, write any code, scaffold any project, or take any
+implementation action until you have presented a design and the user has approved it.
+</HARD-GATE>
 
 ## Process
 
@@ -88,6 +92,10 @@ The reviewer has fresh context — no accumulated assumptions from the brainstor
 
 ## Handoff
 
-When the spec is approved, reviewed, and tagged:
-- Suggest `/context-plan` to create the implementation plan
-- The complexity tags you set here drive the agent budget in `/context-execute`
+When the spec is approved, reviewed, and tagged, the ONLY next step is `/context-plan`. Do NOT invoke `/context-execute`, `/context-ship`, or any implementation skill directly from brainstorm.
+
+```
+/context-brainstorm-ss → /context-plan (ONLY valid next skill)
+```
+
+The complexity tags you set here drive the agent budget in `/context-execute`.

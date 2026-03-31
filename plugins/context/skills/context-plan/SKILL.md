@@ -2,8 +2,7 @@
 name: context-plan
 description: >
   Use when you have a spec or requirements and need an implementation plan before
-  writing code. Reads complexity tags from /context-brainstorm specs and produces
-  bite-sized tasks with exact file paths, TDD steps, and model/agent budget per task.
+  writing code.
 user-invocable: true
 ---
 
@@ -120,7 +119,13 @@ Before presenting the plan:
 
 ## Handoff
 
-After the plan is approved, offer execution choice:
+After the plan is approved, the ONLY next step is `/context-execute` (or inline for trivial plans). Do NOT invoke `/context-brainstorm` or `/context-ship` from here.
+
+```
+/context-plan → /context-execute (ONLY valid next skill)
+```
+
+Offer execution choice:
 
 ```
 Plan saved to docs/context/plans/<filename>.md

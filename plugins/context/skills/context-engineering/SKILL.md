@@ -87,3 +87,4 @@ Do not block. Guide.
 
 - `references/context_engineering_principles.md` — Anthropic's official techniques (hallucination reduction, output consistency, Claude 4.6 specifics)
 - `references/hidden_token_costs.md` — Background systems in Claude Code that consume tokens silently (prompt suggestions, speculative execution, memory extraction) and how to control them
+- `references/persuasion_principles.md` — Research-backed guide to making skills resist agent rationalization (Authority, Commitment, Social Proof — Meincke et al. 2025, compliance 33% → 72%)
