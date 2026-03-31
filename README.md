@@ -2,7 +2,7 @@
 
 A Claude Code plugin built on **context economy** — every skill optimizes for minimal token spend with maximum signal.
 
-12 skills, 3 agents, and 3 hooks that cover the full development lifecycle: brainstorm, plan, execute, ship, QA.
+17 skills, 3 agents, and 3 hooks that cover the full development lifecycle: brainstorm, plan, execute, ship, debug, test, verify, QA.
 
 ## Install
 
@@ -32,12 +32,22 @@ Skills are namespaced `context-*` and invoked with `/context:<skill-name>`.
 | `context-execute` | Dispatches subagents per task, gated by complexity tags — `[LOW]` gets 1 agent, `[MED]` gets 2, `[HIGH]` gets full review. |
 | `context-ship` | Full gated pipeline: preflight, architect, implement, verify, PR, ship. Each phase requires user confirmation. Uses DORA two-stage verification. |
 
-### Quality & Calibration
+### Quality & Verification
 
 | Skill | What it does |
 |-------|-------------|
 | `context-qa` | QA test any web app and fix bugs. Uses Playwright connected to your real Chrome session via CDP. |
+| `context-tdd` | Test-driven development with Iron Law enforcement. Red-Green-Refactor cycle, rationalization prevention, testing anti-patterns reference. |
+| `context-verify` | Standalone evidence-before-claims gate. Run the command, read the output, THEN make the claim. Composable into any workflow. |
+| `context-debug` | Systematic 4-phase debugging: root cause investigation, pattern analysis, hypothesis testing, implementation. Blocks fixes before Phase 1 completion. |
+| `context-review-receive` | How to handle incoming code review feedback. Anti-sycophancy rules, verify-before-implementing protocol, YAGNI checks, push-back guidance. |
+
+### Calibration
+
+| Skill | What it does |
+|-------|-------------|
 | `context-engineering` | Prompt calibration coach. Flags prompts that are too specific (brittle) or too vague (no success criteria) and guides toward the "just right" zone. |
+| `context-parallel` | Ad-hoc parallel subagent dispatch. Decision framework for when to parallelize vs. sequence. Complements `context-execute`. |
 
 ### Session Management
 
