@@ -18,9 +18,10 @@ Each phase ends with a gate. Do not advance without explicit user confirmation.
 
 ## Phase 0 — Preflight
 
+The scripts are at `../../scripts/` relative to this skill's base directory.
+
 ```bash
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(dirname "$(dirname "$(realpath "$0")")")}"
-bash "$PLUGIN_ROOT/scripts/ship-preflight.sh" --base main
+bash <base-directory>/../../scripts/ship-preflight.sh --base main
 ```
 
 Parse the output. Classify risk from `prod_files`, `prod_lines`, and `---risk-signals---`:
@@ -86,7 +87,7 @@ Risk-adjusted enforcement: LOW = advisory, MEDIUM = user acknowledges, HIGH = ha
 Prepare commit message and PR body (judgment), then delegate mechanics:
 
 ```bash
-bash "$PLUGIN_ROOT/scripts/ship-pr.sh" \
+bash <base-directory>/../../scripts/ship-pr.sh \
   --files file1.ts file2.ts \
   --message "feat: description" \
   --title "PR title under 70 chars" \

@@ -23,9 +23,10 @@ Ask the user if not already provided:
 
 ## 2. Run the script
 
+The script is at `../../scripts/worktree-create.sh` relative to this skill's base directory (shown in the skill loading message). Resolve the full path and run:
+
 ```bash
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(dirname "$(dirname "$(realpath "$0")")")}"
-bash "$PLUGIN_ROOT/scripts/worktree-create.sh" \
+bash <base-directory>/../../scripts/worktree-create.sh \
   --name <name> --base <base> --prefix <prefix>
 ```
 

@@ -15,9 +15,10 @@ Delegates file operations to `scripts/grab-restore.sh`. This skill handles inter
 
 ## 1. Run the script
 
+The script is at `../../scripts/grab-restore.sh` relative to this skill's base directory.
+
 ```bash
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(dirname "$(dirname "$(realpath "$0")")")}"
-bash "$PLUGIN_ROOT/scripts/grab-restore.sh"
+bash <base-directory>/../../scripts/grab-restore.sh
 ```
 
 If exit code 1: no handoff found. Say "No parked context — starting fresh. What are we working on?" and stop.

@@ -15,9 +15,10 @@ Delegates artifact scanning to `scripts/park-scan.sh`. This skill handles contex
 
 ## 1. Scan artifacts
 
+The script is at `../../scripts/park-scan.sh` relative to this skill's base directory.
+
 ```bash
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(dirname "$(dirname "$(realpath "$0")")")}"
-bash "$PLUGIN_ROOT/scripts/park-scan.sh" --clean-log
+bash <base-directory>/../../scripts/park-scan.sh --clean-log
 ```
 
 The script outputs `key=value` metadata, `---artifacts---` section, and `---skill-log---` section.
