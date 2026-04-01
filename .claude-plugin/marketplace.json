@@ -11,7 +11,7 @@
       "name": "ctx",
       "source": "./plugins/ctx",
       "description": "Personal development toolkit built on context economy — brainstorm, plan, execute, ship, QA. Every skill optimizes for minimal token spend with maximum signal.",
-      "version": "0.2.3"
+      "version": "0.2.4"
     }
   ]
 }
