@@ -1,4 +1,4 @@
-# Context Plugin
+# ctx-plugin
 
 A Claude Code plugin built on **context economy** — every skill optimizes for minimal token spend with maximum signal.
 
