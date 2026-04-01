@@ -1,8 +1,9 @@
 #!/bin/bash
-# PreToolUse hook: block Edit/Write unless session is in a git worktree.
+# PreToolUse hook: block file mutations unless session is in a git worktree.
 # The ctx workflow expects all implementation to happen in isolated worktrees
 # created via /ctx-worktree. Edits to the main checkout are blocked.
 #
+# Matches: Edit, Write, Bash (write-like commands only)
 # Reads tool_input from stdin (JSON), exits 2 to block.
 
 INPUT=$(cat)
@@ -10,14 +11,32 @@ INPUT=$(cat)
 # If jq is not installed, allow through to avoid blocking
 command -v jq &>/dev/null || exit 0
 
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
-[ -z "$FILE_PATH" ] && exit 0
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)
 
-# Resolve the repo root for the file being edited
-REPO_ROOT=$(git -C "$(dirname "$FILE_PATH" 2>/dev/null)" rev-parse --show-toplevel 2>/dev/null) || exit 0
+# --- Determine the file path or repo context to check ---
 
-# Check if this repo root is a worktree (not the main checkout)
-# git worktree list marks the main working tree — if our root IS that, we're not in a worktree
+if [ "$TOOL_NAME" = "Edit" ] || [ "$TOOL_NAME" = "Write" ]; then
+  FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
+  [ -z "$FILE_PATH" ] && exit 0
+  CHECK_DIR=$(dirname "$FILE_PATH" 2>/dev/null)
+
+elif [ "$TOOL_NAME" = "Bash" ]; then
+  COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
+  [ -z "$COMMAND" ] && exit 0
+
+  # Only intercept write-like commands — let reads through
+  WRITE_PATTERN='(mkdir|touch|cp|mv|rm|cat\s.*>|tee|echo\s.*>|printf\s.*>|sed\s+-i|chmod|chown|install\s|rsync|tar\s.*-[cx])'
+  echo "$COMMAND" | grep -qE "$WRITE_PATTERN" || exit 0
+
+  # Use pwd as the context — Bash doesn't have a file_path
+  CHECK_DIR=$(pwd)
+else
+  exit 0
+fi
+
+# --- Check if we're in a worktree ---
+
+REPO_ROOT=$(git -C "$CHECK_DIR" rev-parse --show-toplevel 2>/dev/null) || exit 0
 MAIN_WORKTREE=$(git -C "$REPO_ROOT" worktree list --porcelain 2>/dev/null | head -1 | sed 's/^worktree //')
 
 if [ "$REPO_ROOT" = "$MAIN_WORKTREE" ]; then
