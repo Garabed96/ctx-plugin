@@ -26,8 +26,9 @@ REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Error: not in 
 BRANCH=$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null || echo "detached")
 WORKTREE_DIR=$(pwd)
 
-# Worktree check
-MAIN_WORKTREE=$(git -C "$REPO_ROOT" worktree list --porcelain 2>/dev/null | head -1 | sed 's/^worktree //')
+# Worktree check (capture first, then parse — avoids SIGPIPE with pipefail)
+WT_LIST=$(git -C "$REPO_ROOT" worktree list --porcelain 2>/dev/null || true)
+MAIN_WORKTREE=$(echo "$WT_LIST" | head -1 | sed 's/^worktree //')
 if [[ "$REPO_ROOT" == "$MAIN_WORKTREE" && "$BRANCH" == "$BASE" ]]; then
   echo "Warning: on main checkout ($BRANCH) — consider using a worktree" >&2
 fi
@@ -54,25 +55,28 @@ fi
 ALL_FILES=$(git diff "$BASE"...HEAD --name-only 2>/dev/null || echo "")
 ALL_STAT=$(git diff "$BASE"...HEAD --shortstat 2>/dev/null || echo "no changes")
 
-# Production code only (exclude docs, tests, migrations, scripts, plans, skills)
-PROD_STAT=$(git diff "$BASE"...HEAD --shortstat -- \
-  '*.ts' '*.tsx' '*.py' '*.go' '*.rs' '*.js' '*.jsx' \
-  ':!__tests__' ':!*/test/*' ':!*/tests/*' ':!scripts/*' \
-  ':!docs/*' ':!migrations/*' ':!*.md' 2>/dev/null || echo "no production changes")
+# Filter production code from ALL_FILES (no second git diff — avoids pathspec portability issues)
+PROD_PATTERN='\.(ts|tsx|py|go|rs|js|jsx)$'
+EXCLUDE_PATTERN='(^(__tests__|test|tests|scripts|docs|migrations)/|\.md$)'
+PROD_FILES_LIST=$(echo "$ALL_FILES" | grep -E "$PROD_PATTERN" | grep -vE "$EXCLUDE_PATTERN" || true)
+PROD_FILE_COUNT=0
+if [[ -n "$PROD_FILES_LIST" ]]; then
+  PROD_FILE_COUNT=$(echo "$PROD_FILES_LIST" | wc -l | tr -d ' ')
+fi
 
-# Extract line count from shortstat
+# Line count from production files only
 PROD_LINES=0
-if [[ "$PROD_STAT" =~ ([0-9]+)\ insertion ]]; then
-  PROD_LINES=${BASH_REMATCH[1]}
+if [[ -n "$PROD_FILES_LIST" ]]; then
+  PROD_STAT=$(git diff "$BASE"...HEAD --shortstat -- $PROD_FILES_LIST 2>/dev/null || echo "")
+  if [[ "$PROD_STAT" =~ ([0-9]+)\ insertion ]]; then
+    PROD_LINES=${BASH_REMATCH[1]}
+  fi
+  if [[ "$PROD_STAT" =~ ([0-9]+)\ deletion ]]; then
+    PROD_LINES=$((PROD_LINES + ${BASH_REMATCH[1]}))
+  fi
+else
+  PROD_STAT="no production changes"
 fi
-if [[ "$PROD_STAT" =~ ([0-9]+)\ deletion ]]; then
-  PROD_LINES=$((PROD_LINES + ${BASH_REMATCH[1]}))
-fi
-
-# File count
-PROD_FILE_COUNT=$(git diff "$BASE"...HEAD --name-only -- \
-  '*.ts' '*.tsx' '*.py' '*.go' '*.rs' '*.js' '*.jsx' \
-  ':!__tests__' ':!*/test/*' ':!*/tests/*' ':!scripts/*' 2>/dev/null | wc -l | tr -d ' ')
 
 # ── Risk signals ──────────────────────────────────────────
 RISK_SIGNALS=""
