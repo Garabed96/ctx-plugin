@@ -69,9 +69,10 @@ fi
 # ── Symlink env files ─────────────────────────────────────
 ENV_COUNT=0
 
-# Root-level env files (only real files, not symlinks — worktree already has those)
+# Root-level env files (only gitignored real files — templates/examples are tracked)
 for f in "$REPO_ROOT"/.env*; do
   [[ -f "$f" && ! -L "$f" ]] || continue
+  git -C "$REPO_ROOT" check-ignore -q "$f" 2>/dev/null || continue
   BASENAME=$(basename "$f")
   TARGET="$WORKTREE_DIR/$BASENAME"
   if [[ ! -e "$TARGET" ]]; then
@@ -88,6 +89,20 @@ while IFS= read -r link; do
   DEST_DIR=$(dirname "$DEST")
   [[ -d "$DEST_DIR" ]] && [[ ! -e "$DEST" ]] && ln -s "$LINK_TARGET" "$DEST" && ENV_COUNT=$((ENV_COUNT + 1))
 done < <(find "$REPO_ROOT" -name ".env*" -type l 2>/dev/null)
+
+# Nested gitignored env files (e.g. src/app/.env) — real files in subdirectories
+while IFS= read -r envfile; do
+  [[ -z "$envfile" ]] && continue
+  # Skip root-level (already handled above) and symlinks
+  [[ "$envfile" == "$REPO_ROOT"/.env* ]] && continue
+  [[ -L "$envfile" ]] && continue
+  # Only symlink if gitignored (tracked files are already in the worktree)
+  git -C "$REPO_ROOT" check-ignore -q "$envfile" 2>/dev/null || continue
+  REL_PATH="${envfile#$REPO_ROOT/}"
+  DEST="$WORKTREE_DIR/$REL_PATH"
+  DEST_DIR=$(dirname "$DEST")
+  [[ -d "$DEST_DIR" ]] && [[ ! -e "$DEST" ]] && ln -s "$envfile" "$DEST" && ENV_COUNT=$((ENV_COUNT + 1))
+done < <(find "$REPO_ROOT" -name ".env*" -type f 2>/dev/null)
 
 echo "Symlinked $ENV_COUNT env file(s)" >&2
 
