@@ -36,13 +36,20 @@ else
   exit 0
 fi
 
+# --- Only guard the current project's repo, not unrelated repos on disk ---
+
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+FILE_REPO=$(git -C "$CHECK_DIR" rev-parse --show-toplevel 2>/dev/null) || exit 0
+
+# If the file is in a different repo (e.g. plugin cache, dotfiles), let it through
+[ "$FILE_REPO" != "$PROJECT_ROOT" ] && exit 0
+
 # --- Check if we're in a worktree ---
 
-REPO_ROOT=$(git -C "$CHECK_DIR" rev-parse --show-toplevel 2>/dev/null) || exit 0
-MAIN_WORKTREE=$(git -C "$REPO_ROOT" worktree list --porcelain 2>/dev/null | head -1 | sed 's/^worktree //')
+MAIN_WORKTREE=$(git -C "$PROJECT_ROOT" worktree list --porcelain 2>/dev/null | head -1 | sed 's/^worktree //')
 
-if [ "$REPO_ROOT" = "$MAIN_WORKTREE" ]; then
-  BRANCH=$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null)
+if [ "$PROJECT_ROOT" = "$MAIN_WORKTREE" ]; then
+  BRANCH=$(git -C "$PROJECT_ROOT" branch --show-current 2>/dev/null)
   echo "BLOCKED — you're editing in the main checkout (branch: $BRANCH)." >&2
   echo "Create an isolated worktree first: /ctx-worktree" >&2
   exit 2
