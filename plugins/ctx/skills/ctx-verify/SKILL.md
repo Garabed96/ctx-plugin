@@ -61,6 +61,7 @@ Before claiming any status or expressing satisfaction:
 | Regression test works | Red-green cycle verified | Test passes once |
 | Agent completed | VCS diff shows actual changes | Agent reports "success" |
 | Requirements met | Line-by-line checklist against spec | "Tests passing" |
+| Orchestration correct | Path-level: trace data written per code path, assert full side-effect contract | Tests pass, tsc clean (function-level only) |
 
 ---
 
@@ -161,3 +162,4 @@ Any workflow    → Invoke before claiming DONE
 - **Partial verification is not verification.** Running unit tests does not verify the build. Running lint does not verify tests. Each claim needs its own evidence.
 - **Subagents lie (unintentionally).** An agent reporting "DONE" means it thinks it's done. Check the diff yourself.
 - **Time pressure is when this matters most.** The urge to skip verification correlates with the likelihood of bugs. Resist.
+- **Green CI, broken contract.** When changes reorder control flow, add early exits, or reroute side effects, "tests pass + tsc clean" verifies function shape, not orchestration. Trace data written by each code path and assert the full contract (activities created, IDs consistent, associations linked). Signal: diff touches service-layer method ordering or adds `return` before existing logic.
