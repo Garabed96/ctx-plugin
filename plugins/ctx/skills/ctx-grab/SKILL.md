@@ -4,63 +4,39 @@ description: >
   Use when starting a new session to continue work from a previous session.
   Reads the handoff file left by /ctx-park.
 user-invocable: true
-allowed-tools: Bash, Read, Glob, Write
+allowed-tools: Bash, Read, Glob
 ---
 
 # /ctx-grab — Restore Session Context
 
-**Canonical example:** Read `references/example-briefing.md` for what a good session briefing looks like.
-
-Grab context from a previous session's `/ctx-park` handoff.
+Delegates file operations to `scripts/grab-restore.sh`. This skill handles interpretation.
 
 **Announce at start:** "Grabbing context from previous session."
 
-## Workflow
+## 1. Run the script
 
-### 1. Find the handoff
-
-```bash
-ls .claude/ctx-park.md 2>/dev/null
-```
-
-If no handoff file exists:
-
-```
-No parked context found in this worktree.
-Starting fresh — what are we working on?
-```
-
-Stop here.
-
-### 2. Read the handoff
-
-Read `.claude/ctx-park.md`. Note:
-- Session summary (what was the previous session about)
-- Artifact paths (what files exist)
-- Smart context (decisions, rationale, blockers)
-- Next steps (what to do first)
-
-### 3. Follow artifact links (selectively)
-
-Read artifacts in priority order. Stop when you have enough context:
-
-1. **Active plan** — read the status/progress section, not the entire plan
-2. **Smart context** — this is the highest-value section, already read
-3. **Recent git log** — `git log --oneline -5` for what changed since park
-4. **Docs/changelogs** — skim if referenced in smart context
-
-DO NOT read every linked file. Read what's needed to understand
-current state and next steps.
-
-### 4. Archive the handoff
+The script is at `../../scripts/grab-restore.sh` relative to this skill's base directory.
 
 ```bash
-mv .claude/ctx-park.md ".claude/ctx-park-$(date +%Y-%m-%d).md"
+bash <base-directory>/../../scripts/grab-restore.sh
 ```
 
-### 5. Present briefing and align
+If exit code 1: no handoff found. Say "No parked context — starting fresh. What are we working on?" and stop.
 
-Present a concise briefing, then run ctx-engineering gates:
+The script outputs `status`, `branch`, `worktree`, `archive` metadata, then `---handoff---` and `---git-log---` sections.
+
+## 2. Follow artifact links (judgment)
+
+From the handoff content, read artifacts selectively — priority order:
+
+1. **Active plan** — status/progress section only, not the full plan
+2. **Smart context** — highest-value, already in the handoff
+3. **Git log** — already provided by the script
+4. **Docs** — only if referenced in smart context
+
+DO NOT read every linked file. Stop when you have enough context.
+
+## 3. Present briefing and align
 
 ```
 ## Restored Context
@@ -83,5 +59,4 @@ Before we proceed:
 - What does "done" look like for this session?
 ```
 
-Wait for user confirmation before starting work. Do not proceed
-autonomously after a grab — the user may want to change direction.
+Wait for user confirmation. Do not proceed autonomously after a grab.

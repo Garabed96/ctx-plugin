@@ -8,153 +8,75 @@ user-invocable: true
 
 # /ctx-ship — Gated Development Pipeline
 
-**Canonical example:** Read `references/example-pr.md` for what a good PR description looks like.
+Delegates git mechanics to `scripts/ship-preflight.sh` and `scripts/ship-pr.sh`. This skill handles gating and judgment.
 
 Pipeline: **Preflight → Architect → Implement → Verify → PR Readiness → Ship**
 
-Each phase ends with a gate. Do not advance past a gate without explicit user confirmation.
-
-## Skill Files
-
-- `SKILL.md` — this file
+Each phase ends with a gate. Do not advance without explicit user confirmation.
 
 ---
 
 ## Phase 0 — Preflight
 
-Before touching any file, verify context:
+The scripts are at `../../scripts/` relative to this skill's base directory.
 
 ```bash
-pwd
-git branch --show-current
-git worktree list
+bash <base-directory>/../../scripts/ship-preflight.sh --base main
 ```
 
-If the active path or branch doesn't match the intended work, stop and ask.
-
-**Risk classification:**
-
-```bash
-git diff main...HEAD --name-only
-# Count only production code — exclude docs, plans, skills, tests, migrations, scripts
-git diff main...HEAD --shortstat -- '*.ts' '*.tsx' '*.py' '*.go' '*.rs' ':!__tests__' ':!*/test/*' ':!scripts/*'
-```
-
-Classify the change:
+Parse the output. Classify risk from `prod_files`, `prod_lines`, and `---risk-signals---`:
 
 | Risk | Signals |
 |------|---------|
-| LOW | Config, docs, copy changes. No logic. |
-| MEDIUM | New feature in existing patterns. 1-3 files with logic. |
-| HIGH | New system, auth changes, data model changes, 4+ files with logic. |
+| LOW | Config, docs, copy. No logic. |
+| MEDIUM | New feature in existing patterns. 1-3 prod files. |
+| HIGH | New system, auth/data model changes, 4+ prod files, or `scope-over-500-lines` signal. |
+
+If `scope-warning-400-plus` or `scope-over-500-lines`: warn or block before proceeding.
 
 **Gate 0:** User confirms branch, feature description, and risk level.
 
 ---
 
-## Phase 1 — Architect
+## Phase 1 — Architect (judgment)
 
-Goal: written plan before any code.
+Goal: written plan before any code. Invoke `/ctx-brainstorm` if design exploration needed, then `/ctx-plan`.
 
-**If the feature needs design exploration**, invoke `/ctx-brainstorm` first. Otherwise go straight to planning.
+**Gate A:** User approves the plan.
 
-**Key questions to answer:**
-- What does the user need to read/write?
-- New files or modifications to existing?
-- What existing patterns apply?
-- What's the test scope?
+## Phase 2 — Implement (judgment)
 
-**Write the plan** using `/ctx-plan` — this tags each task `[LOW]/[MED]/[HIGH]` and calculates the agent budget.
+Execute via `/ctx-execute` or inline for small plans. Follow project conventions.
 
-**Gate A:** User approves the plan. Do not write code until confirmed.
-
----
-
-## Phase 2 — Implement
-
-Execute the plan using `/ctx-execute` — complexity-gated subagents.
-
-Or implement inline if the plan is small enough (1-2 `[LOW]` tasks don't need subagent overhead).
-
-Follow project conventions. If project-level skills exist (e.g., TanStack, API design), compose with them.
-
-**Gate B:** Static checks pass:
-
-```bash
-# Discover the project's lint/type commands from package.json, Makefile, etc.
-# Common patterns:
-# pnpm type-check && pnpm lint
-# npm run lint
-# cargo clippy
-# mypy .
-```
-
-Fix all errors before proceeding.
+**Gate B:** Static checks pass (discover lint/type commands from project config).
 
 ---
 
 ## Phase 3 — Verify (DORA Two-Stage)
 
-Farley's principle: run cheap checks first. Don't run slow acceptance tests until fast commit checks pass.
+Cheap checks first (type-check + lint + unit tests), then acceptance tests only after commit stage passes.
 
-### Commit stage (~30s)
-
-```bash
-# Type-check + lint + unit tests
-# Discover from project config
-```
-
-If commit stage fails → fix before running acceptance stage.
-
-### Acceptance stage (only after commit passes)
-
-```bash
-# Integration tests scoped to changed files
-# Full suite only if high-impact files changed (middleware, auth, config, lockfiles)
-```
-
-### Scope check
-
-Count only production code — docs, plans, skills, test utilities, migrations, and scripts do not count toward scope gates.
-
-```bash
-# Production code only (excludes docs, tests, migrations, scripts, plans, skills)
-git diff main...HEAD --shortstat -- '*.ts' '*.tsx' '*.py' '*.go' '*.rs' ':!__tests__' ':!*/test/*' ':!scripts/*'
-```
-
+Scope check uses `prod_lines` from preflight. Re-run preflight if implementation changed the diff:
 - Under 400 lines: proceed
-- 400-499 lines: warn user, suggest splitting
-- 500+ lines: hard stop, must split before continuing
+- 400-499: warn, suggest splitting
+- 500+: hard stop, must split
 
-**Gate C:** Commit stage passes AND acceptance stage passes AND diff is within scope.
+**Gate C:** Commit + acceptance pass, diff within scope.
 
 ---
 
-## Phase 4 — PR Readiness
+## Phase 4 — PR Readiness (judgment)
 
-Review the diff for common issues:
-
-```bash
-git diff main...HEAD --name-only
-git diff main...HEAD -- '*.ts' '*.tsx' '*.py' '*.go' '*.rs'
-```
-
-**Universal checks:**
+Review the diff (use `---files---` from preflight) for:
 
 | Check | Flag when |
 |-------|-----------|
 | Tests for logic changes | New logic with no test file touched |
 | No leaked internals | Error details, stack traces in API responses |
 | No hardcoded secrets | API keys, tokens, passwords in code |
-| No TODO debris | TODO/FIXME/HACK in new code without a tracking issue |
+| No TODO debris | TODO/FIXME/HACK without tracking issue |
 
-**Project-specific checks:** If the project has a `/ship` skill in `.claude/skills/`, defer to its PR readiness rules for domain-specific validation.
-
-**Risk-adjusted enforcement:**
-
-- **LOW:** Advisory only. Document any findings in PR body.
-- **MEDIUM:** HIGH-severity findings block until fixed or user accepts risk. User must acknowledge Gate D.
-- **HIGH:** HIGH-severity findings hard block. PR body must include architecture review section.
+Risk-adjusted enforcement: LOW = advisory, MEDIUM = user acknowledges, HIGH = hard block.
 
 **Gate D:** Risk-appropriate findings cleared.
 
@@ -162,36 +84,20 @@ git diff main...HEAD -- '*.ts' '*.tsx' '*.py' '*.go' '*.rs'
 
 ## Phase 5 — Ship
 
-### Commit
-
-Stage specific files (never `git add -A`):
+Prepare commit message and PR body (judgment), then delegate mechanics:
 
 ```bash
-git add <specific files>
-git status  # verify only intended files staged
+bash <base-directory>/../../scripts/ship-pr.sh \
+  --files file1.ts file2.ts \
+  --message "feat: description" \
+  --title "PR title under 70 chars" \
+  --body "PR body with ## What changed, ## Why, ## Risk, ## Validation" \
+  --draft
 ```
 
-Commit with conventional message:
+PR body template:
 
-```bash
-git commit -m "$(cat <<'EOF'
-<type>: <what changed and why — max 50 chars>
-
-<optional body, wrap at 72 chars>
-
-Co-Authored-By: Claude <model> <noreply@anthropic.com>
-EOF
-)"
 ```
-
-### Push and PR
-
-```bash
-git push -u origin <branch>
-```
-
-```bash
-gh pr create --draft --title "<title under 70 chars>" --body "$(cat <<'EOF'
 ## What changed
 - <bullet points>
 
@@ -203,13 +109,6 @@ gh pr create --draft --title "<title under 70 chars>" --body "$(cat <<'EOF'
 
 ## Validation
 <commands run and their results>
-
-## Rollback
-<revert instructions>
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-EOF
-)"
 ```
 
 **Gate E:** PR is open, CI is green.
@@ -218,38 +117,21 @@ EOF
 
 ## Composability
 
-This skill orchestrates other ctx-* skills:
-
 ```
 /ctx-ship
-  └─ Phase 0: Preflight (standalone)
-  └─ Phase 1: /ctx-brainstorm (if needed) → /ctx-plan
-  └─ Phase 2: /ctx-execute (or inline for trivial plans)
-  └─ Phase 3: Verify (standalone)
-  └─ Phase 4: PR Readiness (standalone)
-  └─ Phase 5: Ship (standalone)
+  └─ Phase 0: ship-preflight.sh
+  └─ Phase 1: /ctx-brainstorm → /ctx-plan
+  └─ Phase 2: /ctx-execute (or inline)
+  └─ Phase 3: Verify (re-run preflight if needed)
+  └─ Phase 4: PR Readiness (judgment)
+  └─ Phase 5: ship-pr.sh
 ```
-
-Project-specific conventions stay in project-level skill overrides, not here.
-
----
-
-## Rationalization Prevention
-
-| Excuse | Reality |
-|--------|---------|
-| "Just skip Gate A, the plan is obvious" | Obvious plans still have scope drift. Gate A catches it. |
-| "Tests pass, skip PR review" | Tests verify code, not intent. Review verifies intent. |
-| "It's a small change, ship directly" | Small changes still get risk-classified at Gate 0. |
-| "CI will catch it" | CI checks syntax, not architecture. Gates check architecture. |
-| "The user is waiting" | A 2-minute gate saves a 2-hour rollback. |
-| "I already verified in Phase 2" | Phase 3 re-verifies after all changes. Stale evidence is not evidence. |
 
 ---
 
 ## Gotchas
 
-- **Don't skip gates under time pressure.** Gates exist because skipping them is how bugs ship. If you're tempted to skip Gate A (plan approval), that's the time you need it most.
-- **Scope creep during implementation.** If Phase 2 reveals work not in the plan, stop and update the plan — don't silently expand scope.
-- **Risk classification is not optional.** Every change gets a risk level at Gate 0. It drives enforcement for the rest of the pipeline.
-- **Never `git add -A`.** Stage specific files. Accidental commits of `.env`, credentials, or large binaries are hard to undo.
+- **Don't skip gates under time pressure.** That's when you need them most.
+- **Scope creep during implementation.** If Phase 2 reveals unplanned work, update the plan first.
+- **Risk classification is not optional.** Every change gets a level at Gate 0.
+- **Never `git add -A`.** The script stages specific files only — always pass explicit `--files`.
