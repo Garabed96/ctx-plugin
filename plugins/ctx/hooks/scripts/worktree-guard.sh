@@ -39,6 +39,8 @@ fi
 # --- Only guard the current project's repo, not unrelated repos on disk ---
 
 PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+# Never guard ~/.claude (memory, plugins, settings)
+case "$CHECK_DIR" in "$HOME/.claude"*) exit 0 ;; esac
 FILE_REPO=$(git -C "$CHECK_DIR" rev-parse --show-toplevel 2>/dev/null) || exit 0
 
 # If the file is in a different repo (e.g. plugin cache, dotfiles), let it through

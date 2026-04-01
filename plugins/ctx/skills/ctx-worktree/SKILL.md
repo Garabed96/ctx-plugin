@@ -10,129 +10,50 @@ user-invocable: true
 
 # /worktree — Create an Isolated Git Worktree
 
-## Skill Files
+Delegates mechanical work to `scripts/worktree-create.sh`. This skill handles judgment only.
 
-- `SKILL.md` — this file
+## 1. Gather inputs
 
-## What this does
+Ask the user if not already provided:
 
-Sets up a fully functional git worktree as a sibling directory, with env files symlinked and dependencies installed so the worktree is immediately runnable.
+- **Name**: short identifier (e.g., `fix-email-bug`, `new-search-ui`)
+- **Base branch**: default `main`
+- **Branch prefix**: `feat/`, `fix/`, `hotfix/`, or `--no-prefix`. Default: `feat/`
+- **Skip deps?** If they say they won't need a dev server, add `--skip-deps`
 
-## Workflow
-
-### 1. Gather inputs
-
-Ask the user if not provided:
-
-- **Name**: a short identifier (e.g., `fix-email-bug`, `new-search-ui`)
-- **Base branch**: which branch to branch from. Default: `main`
-- **Branch prefix**: `feat/`, `fix/`, `hotfix/`, or none. Default: `feat/`
-
-### 2. Resolve paths
+## 2. Run the script
 
 ```bash
-REPO_ROOT=$(git rev-parse --show-toplevel)
-PROJECT_NAME=$(basename "$REPO_ROOT")
-PARENT_DIR=$(dirname "$REPO_ROOT")
-WORKTREE_DIR="$PARENT_DIR/$PROJECT_NAME-<name>"
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(dirname "$(dirname "$(realpath "$0")")")}"
+bash "$PLUGIN_ROOT/scripts/worktree-create.sh" \
+  --name <name> --base <base> --prefix <prefix>
 ```
 
-The worktree lands as a sibling to the main project. For example, if the project is at `~/Projects/myapp`, the worktree goes to `~/Projects/myapp-fix-email-bug`.
+The script prints progress to stderr and a `key=value` summary to stdout. Parse the stdout values.
 
-### 3. Safety check — prevent accidental commits
+## 3. Interpret result and present
 
-If the worktree lands inside the repo (project-local placement), verify it's gitignored:
-
-```bash
-git check-ignore -q "$WORKTREE_DIR" 2>/dev/null || echo "$WORKTREE_DIR" >> .gitignore
-```
-
-This prevents accidentally committing the worktree directory.
-
-### 4. Create the worktree
-
-```bash
-git fetch origin <base-branch>
-git worktree add -b <prefix><name> "$WORKTREE_DIR" origin/<base-branch>
-```
-
-If the branch already exists, skip `-b` and just attach:
-
-```bash
-git worktree add "$WORKTREE_DIR" <prefix><name>
-```
-
-### 4. Symlink env files
-
-Find and symlink all gitignored env files from the repo root:
-
-```bash
-# Symlink root-level env files
-for f in "$REPO_ROOT"/.env.local "$REPO_ROOT"/.env.local.*; do
-  [ -f "$f" ] && ln -s "$f" "$WORKTREE_DIR/$(basename "$f")"
-done
-```
-
-**Monorepo check**: If the project has sub-apps that need their own env files (e.g., `apps/web/.env.local`), check if the main repo has symlinks pointing to root env files and recreate them:
-
-```bash
-# Find env symlinks in the main repo and recreate them in the worktree
-find "$REPO_ROOT" -name ".env.local" -type l | while read -r link; do
-  REL_PATH="${link#$REPO_ROOT/}"
-  TARGET=$(readlink "$link")
-  ln -s "$TARGET" "$WORKTREE_DIR/$REL_PATH" 2>/dev/null
-done
-```
-
-### 5. Install dependencies
-
-Detect the package manager and install:
-
-```bash
-cd "$WORKTREE_DIR"
-if [ -f "pnpm-lock.yaml" ]; then pnpm install
-elif [ -f "yarn.lock" ]; then yarn install
-elif [ -f "package-lock.json" ]; then npm install
-elif [ -f "Pipfile.lock" ]; then pipenv install
-elif [ -f "requirements.txt" ]; then pip install -r requirements.txt
-fi
-```
-
-Skip if the user says they won't need to run a dev server.
-
-### 6. Verify clean baseline
-
-Run the project's test suite to ensure the worktree starts clean:
-
-```bash
-cd "$WORKTREE_DIR"
-# Discover test command from package.json, Makefile, etc.
-# pnpm test / npm test / cargo test / pytest
-```
-
-**If tests pass:** proceed to confirmation.
-**If tests fail:** report the failures to the user and ask whether to proceed or investigate. Failures here mean the base branch has issues — better to know now than after implementation.
-
-### 7. Confirm and prompt to relaunch
+On **success** (exit 0), present:
 
 ```
 Worktree ready:
-  Path:   <WORKTREE_DIR>
-  Branch: <prefix><name>
-  Base:   <base-branch>
-  .env:   symlinked
-  deps:   installed
+  Path:   <path>
+  Branch: <branch>
+  Base:   <base>
+  .env:   <env_count> file(s) symlinked
+  Deps:   <deps status>
 
-  Claude Code is anchored to this directory — to work in the
-  new worktree, quit and relaunch:
-    cd <WORKTREE_DIR> && claude
-
-Want me to stop here so you can relaunch from the worktree?
+To work here, quit and relaunch:
+  cd <path> && claude
 ```
 
-Always ask — don't silently continue in the old directory.
+On **failure** (exit 2 = git error, exit 3 = deps failed), report the stderr message and ask the user how to proceed.
 
-## Cleanup reminder
+If `deps=failed`, note the worktree still exists and is usable — deps can be installed manually.
+
+## 4. Cleanup reference
+
+When the user asks about removing worktrees:
 
 ```bash
 git worktree remove <path>        # clean removal
@@ -141,13 +62,6 @@ git branch -d <branch-name>       # delete branch if no longer needed
 git worktree list                  # see all active worktrees
 ```
 
-## Edge cases
+## Gotcha
 
-- **Worktree already exists**: tell the user and ask if they want a different name or reuse it
-- **Branch already exists**: ask if they want to attach or pick a new name
-- **Dirty working directory**: fine — worktrees are independent, no warning needed
-
-## Gotchas
-
-- **`claude --continue` doesn't work across directories.** When switching to a worktree, `cd` there and start a NEW session.
-- **Env symlinks in monorepos**: Git worktrees don't copy gitignored symlinks. The skill must recreate them.
+`claude --continue` doesn't work across directories. Always start a NEW session in the worktree.

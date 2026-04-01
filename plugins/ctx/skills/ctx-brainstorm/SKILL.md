@@ -32,9 +32,9 @@ before the spec is written and approved.
 
 1. **Explore context** — check files, docs, recent commits relevant to the idea
 2. **Scope check** — if the request covers multiple independent systems, decompose first. If scope is large or ambiguity is high, suggest `/ctx-brainstorm-ss` (see Escalation below)
-3. **Ask questions** — one at a time, prefer multiple choice, understand purpose/constraints/success criteria
-4. **Visual companion** — offer once if upcoming questions are visual (read `references/companion-guide.md`)
-5. **Propose 2-3 approaches** — with tradeoffs, lead with your recommendation
+3. **Visual companion gate** — before asking any questions, evaluate: will this brainstorm involve architecture diagrams, layout comparisons, option cards, or spatial content? If yes, offer the companion as its own message and wait for the user's response before continuing (read `references/companion-guide.md`). If no, proceed directly to questions — no extra message.
+4. **Ask questions** — one at a time, prefer multiple choice, understand purpose/constraints/success criteria
+5. **Propose 2-3 approaches** — with tradeoffs, lead with your recommendation. If companion is active, present visually.
 6. **Present design** — sections scaled to complexity, get approval incrementally
 7. **Write spec** — save to `docs/specs/YYYY-MM-DD-<topic>-design.md`, commit
 8. **Self-review** — apply the five checks below, fix issues inline
@@ -94,6 +94,7 @@ _Built from real failures. Update this section as you hit new edge cases._
 - **Inventing thresholds that already exist**: When designing states or edge cases for a component that consumes an existing utility, derive the cases from that utility's thresholds — don't invent new ones. Run `Grep` for the source function before proposing breakpoints.
 - **Proposing new API work when data already flows**: Before suggesting backend changes to serve data, trace the data path from where it's consumed: component → hook/query → API endpoint. The endpoint often already returns what you need — you just haven't followed the chain. If you've read a component that has the data, ask "where does this come from?" and trace upstream before proposing new API fields.
 - **Proposing implementation details without checking conventions**: Before recommending specific libraries, patterns, or API styles in the design, check CLAUDE.md for project conventions. The brainstorm output feeds directly into implementation — wrong conventions here propagate downstream.
+- **Skipping companion for visual content**: Architecture diagrams, A/B/C option cards, layout comparisons, and design decisions are visual — use the companion. Text walls with ASCII art are not a substitute. If you're about to present 3+ options with diagrams or spatial content, that's a companion question. The gate at step 3 exists because by the time you're synthesizing, you've already committed to text mode and won't backtrack.
 
 ---
 
