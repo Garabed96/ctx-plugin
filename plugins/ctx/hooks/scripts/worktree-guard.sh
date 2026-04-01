@@ -25,8 +25,10 @@ elif [ "$TOOL_NAME" = "Bash" ]; then
   [ -z "$COMMAND" ] && exit 0
 
   # Only intercept write-like commands — let reads through
-  WRITE_PATTERN='(mkdir|touch|cp|mv|rm|cat\s.*>|tee|echo\s.*>|printf\s.*>|sed\s+-i|chmod|chown|install\s|rsync|tar\s.*-[cx])'
-  echo "$COMMAND" | grep -qE "$WRITE_PATTERN" || exit 0
+  # Extract command names (first token of each chained/piped segment), match as whole words
+  CMDS=$(echo "$COMMAND" | grep -oE '(^|[;&|]+)\s*[a-zA-Z_][a-zA-Z0-9_.-]*' | grep -oE '[a-zA-Z_][a-zA-Z0-9_.-]*')
+  WRITE_CMDS='(mkdir|touch|cp|mv|rm|cat|tee|echo|printf|sed|chmod|chown|install|rsync|tar|dd|scp)'
+  echo "$CMDS" | grep -qxE "$WRITE_CMDS" || exit 0
 
   # Use pwd as the context — Bash doesn't have a file_path
   CHECK_DIR=$(pwd)
