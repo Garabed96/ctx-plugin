@@ -75,7 +75,7 @@ for f in "$REPO_ROOT"/.env*; do
   BASENAME=$(basename "$f")
   TARGET="$WORKTREE_DIR/$BASENAME"
   if [[ ! -e "$TARGET" ]]; then
-    ln -s "$f" "$TARGET" && ((ENV_COUNT++))
+    ln -s "$f" "$TARGET" && ENV_COUNT=$((ENV_COUNT + 1))
   fi
 done
 
@@ -86,7 +86,7 @@ while IFS= read -r link; do
   LINK_TARGET=$(readlink "$link")
   DEST="$WORKTREE_DIR/$REL_PATH"
   DEST_DIR=$(dirname "$DEST")
-  [[ -d "$DEST_DIR" ]] && [[ ! -e "$DEST" ]] && ln -s "$LINK_TARGET" "$DEST" && ((ENV_COUNT++))
+  [[ -d "$DEST_DIR" ]] && [[ ! -e "$DEST" ]] && ln -s "$LINK_TARGET" "$DEST" && ENV_COUNT=$((ENV_COUNT + 1))
 done < <(find "$REPO_ROOT" -name ".env*" -type l 2>/dev/null)
 
 echo "Symlinked $ENV_COUNT env file(s)" >&2

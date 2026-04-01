@@ -49,7 +49,7 @@ if [[ "$NO_ARCHIVE" == false ]]; then
   if [[ -f "$ARCHIVE_PATH" ]]; then
     COUNTER=1
     while [[ -f "${ARCHIVE_PATH%.md}-${COUNTER}.md" ]]; do
-      ((COUNTER++))
+      COUNTER=$((COUNTER + 1))
     done
     ARCHIVE_PATH="${ARCHIVE_PATH%.md}-${COUNTER}.md"
   fi
