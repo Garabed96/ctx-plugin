@@ -17,59 +17,59 @@ This plugin adapts the best patterns from superpowers (Iron Laws, rationalizatio
 ## Install
 
 ```sh
-/plugin marketplace add Garabed96/context-plugin
-/plugin install context@context-plugin
+/plugin marketplace add Garabed96/ctx-plugin
+/plugin install ctx@ctx-plugin
 ```
 
 ## Skills
 
-Skills are namespaced `context-*` and invoked with `/context:<skill-name>`.
+Skills are namespaced `ctx-*` and invoked with `/context:<skill-name>`.
 
 ### Ideation
 
 | Skill | What it does |
 |-------|-------------|
-| `context-brainstorm` | Lean brainstorming for small-to-medium tasks. Self-review, no subagents. Auto-escalates to `context-brainstorm-ss` when complexity warrants it. |
-| `context-brainstorm-ss` | Tier 2 brainstorming for complex features — subagent spec reviewer with fresh context, scope decomposition, design-for-isolation principles. |
-| `context-discuss` | Discussion and exploration mode. No code changes. Think out loud, discover what to build, challenge assumptions. |
-| `context-architect-growth` | Critical thinking coach for architectural decisions. Pushes you to reason about tradeoffs, identify hidden assumptions, and map second-order effects. |
+| `ctx-brainstorm` | Lean brainstorming for small-to-medium tasks. Self-review, no subagents. Auto-escalates to `ctx-brainstorm-ss` when complexity warrants it. |
+| `ctx-brainstorm-ss` | Tier 2 brainstorming for complex features — subagent spec reviewer with fresh context, scope decomposition, design-for-isolation principles. |
+| `ctx-discuss` | Discussion and exploration mode. No code changes. Think out loud, discover what to build, challenge assumptions. |
+| `ctx-architect-growth` | Critical thinking coach for architectural decisions. Pushes you to reason about tradeoffs, identify hidden assumptions, and map second-order effects. |
 
 ### Planning & Execution
 
 | Skill | What it does |
 |-------|-------------|
-| `context-plan` | Reads complexity tags from brainstorm specs and produces an implementation plan with task breakdown and agent budgets. |
-| `context-execute` | Dispatches subagents per task, gated by complexity tags — `[LOW]` gets 1 agent, `[MED]` gets 2, `[HIGH]` gets full review. |
-| `context-ship` | Full gated pipeline: preflight, architect, implement, verify, PR, ship. Each phase requires user confirmation. Uses DORA two-stage verification. |
+| `ctx-plan` | Reads complexity tags from brainstorm specs and produces an implementation plan with task breakdown and agent budgets. |
+| `ctx-execute` | Dispatches subagents per task, gated by complexity tags — `[LOW]` gets 1 agent, `[MED]` gets 2, `[HIGH]` gets full review. |
+| `ctx-ship` | Full gated pipeline: preflight, architect, implement, verify, PR, ship. Each phase requires user confirmation. Uses DORA two-stage verification. |
 
 ### Quality & Verification
 
 | Skill | What it does |
 |-------|-------------|
-| `context-qa` | QA test any web app and fix bugs. Uses Playwright connected to your real Chrome session via CDP. |
-| `context-tdd` | Test-driven development with Iron Law enforcement. Red-Green-Refactor cycle, rationalization prevention, testing anti-patterns reference. |
-| `context-verify` | Standalone evidence-before-claims gate. Run the command, read the output, THEN make the claim. Composable into any workflow. |
-| `context-debug` | Systematic 4-phase debugging: root cause investigation, pattern analysis, hypothesis testing, implementation. Blocks fixes before Phase 1 completion. |
-| `context-review-receive` | How to handle incoming code review feedback. Anti-sycophancy rules, verify-before-implementing protocol, YAGNI checks, push-back guidance. |
+| `ctx-qa` | QA test any web app and fix bugs. Uses Playwright connected to your real Chrome session via CDP. |
+| `ctx-tdd` | Test-driven development with Iron Law enforcement. Red-Green-Refactor cycle, rationalization prevention, testing anti-patterns reference. |
+| `ctx-verify` | Standalone evidence-before-claims gate. Run the command, read the output, THEN make the claim. Composable into any workflow. |
+| `ctx-debug` | Systematic 4-phase debugging: root cause investigation, pattern analysis, hypothesis testing, implementation. Blocks fixes before Phase 1 completion. |
+| `ctx-review-receive` | How to handle incoming code review feedback. Anti-sycophancy rules, verify-before-implementing protocol, YAGNI checks, push-back guidance. |
 
 ### Calibration
 
 | Skill | What it does |
 |-------|-------------|
-| `context-engineering` | Prompt calibration coach. Flags prompts that are too specific (brittle) or too vague (no success criteria) and guides toward the "just right" zone. |
-| `context-parallel` | Ad-hoc parallel subagent dispatch. Decision framework for when to parallelize vs. sequence. Complements `context-execute`. |
+| `ctx-engineering` | Prompt calibration coach. Flags prompts that are too specific (brittle) or too vague (no success criteria) and guides toward the "just right" zone. |
+| `ctx-parallel` | Ad-hoc parallel subagent dispatch. Decision framework for when to parallelize vs. sequence. Complements `ctx-execute`. |
 
 ### Session Management
 
 | Skill | What it does |
 |-------|-------------|
-| `context-park` | End-of-session handoff. Scans worktree for artifacts, distills insights, writes a structured handoff file for the next session. |
-| `context-grab` | Start-of-session restore. Reads the handoff from `context-park`, follows artifact links, and re-aligns context. |
-| `context-worktree` | Creates an isolated git worktree with env symlinks and dependency install so parallel work is immediately runnable. |
+| `ctx-park` | End-of-session handoff. Scans worktree for artifacts, distills insights, writes a structured handoff file for the next session. |
+| `ctx-grab` | Start-of-session restore. Reads the handoff from `ctx-park`, follows artifact links, and re-aligns context. |
+| `ctx-worktree` | Creates an isolated git worktree with env symlinks and dependency install so parallel work is immediately runnable. |
 
 ## Agents
 
-Dispatched automatically by `context-execute` and `context-ship` based on task complexity.
+Dispatched automatically by `ctx-execute` and `ctx-ship` based on task complexity.
 
 | Agent | Role |
 |-------|------|
@@ -106,7 +106,7 @@ Claude Code runs background forks that silently consume tokens (prompt suggestio
 }
 ```
 
-See `context-engineering/references/hidden_token_costs.md` for the full breakdown of what each system does.
+See `ctx-engineering/references/hidden_token_costs.md` for the full breakdown of what each system does.
 
 ## Status
 

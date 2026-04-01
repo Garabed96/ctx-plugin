@@ -1,6 +1,6 @@
 #!/bin/bash
 # PostToolUse hook — logs Skill invocations to a session log file
-# The log is read by context-park's skill audit step
+# The log is read by ctx-park's skill audit step
 
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null)

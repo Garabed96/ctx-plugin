@@ -8,7 +8,7 @@ SOURCE="${HOME}/WebstormProjects/claude-files/plugins/context"
 
 # Symlink skills
 if [ -d "$SOURCE/skills" ]; then
-  for dir in "$SOURCE"/skills/context-*/; do
+  for dir in "$SOURCE"/skills/ctx-*/; do
     [ -d "$dir" ] || continue
     name=$(basename "$dir")
     if [ ! -L "${HOME}/.claude/skills/$name" ]; then
