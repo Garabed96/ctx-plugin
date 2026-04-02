@@ -4,13 +4,13 @@ description: >
   Use when the user wants to work on something in parallel — creates an isolated git
   worktree with env symlinks and dependency install so it's immediately runnable.
   Triggers: "worktree", "new worktree", "isolated branch", "parallel branch".
-allowed-tools: Bash, Read, Glob, EnterWorktree, ExitWorktree
+allowed-tools: Bash, Read, Glob, Write, EnterWorktree, ExitWorktree
 user-invocable: true
 ---
 
 # /worktree — Create an Isolated Git Worktree
 
-Uses Claude Code's native `EnterWorktree` tool for session swap, then runs `worktree-post-setup.sh` for env symlinks and dependency install.
+Uses Claude Code's native `EnterWorktree` tool for session swap, then runs `worktree-post-setup.sh` for env symlinks and dependency install. Parks conversation context into the new worktree so `/ctx-grab` can restore it.
 
 ## 1. Gather inputs
 
@@ -20,15 +20,25 @@ Ask the user if not already provided:
 
 That's it. `EnterWorktree` handles branch creation and worktree setup internally.
 
-## 2. Capture source root
+## 2. Capture source root and park context
 
-Before swapping, capture the current repo root — it's needed for the post-setup script:
+Before swapping, two things must happen:
+
+**a) Capture source root** — needed for the post-setup script:
 
 ```bash
 SOURCE_ROOT=$(git rev-parse --show-toplevel)
 ```
 
-Store this value. After `EnterWorktree` swaps the session, the original repo root is no longer the CWD.
+**b) Distill conversation context** — from the current conversation, extract:
+
+- What the user is trying to accomplish (the task/goal)
+- Key decisions made and their rationale
+- Approaches tried or ruled out
+- Relevant file paths, specs, or plans discussed
+- What should happen next in the worktree
+
+Store this as a string — it will be written to the worktree after the swap.
 
 ## 3. Call EnterWorktree
 
@@ -44,7 +54,35 @@ This:
 
 If the tool errors (already in a worktree, not a git repo), report the error and stop.
 
-## 4. Post-setup
+## 4. Write handoff into worktree
+
+Write the distilled context to `.claude/ctx-park.md` in the new worktree so `/ctx-grab` can find it:
+
+```bash
+mkdir -p .claude
+```
+
+Then use the Write tool to create `.claude/ctx-park.md`:
+
+```markdown
+# Context Park — {worktree-name}
+
+**Parked:** {timestamp}
+**Branch:** {branch from git branch --show-current}
+**Session:** {One sentence — what this session is for}
+
+## Smart Context
+
+{Numbered list from step 2b — decisions, rationale, key files}
+
+## Next Steps
+
+{What to do first in this worktree}
+```
+
+This means if the session ends or context gets large, `/ctx-grab` can restore it.
+
+## 5. Post-setup
 
 Run the post-setup script to symlink env files and install dependencies:
 
@@ -59,7 +97,7 @@ Parse the stdout values (`env_count`, `deps`). The script logs detailed progress
 
 If the script exits with code 3 (deps failed), note the worktree is still usable — deps can be installed manually.
 
-## 5. Present result
+## 6. Present result
 
 ```
 Worktree ready:
@@ -67,11 +105,12 @@ Worktree ready:
   Branch: <git branch --show-current>
   .env:   <env_count> file(s) symlinked
   Deps:   <deps status>
+  Context: parked to .claude/ctx-park.md
 
 You're now working in the worktree. Use ExitWorktree when done.
 ```
 
-## 6. Cleanup reference
+## 7. Cleanup reference
 
 When the user asks about leaving or removing worktrees:
 
@@ -86,3 +125,4 @@ The old `worktree-create.sh` script still exists for manual worktree creation ou
 - `EnterWorktree` branches from HEAD. If the user needs a specific base branch, they should checkout that branch first or `git rebase <base>` after entering the worktree.
 - On session exit while still in a worktree, Claude Code prompts the user to keep or remove it.
 - The post-setup script creates missing directories for nested env files (e.g., `src/app/` may not exist in the worktree if its only content was gitignored).
+- The handoff written in step 4 is a snapshot of conversation context at worktree creation time. If the session continues with significant new context, `/ctx-park` should be run again before ending the session.
