@@ -81,11 +81,9 @@ After the park file is written, open a new tab and launch claude:
 ```bash
 osascript -e "
   tell application \"iTerm2\"
-    tell current window
-      create tab with default profile
-      tell current session
-        write text \"cd '<worktree-path>' && claude\"
-      end tell
+    set newWindow to (create window with default profile)
+    tell current session of newWindow
+      write text \"cd '<worktree-path>' && claude -p '/ctx-grab'\"
     end tell
   end tell
 " 2>/dev/null || true
