@@ -24,11 +24,31 @@ elif [ "$TOOL_NAME" = "Bash" ]; then
   COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null)
   [ -z "$COMMAND" ] && exit 0
 
+  # Allow commands targeting the plugin directory (manual plugin edits)
+  echo "$COMMAND" | grep -q '\.claude/plugins' && exit 0
+
   # Only intercept write-like commands — let reads through
   # Extract command names (first token of each chained/piped segment), match as whole words
   CMDS=$(echo "$COMMAND" | grep -oE '(^|[;&|]+)\s*[a-zA-Z_][a-zA-Z0-9_.-]*' | grep -oE '[a-zA-Z_][a-zA-Z0-9_.-]*')
-  WRITE_CMDS='(mkdir|touch|cp|mv|rm|cat|tee|echo|printf|sed|chmod|chown|install|rsync|tar|dd|scp)'
-  echo "$CMDS" | grep -qxE "$WRITE_CMDS" || exit 0
+
+  # Commands that always mutate the filesystem
+  ALWAYS_WRITE='(mkdir|touch|cp|mv|rm|chmod|chown|install|rsync|tar|dd|scp)'
+  # Commands that only write when paired with redirection (>, >>)
+  REDIRECT_WRITE='(cat|tee|echo|printf|sed)'
+
+  HAS_ALWAYS_WRITE=false
+  HAS_REDIRECT_WRITE=false
+  echo "$CMDS" | grep -qxE "$ALWAYS_WRITE" && HAS_ALWAYS_WRITE=true
+  echo "$CMDS" | grep -qxE "$REDIRECT_WRITE" && HAS_REDIRECT_WRITE=true
+
+  if ! $HAS_ALWAYS_WRITE; then
+    if $HAS_REDIRECT_WRITE; then
+      # Only block if there's actual file redirection
+      echo "$COMMAND" | grep -qE '>[^&]|>>' || exit 0
+    else
+      exit 0
+    fi
+  fi
 
   # Use pwd as the context — Bash doesn't have a file_path
   CHECK_DIR=$(pwd)
