@@ -11,15 +11,6 @@ user-invocable: true
 
 Same core as `/ctx-brainstorm` but with fresh-context review and stronger guardrails for complex work. The SS tax is 3-4x tokens — only pay it when the problem warrants it.
 
-## Skill Files
-
-- `SKILL.md` — this file (process, reviewer loop, design principles)
-- `references/spec-reviewer-prompt.md` — subagent dispatch template
-- Shared with brainstorm: `../ctx-brainstorm/references/complexity-tags.md`, `../ctx-brainstorm/references/companion-guide.md`
-- Shared companion server: `../ctx-brainstorm/companion/`
-
----
-
 <HARD-GATE>
 Do NOT invoke any implementation skill, write any code, scaffold any project, or take any
 implementation action until you have presented a design and the user has approved it.
@@ -88,6 +79,15 @@ The reviewer has fresh context — no accumulated assumptions from the brainstor
 - **Proposing new API work when data already flows**: Before suggesting backend changes to serve data, trace the data path from where it's consumed: component → hook/query → API endpoint. The endpoint often already returns what you need — you just haven't followed the chain. If you've read a component that has the data, ask "where does this come from?" and trace upstream before proposing new API fields.
 - **Proposing implementation details without checking conventions**: Before recommending specific libraries, patterns, or API styles in the design, check CLAUDE.md for project conventions. The brainstorm output feeds directly into implementation — wrong conventions here propagate downstream.
 - **Skipping companion for visual content**: Architecture diagrams, A/B/C option cards, layout comparisons, and design decisions are visual — use the companion. Text walls with ASCII art are not a substitute. If you're about to present 3+ options with diagrams or spatial content, that's a companion question. The gate at step 3 exists because by the time you're synthesizing, you've already committed to text mode and won't backtrack.
+
+---
+
+## Skill Files
+
+- `SKILL.md` — this file (process, reviewer loop, design principles)
+- `references/spec-reviewer-prompt.md` — subagent dispatch template
+- Shared with brainstorm: `../ctx-brainstorm/references/complexity-tags.md`, `../ctx-brainstorm/references/companion-guide.md`
+- Shared companion server: `../ctx-brainstorm/companion/`
 
 ---
 

@@ -11,16 +11,6 @@ user-invocable: true
 
 Core principle: understand what to build before building it. Spend tokens on discovery, not ceremony.
 
-## Skill Files
-
-- `SKILL.md` — this file (process, self-review, principles, gotchas)
-- `references/example-spec.md` — canonical spec example (read this before writing your first spec)
-- `references/complexity-tags.md` — LOW/MED/HIGH tagging guide (shared with brainstorm-ss)
-- `references/companion-guide.md` — visual companion CSS classes, loop, terminal-vs-browser guide
-- `companion/` — server, frame template, launcher (read only when user accepts companion offer)
-
----
-
 <HARD-GATE>
 Do NOT invoke any implementation skill, write any code, scaffold any project, or take any
 implementation action until you have presented a design and the user has approved it.
@@ -95,6 +85,16 @@ _Built from real failures. Update this section as you hit new edge cases._
 - **Proposing new API work when data already flows**: Before suggesting backend changes to serve data, trace the data path from where it's consumed: component → hook/query → API endpoint. The endpoint often already returns what you need — you just haven't followed the chain. If you've read a component that has the data, ask "where does this come from?" and trace upstream before proposing new API fields.
 - **Proposing implementation details without checking conventions**: Before recommending specific libraries, patterns, or API styles in the design, check CLAUDE.md for project conventions. The brainstorm output feeds directly into implementation — wrong conventions here propagate downstream.
 - **Skipping companion for visual content**: Architecture diagrams, A/B/C option cards, layout comparisons, and design decisions are visual — use the companion. Text walls with ASCII art are not a substitute. If you're about to present 3+ options with diagrams or spatial content, that's a companion question. The gate at step 3 exists because by the time you're synthesizing, you've already committed to text mode and won't backtrack.
+
+---
+
+## Skill Files
+
+- `SKILL.md` — this file (process, self-review, principles, gotchas)
+- `references/example-spec.md` — canonical spec example (read this before writing your first spec)
+- `references/complexity-tags.md` — LOW/MED/HIGH tagging guide (shared with brainstorm-ss)
+- `references/companion-guide.md` — visual companion CSS classes, loop, terminal-vs-browser guide
+- `companion/` — server, frame template, launcher (read only when user accepts companion offer)
 
 ---
 
