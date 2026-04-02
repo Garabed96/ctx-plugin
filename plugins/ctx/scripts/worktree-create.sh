@@ -142,15 +142,3 @@ env_count=$ENV_COUNT
 deps=$DEPS_STATUS
 project=$PROJECT_NAME
 EOF
-
-# ── Auto-swap: open new iTerm2 tab and launch claude ─────
-osascript -e "
-  tell application \"iTerm2\"
-    tell current window
-      create tab with default profile
-      tell current session
-        write text \"cd '$WORKTREE_DIR' && claude\"
-      end tell
-    end tell
-  end tell
-" 2>/dev/null || true
