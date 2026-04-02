@@ -242,6 +242,90 @@ assert_contains "requires --message" "$OUTPUT" "--message is required"
 
 # ══════════════════════════════════════════════════════════
 echo ""
+echo "=== TEST: worktree-post-setup.sh ==="
+
+# Setup: fresh repo for isolated post-setup testing
+POST_SETUP_SRC="$TEMP_DIR/post-setup-src-bare"
+mkdir -p "$POST_SETUP_SRC"
+git -C "$POST_SETUP_SRC" init --bare -q
+POST_SETUP_REPO="$TEMP_DIR/post-setup-src"
+git clone -q "$POST_SETUP_SRC" "$POST_SETUP_REPO"
+cd "$POST_SETUP_REPO"
+git config user.email "test@test.com"
+git config user.name "Test"
+
+# Initial commit + gitignore rules
+echo "hello" > file.txt
+printf ".env.local\nsrc/app/.env\n" > .gitignore
+git add file.txt .gitignore
+git commit -q -m "init with gitignore"
+
+# Tracked env file (should NOT be symlinked)
+echo "PUBLIC=xyz" > .env.example
+git add .env.example
+git commit -q -m "add tracked env example"
+git push -q origin main
+
+# Create gitignored env files on disk (not tracked)
+echo "SECRET=abc" > .env.local
+mkdir -p src/app
+echo "NESTED_SECRET=123" > src/app/.env
+
+# Create a plain worktree (simulates EnterWorktree — no worktree-create.sh)
+git worktree add -b post-setup-test "$TEMP_DIR/post-setup-target" origin/main 2>/dev/null
+POST_SETUP_TARGET="$TEMP_DIR/post-setup-target"
+
+# Happy path: symlink env files, skip deps
+OUTPUT=$(bash "$SCRIPT_DIR/worktree-post-setup.sh" --source "$POST_SETUP_REPO" --target "$POST_SETUP_TARGET" --skip-deps 2>/dev/null)
+assert_contains "env_count=2" "$OUTPUT" "env_count=2"
+assert_contains "deps=skipped" "$OUTPUT" "deps=skipped"
+
+# Verify symlinks exist
+if [[ -L "$POST_SETUP_TARGET/.env.local" ]]; then
+  echo "  PASS: .env.local symlinked"
+  PASS=$((PASS + 1))
+else
+  echo "  FAIL: .env.local not symlinked"
+  FAIL=$((FAIL + 1))
+fi
+
+if [[ -L "$POST_SETUP_TARGET/src/app/.env" ]]; then
+  echo "  PASS: src/app/.env symlinked"
+  PASS=$((PASS + 1))
+else
+  echo "  FAIL: src/app/.env not symlinked"
+  FAIL=$((FAIL + 1))
+fi
+
+# .env.example is tracked — should NOT be symlinked (it's already in the worktree via git)
+if [[ ! -L "$POST_SETUP_TARGET/.env.example" ]]; then
+  echo "  PASS: .env.example not symlinked (tracked)"
+  PASS=$((PASS + 1))
+else
+  echo "  FAIL: .env.example was symlinked (should be tracked)"
+  FAIL=$((FAIL + 1))
+fi
+
+# Missing --source
+OUTPUT=$(bash "$SCRIPT_DIR/worktree-post-setup.sh" --target /tmp 2>&1 || true)
+assert_contains "requires --source" "$OUTPUT" "--source is required"
+
+# Missing --target
+OUTPUT=$(bash "$SCRIPT_DIR/worktree-post-setup.sh" --source /tmp 2>&1 || true)
+assert_contains "requires --target" "$OUTPUT" "--target is required"
+
+# Verbose logging check (stderr should contain [post-setup] lines)
+STDERR_OUTPUT=$(bash "$SCRIPT_DIR/worktree-post-setup.sh" --source "$POST_SETUP_REPO" --target "$POST_SETUP_TARGET" --skip-deps 2>&1 >/dev/null)
+if echo "$STDERR_OUTPUT" | grep -q "\[post-setup\]"; then
+  echo "  PASS: stderr contains [post-setup] logging"
+  PASS=$((PASS + 1))
+else
+  echo "  FAIL: no [post-setup] logging in stderr"
+  FAIL=$((FAIL + 1))
+fi
+
+# ══════════════════════════════════════════════════════════
+echo ""
 echo "════════════════════════════════"
 echo "Results: $PASS passed, $FAIL failed"
 echo "════════════════════════════════"
