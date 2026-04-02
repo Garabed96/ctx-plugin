@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Protosmith Companion</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #0a0e17;
+    color: #e2e8f0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Top bar */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    flex-shrink: 0;
+  }
+  .top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .top-bar-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+  .top-bar-file {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .presets {
+    display: flex;
+    gap: 0.35rem;
+  }
+  .preset-btn {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .preset-btn:hover { border-color: #818cf8; color: #c7d2fe; }
+  .preset-btn.active { background: #312e81; border-color: #818cf8; color: #c7d2fe; }
+
+  /* Main layout */
+  .main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* Controls panel */
+  .controls {
+    width: 250px;
+    flex-shrink: 0;
+    border-right: 1px solid #1e293b;
+    padding: 1rem;
+    overflow-y: auto;
+    background: #0f172a;
+  }
+  .controls-section {
+    margin-bottom: 1rem;
+  }
+  .controls-section-title {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #1e293b;
+  }
+  .control-group {
+    margin-bottom: 0.75rem;
+  }
+  .control-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-bottom: 0.3rem;
+    display: block;
+  }
+  .control-select {
+    width: 100%;
+    background: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.75rem;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .control-select:focus { outline: none; border-color: #818cf8; }
+  .control-range {
+    width: 100%;
+    accent-color: #818cf8;
+    cursor: pointer;
+  }
+  .control-range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.6rem;
+    color: #475569;
+    margin-top: 0.15rem;
+  }
+  .control-value {
+    font-size: 0.7rem;
+    color: #818cf8;
+    float: right;
+  }
+
+  /* Preview */
+  .preview {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .preview-iframe {
+    flex: 1;
+    border: none;
+    background: #fff;
+    margin: 0.75rem;
+    border-radius: 8px;
+  }
+  .preview-placeholder {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0.75rem;
+    border-radius: 8px;
+    border: 1px dashed #334155;
+    background: #0f172a;
+  }
+  .preview-placeholder p {
+    color: #475569;
+    font-size: 0.85rem;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  /* Prompt bar */
+  .prompt-bar {
+    border-top: 1px solid #1e293b;
+    padding: 0.65rem 1rem;
+    background: #0f172a;
+    display: flex;
+    gap: 0.5rem;
+    align-items: start;
+    flex-shrink: 0;
+  }
+  .prompt-text {
+    flex: 1;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    min-height: 42px;
+    font-family: inherit;
+    line-height: 1.5;
+    resize: none;
+    overflow-y: auto;
+    max-height: 80px;
+  }
+  .prompt-text:focus { outline: none; border-color: #818cf8; color: #e2e8f0; }
+  .prompt-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex-shrink: 0;
+  }
+  .btn-iterate {
+    background: #334155;
+    color: #64748b;
+    border: none;
+    border-radius: 6px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .btn-copy {
+    background: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-copy:hover { border-color: #818cf8; color: #c7d2fe; }
+  .btn-copy.copied { border-color: #22c55e; color: #86efac; }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <div class="top-bar-left">
+    <span class="top-bar-title">Protosmith Companion</span>
+    <span class="top-bar-file" id="file-label"></span>
+  </div>
+  <div class="presets" id="presets"></div>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <!-- Controls -->
+  <div class="controls">
+    <div class="controls-section">
+      <div class="controls-section-title">Prototype</div>
+
+      <div class="control-group">
+        <label class="control-label">Layout</label>
+        <select class="control-select" id="ctrl-layout" onchange="set('layout', this.value)">
+          <option value="single-column">Single Column</option>
+          <option value="two-column">Two Column</option>
+          <option value="sidebar">Sidebar</option>
+          <option value="full-width">Full Width</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Density</label>
+        <select class="control-select" id="ctrl-density" onchange="set('density', this.value)">
+          <option value="spacious">Spacious</option>
+          <option value="balanced">Balanced</option>
+          <option value="compact">Compact</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Hero Style</label>
+        <select class="control-select" id="ctrl-heroStyle" onchange="set('heroStyle', this.value)">
+          <option value="minimal">Minimal</option>
+          <option value="gradient">Gradient</option>
+          <option value="image">Image</option>
+          <option value="split">Split</option>
+          <option value="none">None</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Navigation</label>
+        <select class="control-select" id="ctrl-navStyle" onchange="set('navStyle', this.value)">
+          <option value="top-bar">Top Bar</option>
+          <option value="sidebar">Sidebar</option>
+          <option value="tabs">Tabs</option>
+          <option value="none">None</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Sections <span class="control-value" id="sections-value">4</span></label>
+        <input class="control-range" id="ctrl-sectionCount" type="range" min="1" max="8" step="1" value="4"
+          oninput="set('sectionCount', parseInt(this.value)); document.getElementById('sections-value').textContent = this.value">
+        <div class="control-range-labels"><span>1</span><span>8</span></div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Tone</label>
+        <select class="control-select" id="ctrl-contentTone" onchange="set('contentTone', this.value)">
+          <option value="clinical">Clinical</option>
+          <option value="friendly">Friendly</option>
+          <option value="technical">Technical</option>
+          <option value="marketing">Marketing</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="controls-section">
+      <div class="controls-section-title">Shared</div>
+
+      <div class="control-group">
+        <label class="control-label">Color Scheme</label>
+        <select class="control-select" id="ctrl-colorScheme" onchange="set('colorScheme', this.value)">
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+          <option value="system">System</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Viewport</label>
+        <select class="control-select" id="ctrl-viewport" onchange="set('viewport', this.value)">
+          <option value="desktop">Desktop</option>
+          <option value="tablet">Tablet</option>
+          <option value="mobile">Mobile</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Spacing Scale <span class="control-value" id="spacing-value">1.0</span></label>
+        <input class="control-range" id="ctrl-spacingScale" type="range" min="0.5" max="2.0" step="0.25" value="1.0"
+          oninput="set('spacingScale', parseFloat(this.value)); document.getElementById('spacing-value').textContent = parseFloat(this.value).toFixed(1)">
+        <div class="control-range-labels"><span>0.5x</span><span>2.0x</span></div>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Border Radius <span class="control-value" id="radius-value">8px</span></label>
+        <input class="control-range" id="ctrl-borderRadius" type="range" min="0" max="24" step="2" value="8"
+          oninput="set('borderRadius', parseInt(this.value)); document.getElementById('radius-value').textContent = this.value + 'px'">
+        <div class="control-range-labels"><span>0px</span><span>24px</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="preview" id="preview-container"></div>
+</div>
+
+<!-- Prompt Bar -->
+<div class="prompt-bar">
+  <textarea class="prompt-text" id="prompt-text" rows="2" placeholder="Adjust controls to generate a prompt..."></textarea>
+  <div class="prompt-buttons">
+    <button class="btn-iterate" title="API wiring coming in step 2" disabled>Iterate</button>
+    <button class="btn-copy" id="btn-copy" onclick="copyPrompt()">Copy</button>
+  </div>
+</div>
+
+<script>
+// --- State ---
+const DEFAULTS = {
+  layout: 'single-column',
+  density: 'balanced',
+  heroStyle: 'minimal',
+  navStyle: 'top-bar',
+  sectionCount: 4,
+  contentTone: 'clinical',
+  colorScheme: 'dark',
+  viewport: 'desktop',
+  spacingScale: 1.0,
+  borderRadius: 8,
+};
+
+const state = { ...DEFAULTS };
+let activePreset = null;
+
+// --- Presets ---
+const PRESETS = {
+  'Minimal': {
+    layout: 'single-column', density: 'spacious', heroStyle: 'minimal',
+    navStyle: 'none', sectionCount: 3, contentTone: 'clinical',
+    colorScheme: 'light', viewport: 'desktop', spacingScale: 1.25, borderRadius: 12
+  },
+  'Bold Hero': {
+    layout: 'full-width', density: 'balanced', heroStyle: 'gradient',
+    navStyle: 'top-bar', sectionCount: 5, contentTone: 'marketing',
+    colorScheme: 'dark', viewport: 'desktop', spacingScale: 1.0, borderRadius: 8
+  },
+  'Dense Dashboard': {
+    layout: 'sidebar', density: 'compact', heroStyle: 'none',
+    navStyle: 'sidebar', sectionCount: 7, contentTone: 'technical',
+    colorScheme: 'dark', viewport: 'desktop', spacingScale: 0.75, borderRadius: 4
+  },
+  'Magazine': {
+    layout: 'two-column', density: 'spacious', heroStyle: 'image',
+    navStyle: 'top-bar', sectionCount: 6, contentTone: 'friendly',
+    colorScheme: 'light', viewport: 'desktop', spacingScale: 1.0, borderRadius: 16
+  }
+};
+
+// --- Init ---
+const params = new URLSearchParams(window.location.search);
+const protoFile = params.get('prototype');
+
+document.getElementById('file-label').textContent = protoFile || '';
+
+// Render preview
+const previewContainer = document.getElementById('preview-container');
+if (protoFile) {
+  const iframe = document.createElement('iframe');
+  iframe.className = 'preview-iframe';
+  iframe.src = '/prototype?file=' + encodeURIComponent(protoFile);
+  previewContainer.appendChild(iframe);
+} else {
+  const placeholder = document.createElement('div');
+  placeholder.className = 'preview-placeholder';
+  const msg = document.createElement('p');
+  msg.textContent = 'Add ?prototype=path/file.html to the URL to load a prototype';
+  placeholder.appendChild(msg);
+  previewContainer.appendChild(placeholder);
+}
+
+// Render presets
+const presetsEl = document.getElementById('presets');
+Object.keys(PRESETS).forEach(function(name) {
+  const btn = document.createElement('button');
+  btn.className = 'preset-btn';
+  btn.textContent = name;
+  btn.dataset.preset = name;
+  btn.onclick = function() { applyPreset(name); };
+  presetsEl.appendChild(btn);
+});
+
+// Set initial control values
+syncControlsToState();
+updateAll();
+
+// --- Functions ---
+function set(key, value) {
+  state[key] = value;
+  activePreset = null;
+  updatePresetButtons();
+  updateAll();
+}
+
+function updateAll() {
+  updatePrompt();
+}
+
+function updatePrompt() {
+  const parts = [];
+
+  if (state.layout !== DEFAULTS.layout)
+    parts.push(state.layout.replace(/-/g, ' ') + ' layout');
+  if (state.density !== DEFAULTS.density)
+    parts.push(state.density + ' density');
+  if (state.heroStyle !== DEFAULTS.heroStyle)
+    parts.push(state.heroStyle + ' hero');
+  if (state.navStyle !== DEFAULTS.navStyle)
+    parts.push(state.navStyle.replace(/-/g, ' ') + ' navigation');
+  if (state.sectionCount !== DEFAULTS.sectionCount)
+    parts.push(state.sectionCount + ' sections');
+  if (state.contentTone !== DEFAULTS.contentTone)
+    parts.push(state.contentTone + ' tone');
+  if (state.colorScheme !== DEFAULTS.colorScheme)
+    parts.push(state.colorScheme + ' color scheme');
+  if (state.viewport !== DEFAULTS.viewport)
+    parts.push(state.viewport + ' viewport');
+  if (state.spacingScale !== DEFAULTS.spacingScale)
+    parts.push(state.spacingScale.toFixed(1) + 'x spacing');
+  if (state.borderRadius !== DEFAULTS.borderRadius)
+    parts.push(state.borderRadius + 'px border radius');
+
+  var promptEl = document.getElementById('prompt-text');
+  if (parts.length === 0) {
+    promptEl.value = 'Using defaults \u2014 adjust controls to generate a prompt.';
+  } else {
+    promptEl.value = 'Iterate with ' + parts.join(', ') + '.';
+  }
+}
+
+function applyPreset(name) {
+  var preset = PRESETS[name];
+  if (!preset) return;
+  Object.assign(state, preset);
+  activePreset = name;
+  syncControlsToState();
+  updatePresetButtons();
+  updateAll();
+}
+
+function syncControlsToState() {
+  document.getElementById('ctrl-layout').value = state.layout;
+  document.getElementById('ctrl-density').value = state.density;
+  document.getElementById('ctrl-heroStyle').value = state.heroStyle;
+  document.getElementById('ctrl-navStyle').value = state.navStyle;
+  document.getElementById('ctrl-sectionCount').value = state.sectionCount;
+  document.getElementById('sections-value').textContent = state.sectionCount;
+  document.getElementById('ctrl-contentTone').value = state.contentTone;
+  document.getElementById('ctrl-colorScheme').value = state.colorScheme;
+  document.getElementById('ctrl-viewport').value = state.viewport;
+  document.getElementById('ctrl-spacingScale').value = state.spacingScale;
+  document.getElementById('spacing-value').textContent = state.spacingScale.toFixed(1);
+  document.getElementById('ctrl-borderRadius').value = state.borderRadius;
+  document.getElementById('radius-value').textContent = state.borderRadius + 'px';
+}
+
+function updatePresetButtons() {
+  var buttons = document.querySelectorAll('.preset-btn');
+  for (var i = 0; i < buttons.length; i++) {
+    var btn = buttons[i];
+    if (btn.dataset.preset === activePreset) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  }
+}
+
+function copyPrompt() {
+  var text = document.getElementById('prompt-text').value;
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.getElementById('btn-copy');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+</script>
+</body>
+</html>

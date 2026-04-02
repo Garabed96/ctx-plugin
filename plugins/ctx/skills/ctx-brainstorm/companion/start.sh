@@ -25,7 +25,7 @@ mkdir -p "$SCREEN_DIR"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Start server in background
-node "$SCRIPT_DIR/server.js" --dir "$SCREEN_DIR" --port "$PORT" &
+node "$SCRIPT_DIR/server.js" --dir "$SCREEN_DIR" --port "$PORT" --project-dir "$PROJECT_DIR" &
 SERVER_PID=$!
 
 # Give it a moment to start
