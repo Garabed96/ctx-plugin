@@ -11,16 +11,6 @@ user-invocable: true
 
 Core principle: understand what to build before building it. Spend tokens on discovery, not ceremony.
 
-## Skill Files
-
-- `SKILL.md` — this file (process, self-review, principles, gotchas)
-- `references/example-spec.md` — canonical spec example (read this before writing your first spec)
-- `references/complexity-tags.md` — LOW/MED/HIGH tagging guide (shared with brainstorm-ss)
-- `references/companion-guide.md` — visual companion CSS classes, loop, terminal-vs-browser guide
-- `companion/` — server, frame template, launcher (read only when user accepts companion offer)
-
----
-
 <HARD-GATE>
 Do NOT invoke any implementation skill, write any code, scaffold any project, or take any
 implementation action until you have presented a design and the user has approved it.
@@ -32,14 +22,14 @@ before the spec is written and approved.
 
 1. **Explore context** — check files, docs, recent commits relevant to the idea
 2. **Scope check** — if the request covers multiple independent systems, decompose first. If scope is large or ambiguity is high, suggest `/ctx-brainstorm-ss` (see Escalation below)
-3. **Visual companion gate** — before asking any questions, evaluate: will this brainstorm involve architecture diagrams, layout comparisons, option cards, or spatial content? If yes, offer the companion as its own message and wait for the user's response before continuing (read `references/companion-guide.md`). If no, proceed directly to questions — no extra message.
+3. **Visual companion gate** — before asking any questions, evaluate: will this brainstorm involve architecture diagrams, layout comparisons, option cards, or spatial content? If yes, offer the companion as its own message and wait for the user's response before continuing (read `${CLAUDE_SKILL_DIR}/references/companion-guide.md`). If no, proceed directly to questions — no extra message.
 4. **Ask questions** — one at a time, prefer multiple choice, understand purpose/constraints/success criteria
 5. **Propose 2-3 approaches** — with tradeoffs, lead with your recommendation. If companion is active, present visually.
 6. **Present design** — sections scaled to complexity, get approval incrementally
 7. **Write spec** — save to `docs/specs/YYYY-MM-DD-<topic>-design.md`, commit
 8. **Self-review** — apply the five checks below, fix issues inline
 9. **User reviews spec** — ask user to review before proceeding
-10. **Tag complexity** — mark each planned unit as `[LOW]`, `[MED]`, or `[HIGH]` (see `references/complexity-tags.md`)
+10. **Tag complexity** — mark each planned unit as `[LOW]`, `[MED]`, or `[HIGH]` (see `${CLAUDE_SKILL_DIR}/references/complexity-tags.md`)
 
 ---
 
@@ -95,6 +85,16 @@ _Built from real failures. Update this section as you hit new edge cases._
 - **Proposing new API work when data already flows**: Before suggesting backend changes to serve data, trace the data path from where it's consumed: component → hook/query → API endpoint. The endpoint often already returns what you need — you just haven't followed the chain. If you've read a component that has the data, ask "where does this come from?" and trace upstream before proposing new API fields.
 - **Proposing implementation details without checking conventions**: Before recommending specific libraries, patterns, or API styles in the design, check CLAUDE.md for project conventions. The brainstorm output feeds directly into implementation — wrong conventions here propagate downstream.
 - **Skipping companion for visual content**: Architecture diagrams, A/B/C option cards, layout comparisons, and design decisions are visual — use the companion. Text walls with ASCII art are not a substitute. If you're about to present 3+ options with diagrams or spatial content, that's a companion question. The gate at step 3 exists because by the time you're synthesizing, you've already committed to text mode and won't backtrack.
+
+---
+
+## Skill Files
+
+- `SKILL.md` — this file (process, self-review, principles, gotchas)
+- `${CLAUDE_SKILL_DIR}/references/example-spec.md` — canonical spec example (read this before writing your first spec)
+- `${CLAUDE_SKILL_DIR}/references/complexity-tags.md` — LOW/MED/HIGH tagging guide (shared with brainstorm-ss)
+- `${CLAUDE_SKILL_DIR}/references/companion-guide.md` — visual companion CSS classes, loop, terminal-vs-browser guide
+- `${CLAUDE_SKILL_DIR}/companion/` — server, frame template, launcher (read only when user accepts companion offer)
 
 ---
 

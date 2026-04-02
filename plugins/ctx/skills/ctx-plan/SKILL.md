@@ -10,13 +10,6 @@ user-invocable: true
 
 Write plans that a fresh agent with zero codebase knowledge can execute. Tag every task with a complexity level that drives agent budget in `/ctx-execute`.
 
-## Skill Files
-
-- `SKILL.md` — this file
-- `references/example-plan.md` — canonical plan example with complexity tags and TDD steps
-
----
-
 ## Process
 
 1. **Read the spec** — if coming from `/ctx-brainstorm`, the spec already has complexity tags
@@ -114,6 +107,13 @@ Before presenting the plan:
 - [ ] **Commit message per task** — conventional format
 - [ ] **No circular dependencies** — tasks can execute top-to-bottom
 - [ ] **YAGNI** — no tasks that aren't in the spec
+
+---
+
+## Skill Files
+
+- `SKILL.md` — this file
+- `${CLAUDE_SKILL_DIR}/references/example-plan.md` — canonical plan example with complexity tags and TDD steps
 
 ---
 

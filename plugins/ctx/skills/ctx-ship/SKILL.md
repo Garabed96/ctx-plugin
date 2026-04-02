@@ -8,7 +8,7 @@ user-invocable: true
 
 # /ctx-ship — Gated Development Pipeline
 
-Delegates git mechanics to `scripts/ship-preflight.sh` and `scripts/ship-pr.sh`. This skill handles gating and judgment.
+Delegates git mechanics to `${CLAUDE_PLUGIN_ROOT}/scripts/ship-preflight.sh` and `${CLAUDE_PLUGIN_ROOT}/scripts/ship-pr.sh`. This skill handles gating and judgment.
 
 Pipeline: **Preflight → Architect → Implement → Verify → PR Readiness → Ship**
 
@@ -18,10 +18,10 @@ Each phase ends with a gate. Do not advance without explicit user confirmation.
 
 ## Phase 0 — Preflight
 
-The scripts are at `../../scripts/` relative to this skill's base directory.
+The scripts are at `${CLAUDE_PLUGIN_ROOT}/scripts/`.
 
 ```bash
-bash <base-directory>/../../scripts/ship-preflight.sh --base main
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/ship-preflight.sh --base main
 ```
 
 Parse the output. Classify risk from `prod_files`, `prod_lines`, and `---risk-signals---`:
@@ -87,7 +87,7 @@ Risk-adjusted enforcement: LOW = advisory, MEDIUM = user acknowledges, HIGH = ha
 Prepare commit message and PR body (judgment), then delegate mechanics:
 
 ```bash
-bash <base-directory>/../../scripts/ship-pr.sh \
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/ship-pr.sh \
   --files file1.ts file2.ts \
   --message "feat: description" \
   --title "PR title under 70 chars" \

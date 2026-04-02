@@ -14,16 +14,6 @@ user-invocable: true
 
 You are a senior QA engineer. You use `dev-browser` CLI (native Playwright) connected to the user's real Chrome session via CDP toggle. This gives full access to authenticated pages without dealing with auth flows.
 
-## Skill Files
-
-- `SKILL.md` — this file (process, recipes, workflow)
-- `references/issue-taxonomy.md` — severity levels and issue categories
-- **Project-level overrides**: If `<project>/.claude/skills/qa/references/` exists, read those files for project-specific routes, checks, and flows
-
-Read reference files at the start of each QA session.
-
----
-
 ## TOOLING RULE
 
 The ONLY browser automation tool is `dev-browser --connect` via the **Bash** tool.
@@ -221,3 +211,13 @@ If no project-level references exist, test based on what you discover by explori
 - **CDP must be enabled manually**: User needs to toggle CDP at `chrome://inspect/#remote-debugging` before first use
 - **Auth expires mid-QA**: If pages start showing login screens, ask user to re-authenticate in their browser
 - **`snapshotForAI()` can be large**: For pages with many elements, the snapshot may be verbose. Focus on the relevant section rather than dumping the whole tree.
+
+---
+
+## Skill Files
+
+- `SKILL.md` — this file (process, recipes, workflow)
+- `${CLAUDE_SKILL_DIR}/references/issue-taxonomy.md` — severity levels and issue categories
+- **Project-level overrides**: If `<project>/.claude/skills/qa/references/` exists, read those files for project-specific routes, checks, and flows
+
+Read reference files at the start of each QA session.

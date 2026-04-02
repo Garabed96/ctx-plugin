@@ -9,16 +9,16 @@ allowed-tools: Bash, Read, Glob
 
 # /ctx-grab — Restore Session Context
 
-Delegates file operations to `scripts/grab-restore.sh`. This skill handles interpretation.
+Delegates file operations to `${CLAUDE_PLUGIN_ROOT}/scripts/grab-restore.sh`. This skill handles interpretation.
 
 **Announce at start:** "Grabbing context from previous session."
 
 ## 1. Run the script
 
-The script is at `../../scripts/grab-restore.sh` relative to this skill's base directory.
+The script is at `${CLAUDE_PLUGIN_ROOT}/scripts/grab-restore.sh`.
 
 ```bash
-bash <base-directory>/../../scripts/grab-restore.sh
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/grab-restore.sh
 ```
 
 If exit code 1: no handoff found. Say "No parked context — starting fresh. What are we working on?" and stop.
