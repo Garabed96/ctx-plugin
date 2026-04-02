@@ -44,9 +44,10 @@ Worktree ready:
   .env:   <env_count> file(s) symlinked
   Deps:   <deps status>
 
-To swap into this worktree, run:
-  ! cswap <path>
+A new iTerm2 tab is opening with claude in the worktree.
 ```
+
+The script automatically opens a new iTerm2 tab and launches claude there.
 
 On **failure** (exit 2 = git error, exit 3 = deps failed), report the stderr message and ask the user how to proceed.
 
