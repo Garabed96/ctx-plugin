@@ -45,7 +45,7 @@ Before doing anything else, check if we're running inside a git worktree:
 
 **If `main checkout`:** STOP. Do not read the plan, do not dispatch agents. Tell the user:
 
-> "You're on the main checkout. `/ctx-execute` requires an isolated worktree so implementation doesn't touch your main working directory. Run `/ctx-worktree` first, then relaunch Claude from the worktree and re-invoke `/ctx-execute`."
+> "You're on the main checkout. `/ctx-execute` requires an isolated worktree so implementation doesn't touch your main working directory. Run `/ctx-worktree` first — it will swap you into the worktree automatically — then re-invoke `/ctx-execute`."
 
 **Why this is a hard gate:** Subagents write code and commit. If they do that on the main checkout, a failed or partial implementation leaves debris on `main` that's harder to clean up than deleting a worktree branch. The worktree is the undo button.
 
