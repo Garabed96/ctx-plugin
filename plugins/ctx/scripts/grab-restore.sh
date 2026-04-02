@@ -26,7 +26,7 @@ done
 
 # ── Resolve context ───────────────────────────────────────
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "Error: not in a git repo" >&2; exit 2; }
-HANDOFF="$REPO_ROOT/.claude/ctx-park.md"
+HANDOFF="$REPO_ROOT/docs/ctx/park.md"
 BRANCH=$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null || echo "detached")
 WORKTREE=$(basename "$REPO_ROOT")
 
@@ -44,7 +44,7 @@ HANDOFF_CONTENT=$(cat "$HANDOFF")
 # ── Archive ───────────────────────────────────────────────
 ARCHIVE_PATH=""
 if [[ "$NO_ARCHIVE" == false ]]; then
-  ARCHIVE_PATH="$REPO_ROOT/.claude/ctx-park-$(date +%Y-%m-%d).md"
+  ARCHIVE_PATH="$REPO_ROOT/docs/ctx/park-$(date +%Y-%m-%d).md"
   # Handle multiple grabs on same day
   if [[ -f "$ARCHIVE_PATH" ]]; then
     COUNTER=1

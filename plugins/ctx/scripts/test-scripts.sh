@@ -106,7 +106,7 @@ echo "=== TEST: park-scan.sh ==="
 OUTPUT=$(bash "$SCRIPT_DIR/park-scan.sh" 2>/dev/null)
 assert_contains "outputs branch" "$OUTPUT" "branch=main"
 assert_contains "outputs worktree" "$OUTPUT" "worktree=test-repo"
-assert_contains "outputs handoff_path" "$OUTPUT" "handoff_path=$TEMP_DIR/test-repo/.claude/ctx-park.md"
+assert_contains "outputs handoff_path" "$OUTPUT" "handoff_path=$TEMP_DIR/test-repo/docs/ctx/park.md"
 assert_contains "no artifacts" "$OUTPUT" "none"
 
 # With artifacts
@@ -139,8 +139,8 @@ OUTPUT=$(bash "$SCRIPT_DIR/grab-restore.sh" 2>/dev/null || true)
 assert_contains "status not_found" "$OUTPUT" "status=not_found"
 
 # Create handoff and test happy path
-mkdir -p .claude
-cat > .claude/ctx-park.md <<'HANDOFF'
+mkdir -p docs/ctx
+cat > docs/ctx/park.md <<'HANDOFF'
 # Context Park — test-repo
 
 **Parked:** 2026-04-01T12:00:00Z
@@ -158,7 +158,7 @@ assert_contains "handoff content" "$OUTPUT" "This is a test handoff"
 assert_contains "has git log" "$OUTPUT" "---git-log---"
 
 # Verify archived
-if [[ -f ".claude/ctx-park-$(date +%Y-%m-%d).md" ]]; then
+if [[ -f "docs/ctx/park-$(date +%Y-%m-%d).md" ]]; then
   echo "  PASS: handoff archived"
   PASS=$((PASS + 1))
 else
@@ -167,7 +167,7 @@ else
 fi
 
 # Verify original removed
-if [[ ! -f .claude/ctx-park.md ]]; then
+if [[ ! -f docs/ctx/park.md ]]; then
   echo "  PASS: original handoff removed"
   PASS=$((PASS + 1))
 else
@@ -176,7 +176,7 @@ else
 fi
 
 # Archive collision (create another handoff, grab again)
-cat > .claude/ctx-park.md <<'HANDOFF'
+cat > docs/ctx/park.md <<'HANDOFF'
 # Second handoff
 HANDOFF
 OUTPUT=$(bash "$SCRIPT_DIR/grab-restore.sh" 2>/dev/null)

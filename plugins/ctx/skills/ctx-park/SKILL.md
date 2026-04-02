@@ -37,7 +37,7 @@ Be ruthless — 5 items beats a 20-item dump.
 
 ## 3. Write handoff
 
-Write to the `handoff_path` from scan output (`.claude/ctx-park.md`):
+Write to the `handoff_path` from scan output (`docs/ctx/park.md`):
 
 ```markdown
 # Context Park — {worktree}
@@ -66,7 +66,7 @@ If `---skill-log---` was not `none`: assess each invocation — was it the right
 ## 5. Confirm
 
 ```
-Context parked to .claude/ctx-park.md
+Context parked to docs/ctx/park.md
 Artifacts linked: {N} files
 Smart context: {N} items
 Skill audit: {N} gotchas added | clean

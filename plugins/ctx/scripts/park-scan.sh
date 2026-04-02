@@ -95,7 +95,7 @@ echo "branch=$BRANCH"
 echo "worktree=$WORKTREE"
 echo "timestamp=$TIMESTAMP"
 echo "repo_root=$REPO_ROOT"
-echo "handoff_path=$REPO_ROOT/.claude/ctx-park.md"
+echo "handoff_path=$REPO_ROOT/docs/ctx/park.md"
 echo "---artifacts---"
 if [[ -n "$ARTIFACTS" ]]; then
   echo -e "$ARTIFACTS" | sed '/^$/d'

@@ -50,8 +50,14 @@ elif [ "$TOOL_NAME" = "Bash" ]; then
     fi
   fi
 
-  # Use pwd as the context — Bash doesn't have a file_path
-  CHECK_DIR=$(pwd)
+  # If the command contains an absolute path, use it as context instead of pwd.
+  # This lets writes to other worktrees pass the "different repo" check below.
+  CMD_PATH=$(echo "$COMMAND" | grep -oE '/[^ ]+' | head -1)
+  if [ -n "$CMD_PATH" ] && [ -d "$(dirname "$CMD_PATH")" ]; then
+    CHECK_DIR=$(dirname "$CMD_PATH")
+  else
+    CHECK_DIR=$(pwd)
+  fi
 else
   exit 0
 fi

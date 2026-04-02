@@ -50,10 +50,10 @@ Distill the current conversation into a handoff for the new session. This is a j
 
 5 items max. If you can say it in 3, say it in 3.
 
-Write to `<worktree-path>/.claude/ctx-park.md`:
+Write to `<worktree-path>/docs/ctx/park.md`:
 
 ```bash
-mkdir -p <worktree-path>/.claude
+mkdir -p <worktree-path>/docs/ctx
 ```
 
 Then use the Write tool:
@@ -100,7 +100,7 @@ Worktree ready:
   Base:   <base>
   .env:   <env_count> file(s) symlinked
   Deps:   <deps status>
-  Context: parked to .claude/ctx-park.md
+  Context: parked to docs/ctx/park.md
 
 New iTerm2 tab opening. Run /ctx-grab in the new session to restore context.
 ```
