@@ -4,13 +4,13 @@ description: >
   Use when the user wants to work on something in parallel — creates an isolated git
   worktree with env symlinks and dependency install so it's immediately runnable.
   Triggers: "worktree", "new worktree", "isolated branch", "parallel branch".
-allowed-tools: Bash, Read, Glob, EnterWorktree, ExitWorktree
+allowed-tools: Bash, Read, Glob
 user-invocable: true
 ---
 
 # /worktree — Create an Isolated Git Worktree
 
-Uses `EnterWorktree` for session auto-swap. Handles base branch selection and post-setup.
+Delegates mechanical work to `scripts/worktree-create.sh`. This skill handles judgment only.
 
 ## 1. Gather inputs
 
@@ -18,65 +18,47 @@ Ask the user if not already provided:
 
 - **Name**: short identifier (e.g., `fix-email-bug`, `new-search-ui`)
 - **Base branch**: default `main`
-- **Skip deps?** If they say they won't need a dev server, note for step 4.
+- **Branch prefix**: `feat/`, `fix/`, `hotfix/`, or `--no-prefix`. Default: `feat/`
+- **Skip deps?** If they say they won't need a dev server, add `--skip-deps`
 
-## 2. Checkout base branch
+## 2. Run the script
 
-If the requested base branch is not the current branch:
-
-```bash
-git fetch origin <base>
-git checkout <base>
-```
-
-This moves HEAD so `EnterWorktree` branches from the right starting point.
-
-## 3. Enter worktree
-
-```
-EnterWorktree(name: "<name>")
-```
-
-This creates the worktree, new branch from HEAD, and swaps the session into it.
-
-If it errors (already in a worktree, not a git repo), report and stop.
-
-## 4. Post-setup
-
-Capture the source root (the original repo, not the worktree) and run post-setup for env symlinks and deps:
+The script is at `../../scripts/worktree-create.sh` relative to this skill's base directory (shown in the skill loading message). Resolve the full path and run:
 
 ```bash
-SOURCE_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel 2>/dev/null || echo "")
+bash <base-directory>/../../scripts/worktree-create.sh \
+  --name <name> --base <base> --prefix <prefix>
 ```
 
-If SOURCE_ROOT is found, run:
+The script prints progress to stderr and a `key=value` summary to stdout. Parse the stdout values.
 
-```bash
-bash <base-directory>/../../scripts/worktree-post-setup.sh \
-  --source "$SOURCE_ROOT" --target "$(pwd)"
-```
+## 3. Interpret result and present
 
-The script is at `../../scripts/worktree-post-setup.sh` relative to this skill's base directory (shown in the skill loading message). Resolve the full path before running.
-
-Parse stdout values (`env_count`, `deps`). If exit code 3 (deps failed), note worktree is still usable.
-
-## 5. Present result
+On **success** (exit 0), present:
 
 ```
 Worktree ready:
-  Path:   <pwd>
-  Branch: <git branch --show-current>
+  Path:   <path>
+  Branch: <branch>
   Base:   <base>
   .env:   <env_count> file(s) symlinked
   Deps:   <deps status>
 
-Session swapped. Use ExitWorktree when done.
+To swap into this worktree, run:
+  ! cswap <path>
 ```
 
-## 6. Cleanup reference
+On **failure** (exit 2 = git error, exit 3 = deps failed), report the stderr message and ask the user how to proceed.
 
-When the user asks about leaving or removing worktrees:
+If `deps=failed`, note the worktree still exists and is usable — deps can be installed manually.
 
-- **Keep worktree, return to original dir:** `ExitWorktree(action: "keep")`
-- **Remove worktree and branch:** `ExitWorktree(action: "remove")`
-- **List all worktrees:** `git worktree list`
+## 4. Cleanup reference
+
+When the user asks about removing worktrees:
+
+```bash
+git worktree remove <path>        # clean removal
+git worktree remove --force <path> # if changes were discarded
+git branch -d <branch-name>       # delete branch if no longer needed
+git worktree list                  # see all active worktrees
+```
