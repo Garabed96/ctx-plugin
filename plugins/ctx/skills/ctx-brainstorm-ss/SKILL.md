@@ -20,14 +20,14 @@ implementation action until you have presented a design and the user has approve
 
 1. **Explore context** — check files, docs, recent commits relevant to the idea
 2. **Scope check** — if the request covers multiple independent systems, decompose into sub-projects first. Each sub-project gets its own spec -> plan -> implementation cycle. Brainstorm the first sub-project through the normal flow.
-3. **Visual companion gate** — before asking any questions, evaluate: will this brainstorm involve architecture diagrams, layout comparisons, option cards, or spatial content? If yes, offer the companion as its own message and wait for the user's response before continuing (read `../ctx-brainstorm/references/companion-guide.md`). If no, proceed directly to questions — no extra message.
+3. **Visual companion gate** — before asking any questions, evaluate: will this brainstorm involve architecture diagrams, layout comparisons, option cards, or spatial content? If yes, offer the companion as its own message and wait for the user's response before continuing (read `${CLAUDE_PLUGIN_ROOT}/skills/ctx-brainstorm/references/companion-guide.md`). If no, proceed directly to questions — no extra message.
 4. **Ask questions** — one at a time, prefer multiple choice, understand purpose/constraints/success criteria
 5. **Propose 2-3 approaches** — with tradeoffs, lead with your recommendation. If companion is active, present visually.
 6. **Present design** — sections scaled to complexity, get approval incrementally. Apply design-for-isolation (see below).
 7. **Write spec** — save to `docs/specs/YYYY-MM-DD-<topic>-design.md`, commit
 8. **Spec review loop** — dispatch reviewer subagent (see below), fix issues, re-dispatch until approved (max 3 iterations, then surface to user)
 9. **User reviews spec** — ask user to review the written spec before proceeding
-10. **Tag complexity** — mark each planned unit (see `../ctx-brainstorm/references/complexity-tags.md`)
+10. **Tag complexity** — mark each planned unit (see `${CLAUDE_PLUGIN_ROOT}/skills/ctx-brainstorm/references/complexity-tags.md`)
 
 ---
 
@@ -46,7 +46,7 @@ When presenting the design (step 6), apply these principles:
 
 After writing the spec (step 7), dispatch a fresh-context reviewer:
 
-1. Read `references/spec-reviewer-prompt.md` for the dispatch template
+1. Read `${CLAUDE_SKILL_DIR}/references/spec-reviewer-prompt.md` for the dispatch template
 2. Dispatch via Agent tool (`subagent_type: "general-purpose"`) with the spec file path
 3. **If Issues Found:** fix the issues in the spec, re-dispatch. Repeat until Approved.
 4. **Max 3 iterations.** If still failing after 3 rounds, surface remaining issues to the user for guidance.
@@ -85,9 +85,9 @@ The reviewer has fresh context — no accumulated assumptions from the brainstor
 ## Skill Files
 
 - `SKILL.md` — this file (process, reviewer loop, design principles)
-- `references/spec-reviewer-prompt.md` — subagent dispatch template
-- Shared with brainstorm: `../ctx-brainstorm/references/complexity-tags.md`, `../ctx-brainstorm/references/companion-guide.md`
-- Shared companion server: `../ctx-brainstorm/companion/`
+- `${CLAUDE_SKILL_DIR}/references/spec-reviewer-prompt.md` — subagent dispatch template
+- Shared with brainstorm: `${CLAUDE_PLUGIN_ROOT}/skills/ctx-brainstorm/references/complexity-tags.md`, `${CLAUDE_PLUGIN_ROOT}/skills/ctx-brainstorm/references/companion-guide.md`
+- Shared companion server: `${CLAUDE_PLUGIN_ROOT}/skills/ctx-brainstorm/companion/`
 
 ---
 

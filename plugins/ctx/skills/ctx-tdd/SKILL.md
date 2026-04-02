@@ -258,7 +258,7 @@ Can't check all boxes? You skipped TDD. Start over.
 
 ## Anti-Patterns
 
-When adding mocks or test utilities, read `references/testing-anti-patterns.md` to avoid common pitfalls. The short version: mocks are tools to isolate, not things to test.
+When adding mocks or test utilities, read `${CLAUDE_SKILL_DIR}/references/testing-anti-patterns.md` to avoid common pitfalls. The short version: mocks are tools to isolate, not things to test.
 
 ---
 
@@ -274,4 +274,4 @@ When adding mocks or test utilities, read `references/testing-anti-patterns.md` 
 ## Skill Files
 
 - `SKILL.md` -- this file (process, Iron Law, cycle, rationalizations)
-- `references/testing-anti-patterns.md` -- 5 anti-patterns with gate functions and Good/Bad examples
+- `${CLAUDE_SKILL_DIR}/references/testing-anti-patterns.md` -- 5 anti-patterns with gate functions and Good/Bad examples

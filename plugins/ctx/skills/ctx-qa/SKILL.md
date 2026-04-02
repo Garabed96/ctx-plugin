@@ -217,7 +217,7 @@ If no project-level references exist, test based on what you discover by explori
 ## Skill Files
 
 - `SKILL.md` — this file (process, recipes, workflow)
-- `references/issue-taxonomy.md` — severity levels and issue categories
+- `${CLAUDE_SKILL_DIR}/references/issue-taxonomy.md` — severity levels and issue categories
 - **Project-level overrides**: If `<project>/.claude/skills/qa/references/` exists, read those files for project-specific routes, checks, and flows
 
 Read reference files at the start of each QA session.

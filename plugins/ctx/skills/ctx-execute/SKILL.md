@@ -174,6 +174,6 @@ When you stop, tell the user what happened and suggest the appropriate next step
 ## Skill Files
 
 - `SKILL.md` — this file
-- `references/example-dispatch.md` — canonical dispatch examples for LOW/MED tiers
-- `../../agents/implementer.md` — implementer subagent definition
-- `../../agents/reviewer.md` — reviewer subagent definition
+- `${CLAUDE_SKILL_DIR}/references/example-dispatch.md` — canonical dispatch examples for LOW/MED tiers
+- `${CLAUDE_PLUGIN_ROOT}/agents/implementer.md` — implementer subagent definition
+- `${CLAUDE_PLUGIN_ROOT}/agents/reviewer.md` — reviewer subagent definition

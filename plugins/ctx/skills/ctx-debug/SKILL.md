@@ -59,7 +59,7 @@ Complete each phase before proceeding to the next.
 
 4. **Gather evidence in multi-component systems** — before proposing fixes, add diagnostic instrumentation at each component boundary. Log what enters and exits each layer. Run once to gather evidence showing WHERE it breaks, THEN analyze.
 
-5. **Trace data flow** — where does the bad value originate? What called this with the bad value? Keep tracing up until you find the source. Fix at source, not at symptom. See `references/root-cause-tracing.md` for the full backward tracing technique.
+5. **Trace data flow** — where does the bad value originate? What called this with the bad value? Keep tracing up until you find the source. Fix at source, not at symptom. See `${CLAUDE_SKILL_DIR}/references/root-cause-tracing.md` for the full backward tracing technique.
 
 ### Phase 2: Pattern Analysis
 
@@ -182,9 +182,9 @@ _Built from real failures. Update this section as you hit new edge cases._
 ## Skill Files
 
 - `SKILL.md` — this file (iron law, four phases, rationalizations, gotchas)
-- `references/root-cause-tracing.md` — backward tracing technique for deep call stacks
-- `references/defense-in-depth.md` — 4-layer validation pattern after root cause fix
-- `references/condition-based-waiting.md` — replacing arbitrary timeouts with condition polling
+- `${CLAUDE_SKILL_DIR}/references/root-cause-tracing.md` — backward tracing technique for deep call stacks
+- `${CLAUDE_SKILL_DIR}/references/defense-in-depth.md` — 4-layer validation pattern after root cause fix
+- `${CLAUDE_SKILL_DIR}/references/condition-based-waiting.md` — replacing arbitrary timeouts with condition polling
 
 ---
 
@@ -193,4 +193,4 @@ _Built from real failures. Update this section as you hit new edge cases._
 After the bug is fixed and verified:
 - If it revealed a design gap, suggest `/ctx-brainstorm` to design the proper fix
 - If it requires multi-step changes, suggest `/ctx-plan` to break it into tasks
-- Add defense-in-depth validation at each layer (see `references/defense-in-depth.md`)
+- Add defense-in-depth validation at each layer (see `${CLAUDE_SKILL_DIR}/references/defense-in-depth.md`)

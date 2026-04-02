@@ -113,7 +113,7 @@ Before presenting the plan:
 ## Skill Files
 
 - `SKILL.md` — this file
-- `references/example-plan.md` — canonical plan example with complexity tags and TDD steps
+- `${CLAUDE_SKILL_DIR}/references/example-plan.md` — canonical plan example with complexity tags and TDD steps
 
 ---
 

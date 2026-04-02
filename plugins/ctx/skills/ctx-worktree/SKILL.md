@@ -10,7 +10,7 @@ user-invocable: true
 
 # /worktree — Create an Isolated Git Worktree
 
-Creates a durable worktree via `worktree-create.sh`, parks conversation context into it, then opens a new iTerm2 tab with claude. The new session can `/ctx-grab` to restore context instantly.
+Creates a durable worktree via `${CLAUDE_PLUGIN_ROOT}/scripts/worktree-create.sh`, parks conversation context into it, then opens a new iTerm2 tab with claude. The new session can `/ctx-grab` to restore context instantly.
 
 ## 1. Gather inputs
 
@@ -23,10 +23,10 @@ Ask the user if not already provided:
 
 ## 2. Create worktree
 
-The script is at `../../scripts/worktree-create.sh` relative to this skill's base directory (shown in the skill loading message). Resolve the full path and run:
+The script is at `${CLAUDE_PLUGIN_ROOT}/scripts/worktree-create.sh`. Run:
 
 ```bash
-bash <base-directory>/../../scripts/worktree-create.sh \
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/worktree-create.sh \
   --name <name> --base <base> --prefix <prefix>
 ```
 

@@ -9,16 +9,16 @@ allowed-tools: Bash, Read, Glob, Write
 
 # /ctx-park — Save Session Context
 
-Delegates artifact scanning to `scripts/park-scan.sh`. This skill handles context distillation.
+Delegates artifact scanning to `${CLAUDE_PLUGIN_ROOT}/scripts/park-scan.sh`. This skill handles context distillation.
 
 **Announce at start:** "Parking context for this session."
 
 ## 1. Scan artifacts
 
-The script is at `../../scripts/park-scan.sh` relative to this skill's base directory.
+The script is at `${CLAUDE_PLUGIN_ROOT}/scripts/park-scan.sh`.
 
 ```bash
-bash <base-directory>/../../scripts/park-scan.sh --clean-log
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/park-scan.sh --clean-log
 ```
 
 The script outputs `key=value` metadata, `---artifacts---` section, and `---skill-log---` section.
