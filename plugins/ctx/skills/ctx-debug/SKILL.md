@@ -12,15 +12,6 @@ Random fixes waste tokens and create new bugs. Quick patches mask underlying iss
 
 **Core principle:** ALWAYS find root cause before attempting fixes. Symptom fixes are failure.
 
-## Skill Files
-
-- `SKILL.md` — this file (iron law, four phases, rationalizations, gotchas)
-- `references/root-cause-tracing.md` — backward tracing technique for deep call stacks
-- `references/defense-in-depth.md` — 4-layer validation pattern after root cause fix
-- `references/condition-based-waiting.md` — replacing arbitrary timeouts with condition polling
-
----
-
 ## The Iron Law
 
 ```
@@ -185,6 +176,15 @@ _Built from real failures. Update this section as you hit new edge cases._
 - **Stacking diagnostic changes**: When adding instrumentation in Phase 1, add it all in one pass, run once, then analyze. Don't add one log, run, add another log, run. That's thrashing with extra steps.
 - **Confusing correlation with causation**: "It broke after we changed X" does not mean X caused it. Verify the causal chain, don't just note temporal proximity.
 - **Skipping Phase 2 for "obvious" bugs**: Pattern analysis catches the cases where your fix would introduce a new inconsistency with how the rest of the codebase handles the same thing.
+
+---
+
+## Skill Files
+
+- `SKILL.md` — this file (iron law, four phases, rationalizations, gotchas)
+- `references/root-cause-tracing.md` — backward tracing technique for deep call stacks
+- `references/defense-in-depth.md` — 4-layer validation pattern after root cause fix
+- `references/condition-based-waiting.md` — replacing arbitrary timeouts with condition polling
 
 ---
 

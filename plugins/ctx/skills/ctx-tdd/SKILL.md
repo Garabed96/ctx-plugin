@@ -12,13 +12,6 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 **Core principle:** If you didn't watch the test fail, you don't know if it tests the right thing.
 
-## Skill Files
-
-- `SKILL.md` -- this file (process, Iron Law, cycle, rationalizations)
-- `references/testing-anti-patterns.md` -- 5 anti-patterns with gate functions and Good/Bad examples
-
----
-
 ## When to Use
 
 **Always:**
@@ -275,3 +268,10 @@ When adding mocks or test utilities, read `references/testing-anti-patterns.md` 
 - **Test runner discovery**: Before writing the first test, check the project for an existing test runner (package.json scripts, Makefile targets, pytest.ini). Match the existing pattern.
 - **Mocking creep**: If mock setup exceeds test logic, you're testing mocks, not code. Read the anti-patterns reference.
 - **Refactor drift**: Refactoring is for cleaning up, not adding behavior. If you catch yourself adding a feature during refactor, stop -- write a new failing test first.
+
+---
+
+## Skill Files
+
+- `SKILL.md` -- this file (process, Iron Law, cycle, rationalizations)
+- `references/testing-anti-patterns.md` -- 5 anti-patterns with gate functions and Good/Bad examples

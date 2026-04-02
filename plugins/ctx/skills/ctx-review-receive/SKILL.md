@@ -11,12 +11,6 @@ user-invocable: true
 
 Code review requires technical evaluation, not emotional performance. Verify before implementing. Ask before assuming. Technical correctness over social comfort.
 
-## Skill Files
-
-- `SKILL.md` — this file (response protocol, anti-sycophancy rules, pushback guidance)
-
----
-
 ## The Response Protocol
 
 ```
@@ -193,3 +187,9 @@ Do not post as top-level PR comments — reply in the thread where the feedback 
 **External feedback = suggestions to evaluate, not orders to follow.**
 
 Verify. Question. Then implement. No performative agreement. Technical rigor always.
+
+---
+
+## Skill Files
+
+- `SKILL.md` — this file (response protocol, anti-sycophancy rules, pushback guidance)
