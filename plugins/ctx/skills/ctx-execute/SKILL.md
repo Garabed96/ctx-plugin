@@ -10,15 +10,6 @@ user-invocable: true
 
 Execute plans by dispatching fresh subagents per task. The complexity tag on each task determines the agent budget and model selection — no review sandwich for simple work, full review for complex work.
 
-## Skill Files
-
-- `SKILL.md` — this file
-- `references/example-dispatch.md` — canonical dispatch examples for LOW/MED tiers
-- `../../agents/implementer.md` — implementer subagent definition
-- `../../agents/reviewer.md` — reviewer subagent definition
-
----
-
 ## Process
 
 0. **Worktree gate** — verify we're in an isolated worktree (see below)
@@ -177,3 +168,12 @@ When you stop, tell the user what happened and suggest the appropriate next step
 - **Context for the implementer matters more than review.** A well-briefed implementer with clear task text produces fewer issues than a poorly-briefed one with three reviewers.
 - **Sequential, not parallel.** Never dispatch two implementers at once — they'll conflict on shared files.
 - **Re-classification is cheap.** Upgrading a tag costs one extra agent. Shipping a bug from a mis-tagged `[LOW]` costs a debugging session.
+
+---
+
+## Skill Files
+
+- `SKILL.md` — this file
+- `references/example-dispatch.md` — canonical dispatch examples for LOW/MED tiers
+- `../../agents/implementer.md` — implementer subagent definition
+- `../../agents/reviewer.md` — reviewer subagent definition
