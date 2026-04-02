@@ -1,8 +1,8 @@
 ---
 name: ctx-ship
 description: >
-  Use when ready to take a feature from plan through to merged PR. Triggers: "ship this",
-  "full pipeline", "/ship".
+  Use when ready to take a feature from plan through to draft PR with gated human approval
+  at each phase. Does NOT merge autonomously. Triggers: "ship this", "full pipeline", "/ship".
 user-invocable: true
 ---
 
@@ -109,6 +109,9 @@ PR body template:
 
 ## Validation
 <commands run and their results>
+
+## Rollback plan
+<revert PR, or specific rollback steps if migrations/data changes involved>
 ```
 
 **Gate E:** PR is open, CI is green.
