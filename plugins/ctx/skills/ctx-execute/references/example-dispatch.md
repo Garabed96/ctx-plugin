@@ -10,7 +10,7 @@ Shows what a subagent dispatch looks like for each complexity tier and how to ha
 Dispatch: Agent tool (subagent_type: "general-purpose")
 
 Prompt:
-"Execute Task 1 from docs/context/plans/2026-03-28-icp-link.md.
+"Execute Task 1 from docs/ctx/plans/2026-03-28-icp-link.md.
 
 Task: Remove ExclusionRow component [LOW]
 
@@ -40,7 +40,7 @@ type-check passes. Committed as refactor: remove ExclusionRow component.
 Agent 1 (implement): same format as above, with full task text
 
 Agent 2 (review): 
-"Review the changes from Task 3 in docs/context/plans/2026-03-28-icp-link.md.
+"Review the changes from Task 3 in docs/ctx/plans/2026-03-28-icp-link.md.
 
 Read the modified files:
 - src/components/scoring/PipelineInsightPanel.tsx

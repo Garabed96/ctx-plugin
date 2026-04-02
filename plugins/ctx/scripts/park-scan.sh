@@ -45,12 +45,12 @@ scan_dir() {
 
 # Plans
 scan_dir "docs/superpowers/plans" "plan"
-scan_dir "docs/context/plans" "plan"
+scan_dir "docs/ctx/plans" "plan"
 scan_dir "docs/plans" "plan"
 
 # Specs
 scan_dir "docs/superpowers/specs" "spec"
-scan_dir "docs/context/specs" "spec"
+scan_dir "docs/ctx/specs" "spec"
 scan_dir "docs/specs" "spec"
 
 # Docs

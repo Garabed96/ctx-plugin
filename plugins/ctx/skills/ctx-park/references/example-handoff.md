@@ -13,7 +13,7 @@ This is what a good ctx-park handoff looks like. 5 smart context items, not 20.
 
 ## Artifacts
 
-- `docs/context/plans/2026-03-28-icp-link.md` — implementation plan (3 tasks, all LOW)
+- `docs/ctx/plans/2026-03-28-icp-link.md` — implementation plan (3 tasks, all LOW)
 - `src/components/scoring/ScoringModeBadge.tsx` — new component, links to other mode's scoring page
 - `src/services/PipelineMetricsService.ts` — added skipPreviouslyAssigned flag
 

@@ -23,7 +23,7 @@ Write plans that a fresh agent with zero codebase knowledge can execute. Tag eve
 2. **Map the file structure** — which files are created/modified and what each is responsible for
 3. **Decompose into tasks** — each task produces a self-contained, testable change
 4. **Tag each task** — `[LOW]`, `[MED]`, or `[HIGH]` (inherit from spec or classify here)
-5. **Write the plan** — save to `docs/context/plans/YYYY-MM-DD-<feature>.md`, commit
+5. **Write the plan** — save to `docs/ctx/plans/YYYY-MM-DD-<feature>.md`, commit
 6. **Self-review** — apply the checks below, fix inline
 7. **Offer execution** — suggest `/ctx-execute`
 
@@ -128,7 +128,7 @@ After the plan is approved, the ONLY next step is `/ctx-execute` (or inline for 
 Offer execution choice:
 
 ```
-Plan saved to docs/context/plans/<filename>.md
+Plan saved to docs/ctx/plans/<filename>.md
 
 Agent budget: [N agents total — X×1 for LOW, Y×2 for MED, Z×3 for HIGH]
 
