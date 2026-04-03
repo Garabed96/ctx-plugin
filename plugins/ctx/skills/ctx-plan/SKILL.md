@@ -16,7 +16,7 @@ Write plans that a fresh agent with zero codebase knowledge can execute. Tag eve
 2. **Map the file structure** — which files are created/modified and what each is responsible for
 3. **Decompose into tasks** — each task produces a self-contained, testable change
 4. **Tag each task** — `[LOW]`, `[MED]`, or `[HIGH]` (inherit from spec or classify here)
-5. **Write the plan** — save to `docs/ctx/plans/YYYY-MM-DD-<feature>.md`, commit
+5. **Write the plan** — save to `~/.claude/plugins/marketplaces/ctx-plugin/plans/<topic-slug>.md` with frontmatter, commit
 6. **Self-review** — apply the checks below, fix inline
 7. **Offer execution** — suggest `/ctx-execute`
 
@@ -62,9 +62,17 @@ When in doubt, tag up.
 
 ## Plan Header
 
-Every plan starts with:
+Every plan starts with frontmatter + header:
 
 ```markdown
+---
+status: active
+branch: null
+worktree: null
+created: YYYY-MM-DD
+topic: <topic-slug>
+---
+
 # [Feature Name] Implementation Plan
 
 **Goal:** [One sentence]
@@ -75,6 +83,15 @@ Every plan starts with:
 
 ---
 ```
+
+**Frontmatter fields:**
+- `status`: `active` (on creation) → `completed` (by `/ctx-execute` on success) or `abandoned`
+- `branch`: `null` until `/ctx-worktree` links it, then e.g. `feat/my-feature`
+- `worktree`: `null` until linked, then absolute path
+- `created`: date the plan was written
+- `topic`: the filename slug — lowercase, hyphenated, derived from feature name
+
+The `topic` slug is the **filename** (e.g., `download-csv-email-opens.md`). Derive it from the feature name: lowercase, spaces/underscores to hyphens, strip special chars.
 
 The agent budget line makes the cost visible before execution starts.
 
@@ -128,7 +145,7 @@ After the plan is approved, the ONLY next step is `/ctx-execute` (or inline for 
 Offer execution choice:
 
 ```
-Plan saved to docs/ctx/plans/<filename>.md
+Plan saved to ~/.claude/plugins/marketplaces/ctx-plugin/plans/<topic-slug>.md
 
 Agent budget: [N agents total — X×1 for LOW, Y×2 for MED, Z×3 for HIGH]
 

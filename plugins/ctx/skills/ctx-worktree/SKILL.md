@@ -32,7 +32,17 @@ bash ${CLAUDE_PLUGIN_ROOT}/scripts/worktree-create.sh \
 
 Parse the `key=value` stdout output. On failure (exit 2 or 3), report and stop.
 
-## 3. Park context
+## 3. Link plan
+
+After worktree creation, check if there's an active plan to link to this branch:
+
+1. Scan `~/.claude/plugins/marketplaces/ctx-plugin/plans/` for `.md` files
+2. For each, read the frontmatter — look for `status: active` AND `branch: null`
+3. **If exactly one** unlinked plan: update its `branch` and `worktree` fields with the new branch name and worktree path
+4. **If multiple** unlinked plans: ask the user which plan this worktree is for, then update that one
+5. **If zero**: no-op — this is an ad-hoc worktree not created from a plan
+
+## 4. Park context
 
 Distill the current conversation into a handoff for the new session. This is a judgment call — include only what the next session needs to hit the ground running.
 
@@ -40,7 +50,7 @@ Distill the current conversation into a handoff for the new session. This is a j
 - The task/goal (one sentence)
 - Key decisions and their rationale (only non-obvious ones)
 - Approaches tried or ruled out and why
-- Paths to relevant plans or specs (e.g. `docs/ctx/plans/...`)
+- Paths to relevant plans (e.g. `~/.claude/plugins/marketplaces/ctx-plugin/plans/<topic>.md`) or specs
 - What should happen first in the worktree
 
 **Exclude:**
@@ -74,7 +84,7 @@ Then use the Write tool:
 {Ordered — what the next session should do first}
 ```
 
-## 4. Open iTerm2 tab
+## 5. Open iTerm2 tab
 
 After the park file is written, open a new tab and launch claude:
 
@@ -82,7 +92,7 @@ After the park file is written, open a new tab and launch claude:
 bash ${CLAUDE_PLUGIN_ROOT}/scripts/worktree-open.sh '<worktree-path>'
 ```
 
-## 5. Present result
+## 6. Present result
 
 ```
 Worktree ready:
@@ -96,7 +106,7 @@ Worktree ready:
 New iTerm2 tab opening. Run /ctx-grab in the new session to restore context.
 ```
 
-## 6. Cleanup reference
+## 7. Cleanup reference
 
 When the user asks about removing worktrees:
 

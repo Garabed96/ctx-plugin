@@ -13,7 +13,7 @@ Execute plans by dispatching fresh subagents per task. The complexity tag on eac
 ## Process
 
 0. **Worktree gate** — verify we're in an isolated worktree (see below)
-1. **Read the plan** — extract all tasks with full text, note complexity tags
+1. **Read the plan from global storage** — find and load the plan (see below)
 2. **Verify tags** — every task must have `[LOW]`, `[MED]`, or `[HIGH]`
 3. **Execute sequentially** — one task at a time, never parallel implementation
 4. **Gate agents by tag** — see budget table below
@@ -41,6 +41,20 @@ Before doing anything else, check if we're running inside a git worktree:
 **Why this is a hard gate:** Subagents write code and commit. If they do that on the main checkout, a failed or partial implementation leaves debris on `main` that's harder to clean up than deleting a worktree branch. The worktree is the undo button.
 
 </HARD-GATE>
+
+---
+
+## Step 1: Read the Plan
+
+Plans are stored globally at `~/.claude/plugins/marketplaces/ctx-plugin/plans/`.
+
+1. Get current branch: `git branch --show-current`
+2. Scan the plans directory for `.md` files. For each, read the YAML frontmatter and check if `branch` matches the current branch.
+3. **If found:** Read the full plan content. Extract all tasks with their complexity tags. Proceed to Step 2 (Verify tags).
+4. **If not found:** List all plans where `status: active`, show topic + created date, and ask the user to pick one.
+5. Pass the **full plan content** to agents — not a summary, not a path. The agent needs every task, every file path, every code snippet.
+
+After all tasks pass final verification (Step 6), update the plan's frontmatter `status` from `active` to `completed`.
 
 ---
 
