@@ -79,14 +79,7 @@ Then use the Write tool:
 After the park file is written, open a new tab and launch claude:
 
 ```bash
-osascript -e "
-  tell application \"iTerm2\"
-    set newWindow to (create window with default profile)
-    tell current session of newWindow
-      write text \"cd '<worktree-path>' && claude '/ctx-grab'\"
-    end tell
-  end tell
-" 2>/dev/null || true
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/worktree-open.sh '<worktree-path>'
 ```
 
 ## 5. Present result
