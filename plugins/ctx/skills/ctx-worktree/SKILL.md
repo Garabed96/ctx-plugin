@@ -83,7 +83,7 @@ osascript -e "
   tell application \"iTerm2\"
     set newWindow to (create window with default profile)
     tell current session of newWindow
-      write text \"cd '<worktree-path>' && claude\"
+      write text \"cd '<worktree-path>' && claude '/ctx-grab'\"
     end tell
   end tell
 " 2>/dev/null || true
