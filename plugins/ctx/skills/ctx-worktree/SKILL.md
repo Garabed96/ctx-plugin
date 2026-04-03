@@ -84,13 +84,17 @@ Then use the Write tool:
 {Ordered — what the next session should do first}
 ```
 
-## 5. Open iTerm2 tab
+## 5. Open terminal with claude
 
-After the park file is written, open a new tab and launch claude:
+After the park file is written, launch an interactive claude session via the open script. The script sends `/ctx-grab` automatically after a 5s delay.
 
 ```bash
 bash ${CLAUDE_PLUGIN_ROOT}/scripts/worktree-open.sh '<worktree-path>'
 ```
+
+**Edge cases:**
+- If claude takes longer than 5s to start, `/ctx-grab` may type into zsh instead. The user can type it again once claude is ready.
+- If the park file was already consumed by a prior grab (e.g. crashed session), `grab-restore.sh` auto-restores from the latest archive.
 
 ## 6. Present result
 
@@ -103,7 +107,8 @@ Worktree ready:
   Deps:   <deps status>
   Context: parked to docs/ctx/park.md
 
-New iTerm2 tab opening. Run /ctx-grab in the new session to restore context.
+Launching claude in new terminal. /ctx-grab will auto-run after ~5s.
+If it doesn't fire, type /ctx-grab manually.
 ```
 
 ## 7. Cleanup reference

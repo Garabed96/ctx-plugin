@@ -32,10 +32,17 @@ WORKTREE=$(basename "$REPO_ROOT")
 
 # ── Find handoff ──────────────────────────────────────────
 if [[ ! -f "$HANDOFF" ]]; then
-  echo "status=not_found"
-  echo "branch=$BRANCH"
-  echo "worktree=$WORKTREE"
-  exit 1
+  # Fallback: restore from latest archive (handles consumed-by-dead-session edge case)
+  LATEST_ARCHIVE=$(ls -t "$REPO_ROOT"/docs/ctx/park-*.md 2>/dev/null | head -1)
+  if [[ -n "$LATEST_ARCHIVE" ]]; then
+    cp "$LATEST_ARCHIVE" "$HANDOFF"
+    echo "Restored from archive: $(basename "$LATEST_ARCHIVE")" >&2
+  else
+    echo "status=not_found"
+    echo "branch=$BRANCH"
+    echo "worktree=$WORKTREE"
+    exit 1
+  fi
 fi
 
 # ── Read handoff ──────────────────────────────────────────
