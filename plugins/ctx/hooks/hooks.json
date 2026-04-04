@@ -41,6 +41,12 @@
             "prompt": "A Bash command just completed during a coding session. The hook input JSON is: $ARGUMENTS\n\nYou can ONLY see tool_input (the command) and tool_output (stdout/stderr). You do NOT have access to the git diff or file system.\n\nDetermine:\n1. Was this a test run (unit tests, integration tests, e2e tests)? Check tool_input.command.\n2. If yes, examine tool_output.stdout for test results — which test files ran, pass/fail counts.\n3. From the test file names and descriptions, assess: do the tests appear to cover service-layer concerns (orchestration, side effects, data flow between services) or only unit-level concerns (individual functions, utilities, components)?\n\nReturn {\"ok\": true} if no nudge is needed (not a test run, or tests appear to cover service-layer concerns).\nReturn {\"ok\": false, \"reason\": \"<one-sentence nudge shown directly to the developer as a non-blocking reminder>\"} if tests ran but the test output suggests only unit-level coverage with no service-layer or integration tests visible.",
             "if": "Bash(npm *|npx *|bun *|pnpm *|vitest*|jest*|pytest*|make test*)",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/plugins/ctx/scripts/auto-pr.sh\"",
+            "if": "Bash(git push*)",
+            "statusMessage": "Typechecking and creating draft PR..."
           }
         ]
       }
