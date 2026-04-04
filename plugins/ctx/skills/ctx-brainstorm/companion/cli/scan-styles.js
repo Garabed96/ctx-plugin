@@ -122,13 +122,7 @@ function evalTailwindConfigSubprocess(configPath) {
   // Build the evaluation script
   const evalScript = `
     try {
-      let cfg;
-      if (${isTs}) {
-        // TS handled by tsx — require will work via tsx shim
-        cfg = require(${JSON.stringify(configPath)});
-      } else {
-        cfg = require(${JSON.stringify(configPath)});
-      }
+      let cfg = require(${JSON.stringify(configPath)});
       if (cfg && cfg.default) cfg = cfg.default;
       const out = {
         theme: cfg.theme || {},
@@ -251,7 +245,7 @@ function extractFromTailwindTheme(themeData) {
   const merged = {};
   for (const key of new Set([...Object.keys(theme), ...Object.keys(extend)])) {
     if (key === "extend") continue;
-    merged[key] = Object.assign({}, theme[key] || {}, extend[key] || {});
+    merged[key] = deepMerge(theme[key] || {}, extend[key] || {});
   }
 
   const result = {};
@@ -413,7 +407,7 @@ function extractRootVars(cssText) {
   const vars = new Map();
 
   // Find all :root { ... } blocks
-  const rootBlocks = cssText.matchAll(/:root\s*\{([^}]+)\}/g);
+  const rootBlocks = cssText.matchAll(/:root\s*\{([\s\S]+?)\}/g);
   for (const [, block] of rootBlocks) {
     // Extract --name: value; pairs
     const pairs = block.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g);
@@ -426,13 +420,6 @@ function extractRootVars(cssText) {
 }
 
 function scanCssVars(dir) {
-  const patterns = [
-    "{src,app,styles}/**/*.css",
-    "src/**/*.css",
-    "app/**/*.css",
-    "styles/**/*.css",
-  ];
-
   // Deduplicate by finding all css files in the relevant dirs
   const cssFiles = new Set();
   for (const subDir of ["src", "app", "styles"]) {
