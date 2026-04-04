@@ -270,6 +270,62 @@ if (projectDir) {
   });
 }
 
+// ========== Style Profile ==========
+
+let _styleProfileCache = null;
+
+function readStyleProfile() {
+  if (!projectDir) return null;
+  if (_styleProfileCache !== null) return _styleProfileCache;
+
+  const profilePath = path.join(projectDir, "companion/style-profile.json");
+  if (!fs.existsSync(profilePath)) return null;
+
+  try {
+    _styleProfileCache = JSON.parse(fs.readFileSync(profilePath, "utf8"));
+  } catch {
+    _styleProfileCache = null;
+  }
+
+  try {
+    fs.watch(profilePath, () => {
+      _styleProfileCache = null;
+    });
+  } catch {
+    // If watching fails, cache will persist until restart — acceptable degradation
+  }
+
+  return _styleProfileCache;
+}
+
+function buildInjectionStyle(profile) {
+  const vars = [];
+
+  const c = profile.colors || {};
+  if (c.primary     != null) vars.push(`  --cp-primary: ${c.primary};`);
+  if (c.secondary   != null) vars.push(`  --cp-secondary: ${c.secondary};`);
+  if (c.accent      != null) vars.push(`  --cp-accent: ${c.accent};`);
+  if (c.background  != null) vars.push(`  --cp-bg: ${c.background};`);
+  if (c.foreground  != null) vars.push(`  --cp-fg: ${c.foreground};`);
+  if (c.muted       != null) vars.push(`  --cp-muted: ${c.muted};`);
+  if (c.destructive != null) vars.push(`  --cp-destructive: ${c.destructive};`);
+
+  const t = profile.typography || {};
+  if (t.sans != null) vars.push(`  --cp-font-sans: ${t.sans};`);
+  if (t.mono != null) vars.push(`  --cp-font-mono: ${t.mono};`);
+
+  const r = (profile.spacing || {}).radius || {};
+  if (r.sm != null) vars.push(`  --cp-radius-sm: ${r.sm};`);
+  if (r.md != null) vars.push(`  --cp-radius-md: ${r.md};`);
+  if (r.lg != null) vars.push(`  --cp-radius-lg: ${r.lg};`);
+
+  const unit = (profile.spacing || {}).unit;
+  if (unit != null) vars.push(`  --cp-spacing: ${unit};`);
+
+  if (vars.length === 0) return "";
+  return `<style>:root {\n${vars.join("\n")}\n}</style>`;
+}
+
 // ========== HTTP Routes ==========
 
 function newestHtml() {
@@ -325,7 +381,20 @@ function servePrototype(res, filePath) {
     res.end(`Prototype not found: ${filePath}`);
     return;
   }
-  const content = fs.readFileSync(resolved, "utf8");
+  let content = fs.readFileSync(resolved, "utf8");
+
+  const profile = readStyleProfile();
+  if (profile) {
+    const styleBlock = buildInjectionStyle(profile);
+    if (styleBlock) {
+      if (content.includes("<head>")) {
+        content = content.replace("<head>", "<head>\n" + styleBlock);
+      } else {
+        content = styleBlock + "\n" + content;
+      }
+    }
+  }
+
   res.writeHead(200, { "Content-Type": "text/html" });
   res.end(content);
 }
