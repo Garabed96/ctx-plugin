@@ -256,6 +256,20 @@ fs.watch(screenDir, (eventType, filename) => {
   }, 100));
 });
 
+if (projectDir) {
+  const pagesDir = path.join(projectDir, "companion/pages");
+  fs.mkdirSync(pagesDir, { recursive: true });
+  fs.watch(pagesDir, { recursive: true }, (eventType, filename) => {
+    if (!filename || !filename.endsWith(".html")) return;
+    const key = "pages:" + filename;
+    if (debounceTimers.has(key)) clearTimeout(debounceTimers.get(key));
+    debounceTimers.set(key, setTimeout(() => {
+      debounceTimers.delete(key);
+      broadcast({ type: "reload" });
+    }, 100));
+  });
+}
+
 // ========== HTTP Routes ==========
 
 function newestHtml() {
@@ -300,8 +314,8 @@ function servePrototype(res, filePath) {
     res.end("No --project-dir configured");
     return;
   }
-  const resolved = path.resolve(projectDir, "prototypes", filePath);
-  if (!resolved.startsWith(path.resolve(projectDir, "prototypes"))) {
+  const resolved = path.resolve(projectDir, "companion/pages", filePath);
+  if (!resolved.startsWith(path.resolve(projectDir, "companion/pages"))) {
     res.writeHead(403, { "Content-Type": "text/plain" });
     res.end("Forbidden");
     return;
@@ -338,7 +352,7 @@ function serveBrainstorm(res) {
 
 function scanSlots() {
   if (!projectDir) return [];
-  const prototypesDir = path.join(projectDir, "prototypes");
+  const prototypesDir = path.join(projectDir, "companion/pages");
   if (!fs.existsSync(prototypesDir)) return [];
 
   const slots = new Map();
