@@ -66,8 +66,8 @@ run_typecheck() {
     echo "Running $SCRIPT_NAME..." >&2
     (cd "$REPO_ROOT" && pnpm run "$SCRIPT_NAME" 2>&1) >&2
 
-  elif command -v tsc &>/dev/null; then
-    # Raw tsc
+  elif [[ -f "$REPO_ROOT/tsconfig.json" ]] && command -v tsc &>/dev/null; then
+    # Raw tsc (only if tsconfig exists)
     TYPECHECK_SCOPE="tsc --noEmit"
     echo "Running tsc --noEmit..." >&2
     (cd "$REPO_ROOT" && tsc --noEmit 2>&1) >&2
@@ -85,11 +85,12 @@ fi
 
 # ── Create draft PR ──────────────────────────────────────
 echo "Creating draft PR..." >&2
-PR_URL=$(gh pr create --draft --fill 2>&1) || {
+PR_OUTPUT=$(gh pr create --draft --fill 2>&1) || {
   echo "gh pr create failed:" >&2
-  echo "$PR_URL" >&2
+  echo "$PR_OUTPUT" >&2
   exit 2
 }
+PR_URL=$(echo "$PR_OUTPUT" | grep -oE 'https://github\.com/[^ ]+' | head -1)
 
 echo "Draft PR created: $PR_URL" >&2
 
