@@ -105,9 +105,23 @@ const TAILWIND_CONFIG_NAMES = [
 ];
 
 function findTailwindConfig(dir) {
+  // Check project root first
   for (const name of TAILWIND_CONFIG_NAMES) {
     const full = path.join(dir, name);
     if (fs.existsSync(full)) return full;
+  }
+  // Check monorepo app dirs (apps/*)
+  const appsDir = path.join(dir, "apps");
+  if (fs.existsSync(appsDir)) {
+    try {
+      for (const entry of fs.readdirSync(appsDir, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue;
+        for (const name of TAILWIND_CONFIG_NAMES) {
+          const full = path.join(appsDir, entry.name, name);
+          if (fs.existsSync(full)) return full;
+        }
+      }
+    } catch { /* ignore */ }
   }
   return null;
 }
@@ -347,6 +361,29 @@ const CSS_VAR_MAP = {
   "--radius-full": { section: "spacing", key: "radius.full" },
   "--spacing": { section: "spacing", key: "unit" },
   "--spacing-unit": { section: "spacing", key: "unit" },
+  // Tailwind v4 @theme conventions (--color-*, --font-*)
+  "--color-primary": { section: "colors", key: "primary" },
+  "--color-primary-foreground": { section: "colors", key: "primary-foreground" },
+  "--color-secondary": { section: "colors", key: "secondary" },
+  "--color-secondary-foreground": { section: "colors", key: "secondary-foreground" },
+  "--color-accent": { section: "colors", key: "accent" },
+  "--color-accent-foreground": { section: "colors", key: "accent-foreground" },
+  "--color-background": { section: "colors", key: "background" },
+  "--color-foreground": { section: "colors", key: "foreground" },
+  "--color-muted": { section: "colors", key: "muted" },
+  "--color-muted-foreground": { section: "colors", key: "muted-foreground" },
+  "--color-destructive": { section: "colors", key: "destructive" },
+  "--color-destructive-foreground": { section: "colors", key: "destructive-foreground" },
+  "--color-card": { section: "colors", key: "card" },
+  "--color-card-foreground": { section: "colors", key: "card-foreground" },
+  "--color-popover": { section: "colors", key: "popover" },
+  "--color-popover-foreground": { section: "colors", key: "popover-foreground" },
+  "--color-border": { section: "colors", key: "border" },
+  "--color-input": { section: "colors", key: "input" },
+  "--color-ring": { section: "colors", key: "ring" },
+  "--font-display": { section: "typography", key: "display" },
+  "--font-sans": { section: "typography", key: "sans" },
+  "--font-mono": { section: "typography", key: "mono" },
 };
 
 /**
@@ -406,13 +443,41 @@ function normalizeColorValue(raw) {
 function extractRootVars(cssText) {
   const vars = new Map();
 
-  // Find all :root { ... } blocks
+  // Find all :root { ... } blocks (simple lazy match — works for flat blocks)
   const rootBlocks = cssText.matchAll(/:root\s*\{([\s\S]+?)\}/g);
   for (const [, block] of rootBlocks) {
-    // Extract --name: value; pairs
     const pairs = block.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g);
     for (const [, name, value] of pairs) {
       vars.set(name.trim(), value.trim());
+    }
+  }
+
+  // Find @theme { ... } blocks (Tailwind v4) — uses brace-depth parser
+  // because @theme can contain nested @keyframes with their own braces
+  const themeStarts = cssText.matchAll(/@theme\s*\{/g);
+  for (const match of themeStarts) {
+    const startIdx = match.index + match[0].length;
+    let depth = 1;
+    let i = startIdx;
+    while (i < cssText.length && depth > 0) {
+      if (cssText[i] === "{") depth++;
+      else if (cssText[i] === "}") depth--;
+      i++;
+    }
+    const block = cssText.slice(startIdx, i - 1);
+    // Only extract top-level --name: value; pairs (skip nested @keyframes content)
+    // Split by lines to avoid matching inside nested blocks
+    let innerDepth = 0;
+    for (const line of block.split("\n")) {
+      const trimmed = line.trim();
+      if (trimmed.includes("{")) innerDepth += (trimmed.match(/\{/g) || []).length;
+      if (trimmed.includes("}")) innerDepth -= (trimmed.match(/\}/g) || []).length;
+      if (innerDepth === 0) {
+        const pairMatch = trimmed.match(/^(--[\w-]+)\s*:\s*([^;]+);/);
+        if (pairMatch) {
+          vars.set(pairMatch[1].trim(), pairMatch[2].trim());
+        }
+      }
     }
   }
 
@@ -421,12 +486,24 @@ function extractRootVars(cssText) {
 
 function scanCssVars(dir) {
   // Deduplicate by finding all css files in the relevant dirs
+  // Also check monorepo app dirs (apps/*/src, apps/*/app, apps/*/styles)
   const cssFiles = new Set();
-  for (const subDir of ["src", "app", "styles"]) {
-    const full = path.join(dir, subDir);
-    if (fs.existsSync(full)) {
-      const found = glob(full, ["**/*.css"]);
-      for (const f of found) cssFiles.add(f);
+  const searchRoots = [dir];
+  const appsDir = path.join(dir, "apps");
+  if (fs.existsSync(appsDir)) {
+    try {
+      for (const entry of fs.readdirSync(appsDir, { withFileTypes: true })) {
+        if (entry.isDirectory()) searchRoots.push(path.join(appsDir, entry.name));
+      }
+    } catch { /* ignore */ }
+  }
+  for (const root of searchRoots) {
+    for (const subDir of ["src", "app", "styles"]) {
+      const full = path.join(root, subDir);
+      if (fs.existsSync(full)) {
+        const found = glob(full, ["**/*.css"]);
+        for (const f of found) cssFiles.add(f);
+      }
     }
   }
 
@@ -510,22 +587,31 @@ const FRAMEWORKS = [
 ];
 
 function scanPackageJson(dir) {
-  const pkgPath = path.join(dir, "package.json");
-  if (!fs.existsSync(pkgPath)) return { found: false, components: {} };
-
-  let pkg;
-  try {
-    pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
-  } catch {
-    return { found: false, components: {} };
+  // Collect deps from root + monorepo app dirs
+  const pkgPaths = [path.join(dir, "package.json")];
+  const appsDir = path.join(dir, "apps");
+  if (fs.existsSync(appsDir)) {
+    try {
+      for (const entry of fs.readdirSync(appsDir, { withFileTypes: true })) {
+        if (entry.isDirectory()) {
+          const appPkg = path.join(appsDir, entry.name, "package.json");
+          if (fs.existsSync(appPkg)) pkgPaths.push(appPkg);
+        }
+      }
+    } catch { /* ignore */ }
   }
 
-  const allDeps = Object.assign(
-    {},
-    pkg.dependencies || {},
-    pkg.devDependencies || {},
-    pkg.peerDependencies || {}
-  );
+  const allDeps = {};
+  let anyFound = false;
+  for (const pkgPath of pkgPaths) {
+    try {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+      anyFound = true;
+      Object.assign(allDeps, pkg.dependencies || {}, pkg.devDependencies || {}, pkg.peerDependencies || {});
+    } catch { continue; }
+  }
+
+  if (!anyFound) return { found: false, components: {} };
 
   let library = null;
   for (const def of COMPONENT_LIBRARIES) {
