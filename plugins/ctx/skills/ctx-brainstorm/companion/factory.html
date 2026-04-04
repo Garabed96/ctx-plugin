@@ -35,6 +35,13 @@
     font-size: 0.85rem;
     font-weight: 700;
     color: #e2e8f0;
+    white-space: nowrap;
+  }
+  .top-bar-context {
+    font-size: 0.75rem;
+    color: #818cf8;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    white-space: nowrap;
   }
   .proto-select {
     background: #0f172a;
@@ -48,22 +55,31 @@
     min-width: 180px;
   }
   .proto-select:focus { outline: none; border-color: #818cf8; }
-  .presets {
+
+  /* Viewport pills */
+  .viewport-pills {
     display: flex;
-    gap: 0.35rem;
+    gap: 0.25rem;
   }
-  .preset-btn {
+  .viewport-pill {
     font-size: 0.7rem;
-    padding: 0.25rem 0.6rem;
+    padding: 0.2rem 0.55rem;
     border-radius: 4px;
     border: 1px solid #334155;
     background: #0f172a;
-    color: #94a3b8;
+    color: #64748b;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.12s;
+    white-space: nowrap;
   }
-  .preset-btn:hover { border-color: #818cf8; color: #c7d2fe; }
-  .preset-btn.active { background: #312e81; border-color: #818cf8; color: #c7d2fe; }
+  .viewport-pill:hover { border-color: #6366f1; color: #a5b4fc; }
+  .viewport-pill.active {
+    border-color: #818cf8;
+    background: #1e1b4b;
+    color: #c7d2fe;
+    box-shadow: 0 0 0 1px #818cf8;
+  }
+
   .status-dot {
     display: flex;
     align-items: center;
@@ -88,7 +104,7 @@
     min-height: 0;
   }
 
-  /* Controls panel */
+  /* Sidebar */
   .controls {
     width: 250px;
     flex-shrink: 0;
@@ -96,9 +112,12 @@
     padding: 1rem;
     overflow-y: auto;
     background: #0f172a;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
   }
   .controls-section {
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
   }
   .controls-section-title {
     font-size: 0.65rem;
@@ -109,62 +128,45 @@
     padding-bottom: 0.4rem;
     border-bottom: 1px solid #1e293b;
   }
-  .control-group {
-    margin-bottom: 0.75rem;
+
+  /* Pages section */
+  .page-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.12s;
+    margin-bottom: 0.15rem;
   }
-  .control-label {
+  .page-row:hover { background: #1e293b; }
+  .page-row.active { background: #1e1b4b; }
+  .page-row-name {
     font-size: 0.75rem;
     color: #94a3b8;
-    margin-bottom: 0.3rem;
-    display: block;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
   }
-  .control-select {
-    width: 100%;
-    background: #1e293b;
-    color: #e2e8f0;
-    border: 1px solid #334155;
-    border-radius: 4px;
-    padding: 0.35rem 0.5rem;
-    font-size: 0.75rem;
-    font-family: inherit;
-    cursor: pointer;
-  }
-  .control-select:focus { outline: none; border-color: #818cf8; }
-  .control-range {
-    width: 100%;
-    accent-color: #818cf8;
-    cursor: pointer;
-  }
-  .control-range-labels {
-    display: flex;
-    justify-content: space-between;
+  .page-row.active .page-row-name { color: #c7d2fe; }
+  .page-row-count {
     font-size: 0.6rem;
     color: #475569;
-    margin-top: 0.15rem;
+    flex-shrink: 0;
+    margin-left: 0.35rem;
   }
-  .control-value {
-    font-size: 0.7rem;
-    color: #818cf8;
-    float: right;
-  }
+  .page-row.active .page-row-count { color: #818cf8; }
 
-  /* Slots section in sidebar */
-  .slot-sidebar-group {
-    margin-bottom: 0.5rem;
-  }
-  .slot-sidebar-name {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #475569;
-    margin-bottom: 0.3rem;
-  }
-  .slot-sidebar-pills {
+  /* Versions section */
+  .version-pills {
     display: flex;
     flex-wrap: wrap;
     gap: 0.3rem;
+    margin-top: 0.1rem;
   }
-  .slot-sidebar-pill {
+  .version-pill {
     font-size: 0.65rem;
     padding: 0.2rem 0.45rem;
     border-radius: 3px;
@@ -175,12 +177,63 @@
     transition: all 0.12s;
     font-family: 'SF Mono', 'Fira Code', monospace;
   }
-  .slot-sidebar-pill:hover { border-color: #6366f1; color: #a5b4fc; }
-  .slot-sidebar-pill.active {
+  .version-pill:hover { border-color: #6366f1; color: #a5b4fc; }
+  .version-pill.active {
     border-color: #818cf8;
     background: #1e1b4b;
     color: #c7d2fe;
     box-shadow: 0 0 0 1px #818cf8;
+  }
+
+  /* Style Profile section */
+  .style-row {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.45rem;
+  }
+  .style-row-label {
+    font-size: 0.65rem;
+    color: #475569;
+    width: 44px;
+    flex-shrink: 0;
+  }
+  .style-row-value {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+  .color-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    border: 1px solid #334155;
+    flex-shrink: 0;
+  }
+  .btn-rescan {
+    width: 100%;
+    margin-top: 0.5rem;
+    background: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    border-radius: 5px;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.72rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .btn-rescan:hover { border-color: #818cf8; color: #c7d2fe; }
+  .btn-rescan:disabled { opacity: 0.5; cursor: wait; }
+  .style-no-profile {
+    font-size: 0.72rem;
+    color: #475569;
+    font-style: italic;
   }
 
   /* Preview area */
@@ -191,19 +244,25 @@
     min-width: 0;
     min-height: 0;
   }
+  .preview-iframe-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0.75rem 0.75rem 0 0.75rem;
+  }
   .preview-iframe {
     flex: 1;
     border: none;
     background: #fff;
-    margin: 0.75rem 0.75rem 0 0.75rem;
     border-radius: 8px;
+    transition: max-width 0.2s ease;
   }
   .preview-placeholder {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0.75rem 0.75rem 0 0.75rem;
     border-radius: 8px;
     border: 1px dashed #334155;
     background: #0f172a;
@@ -213,56 +272,6 @@
     font-size: 0.85rem;
     text-align: center;
     line-height: 1.6;
-  }
-
-  /* Slots bar (below iframe) */
-  .slots-bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem 1rem;
-    padding: 0.5rem 0.75rem;
-    background: #0a0e17;
-    border-top: 1px solid #1e293b;
-    margin: 0 0.75rem;
-    flex-shrink: 0;
-    min-height: 38px;
-  }
-  .slot-group {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-  }
-  .slot-name {
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: #475569;
-    margin-right: 0.1rem;
-    white-space: nowrap;
-  }
-  .slot-pills {
-    display: flex;
-    gap: 0.25rem;
-    flex-wrap: wrap;
-  }
-  .slot-pill {
-    font-size: 0.65rem;
-    padding: 0.15rem 0.4rem;
-    border-radius: 3px;
-    border: 1px solid #334155;
-    background: #0f172a;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.12s;
-    font-family: 'SF Mono', 'Fira Code', monospace;
-  }
-  .slot-pill:hover { border-color: #6366f1; color: #a5b4fc; }
-  .slot-pill.active {
-    border-color: #818cf8;
-    background: #1e1b4b;
-    color: #c7d2fe;
-    box-shadow: 0 0 0 1px #818cf8;
   }
 
   /* Prompt bar */
@@ -306,6 +315,7 @@
     font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.15s;
+    font-family: inherit;
   }
   .btn-copy:hover { border-color: #818cf8; color: #c7d2fe; }
   .btn-copy.copied { border-color: #22c55e; color: #86efac; }
@@ -333,6 +343,7 @@
     background: #0f172a;
     color: #94a3b8;
     cursor: pointer;
+    font-family: inherit;
   }
   .compare-back-btn:hover {
     border-color: #818cf8;
@@ -390,12 +401,17 @@
 <div class="top-bar">
   <div class="top-bar-left">
     <span class="top-bar-title">Tinker Factory</span>
+    <span class="top-bar-context" id="top-bar-context"></span>
     <select class="proto-select" id="proto-select" onchange="selectProtoFromDropdown(this.value)">
       <option value="">Loading slots...</option>
     </select>
   </div>
-  <div style="display:flex;align-items:center;gap:1rem;">
-    <div class="presets" id="presets"></div>
+  <div style="display:flex;align-items:center;gap:0.75rem;">
+    <div class="viewport-pills" id="viewport-pills">
+      <button class="viewport-pill active" data-viewport="desktop" onclick="setViewport('desktop')">Desktop</button>
+      <button class="viewport-pill" data-viewport="tablet" onclick="setViewport('tablet')">Tablet</button>
+      <button class="viewport-pill" data-viewport="mobile" onclick="setViewport('mobile')">Mobile</button>
+    </div>
     <div class="status-dot" id="status-dot">
       <span class="status-dot-circle"></span>
       <span class="status-dot-label">Connecting...</span>
@@ -405,131 +421,49 @@
 
 <!-- Main -->
 <div class="main">
-  <!-- Controls -->
+  <!-- Sidebar -->
   <div class="controls">
+
+    <!-- Pages section -->
     <div class="controls-section">
-      <div class="controls-section-title">Prototype</div>
-
-      <div class="control-group">
-        <label class="control-label">Layout</label>
-        <select class="control-select" id="ctrl-layout" onchange="set('layout', this.value)">
-          <option value="single-column">Single Column</option>
-          <option value="two-column">Two Column</option>
-          <option value="sidebar">Sidebar</option>
-          <option value="full-width">Full Width</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label class="control-label">Density</label>
-        <select class="control-select" id="ctrl-density" onchange="set('density', this.value)">
-          <option value="spacious">Spacious</option>
-          <option value="balanced">Balanced</option>
-          <option value="compact">Compact</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label class="control-label">Hero Style</label>
-        <select class="control-select" id="ctrl-heroStyle" onchange="set('heroStyle', this.value)">
-          <option value="minimal">Minimal</option>
-          <option value="gradient">Gradient</option>
-          <option value="image">Image</option>
-          <option value="split">Split</option>
-          <option value="none">None</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label class="control-label">Navigation</label>
-        <select class="control-select" id="ctrl-navStyle" onchange="set('navStyle', this.value)">
-          <option value="top-bar">Top Bar</option>
-          <option value="sidebar">Sidebar</option>
-          <option value="tabs">Tabs</option>
-          <option value="none">None</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label class="control-label">Sections <span class="control-value" id="sections-value">4</span></label>
-        <input class="control-range" id="ctrl-sectionCount" type="range" min="1" max="8" step="1" value="4"
-          oninput="set('sectionCount', parseInt(this.value)); document.getElementById('sections-value').textContent = this.value">
-        <div class="control-range-labels"><span>1</span><span>8</span></div>
-      </div>
-
-      <div class="control-group">
-        <label class="control-label">Tone</label>
-        <select class="control-select" id="ctrl-contentTone" onchange="set('contentTone', this.value)">
-          <option value="clinical">Clinical</option>
-          <option value="friendly">Friendly</option>
-          <option value="technical">Technical</option>
-          <option value="marketing">Marketing</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="controls-section">
-      <div class="controls-section-title">Shared</div>
-
-      <div class="control-group">
-        <label class="control-label">Color Scheme</label>
-        <select class="control-select" id="ctrl-colorScheme" onchange="set('colorScheme', this.value)">
-          <option value="dark">Dark</option>
-          <option value="light">Light</option>
-          <option value="system">System</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label class="control-label">Viewport</label>
-        <select class="control-select" id="ctrl-viewport" onchange="set('viewport', this.value)">
-          <option value="desktop">Desktop</option>
-          <option value="tablet">Tablet</option>
-          <option value="mobile">Mobile</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label class="control-label">Spacing Scale <span class="control-value" id="spacing-value">1.0</span></label>
-        <input class="control-range" id="ctrl-spacingScale" type="range" min="0.5" max="2.0" step="0.25" value="1.0"
-          oninput="set('spacingScale', parseFloat(this.value)); document.getElementById('spacing-value').textContent = parseFloat(this.value).toFixed(1)">
-        <div class="control-range-labels"><span>0.5x</span><span>2.0x</span></div>
-      </div>
-
-      <div class="control-group">
-        <label class="control-label">Border Radius <span class="control-value" id="radius-value">8px</span></label>
-        <input class="control-range" id="ctrl-borderRadius" type="range" min="0" max="24" step="2" value="8"
-          oninput="set('borderRadius', parseInt(this.value)); document.getElementById('radius-value').textContent = this.value + 'px'">
-        <div class="control-range-labels"><span>0px</span><span>24px</span></div>
-      </div>
-    </div>
-
-    <div class="controls-section">
-      <div class="controls-section-title">Slots</div>
-      <div id="slots-sidebar-content">
+      <div class="controls-section-title">Pages</div>
+      <div id="pages-list">
         <!-- Populated by JS -->
       </div>
     </div>
+
+    <!-- Versions section (shown when a page is active) -->
+    <div class="controls-section" id="versions-section" style="display:none;">
+      <div class="controls-section-title">Versions</div>
+      <div class="version-pills" id="version-pills">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Style Profile section -->
+    <div class="controls-section">
+      <div class="controls-section-title">Style Profile</div>
+      <div id="style-profile-content">
+        <span class="style-no-profile">No profile loaded</span>
+      </div>
+      <button class="btn-rescan" id="btn-rescan" onclick="triggerRescan()">Re-scan</button>
+    </div>
+
   </div>
 
   <!-- Preview area -->
   <div class="preview-area">
-    <div id="preview-container" style="flex:1;display:flex;flex-direction:column;min-height:0;">
+    <div id="preview-container" class="preview-iframe-wrapper">
       <div class="preview-placeholder" id="preview-placeholder">
         <p id="preview-placeholder-msg">Loading prototypes...</p>
       </div>
-    </div>
-
-    <!-- Slots bar -->
-    <div class="slots-bar" id="slots-bar">
-      <!-- Populated by JS from /api/slots -->
     </div>
   </div>
 </div>
 
 <!-- Prompt Bar -->
 <div class="prompt-bar">
-  <textarea class="prompt-text" id="prompt-text" rows="2" placeholder="Adjust controls to generate a prompt..."></textarea>
+  <textarea class="prompt-text" id="prompt-text" rows="2" placeholder="Describe what you want to iterate on..."></textarea>
   <div class="prompt-buttons">
     <button class="btn-copy" id="btn-copy" onclick="copyPrompt()">Copy</button>
   </div>
@@ -537,137 +471,63 @@
 
 <script>
 // --- State ---
-var DEFAULTS = {
-  layout: 'single-column',
-  density: 'balanced',
-  heroStyle: 'minimal',
-  navStyle: 'top-bar',
-  sectionCount: 4,
-  contentTone: 'clinical',
-  colorScheme: 'dark',
-  viewport: 'desktop',
-  spacingScale: 1.0,
-  borderRadius: 8,
-};
-
-var state = Object.assign({}, DEFAULTS);
-var activePreset = null;
 var activeFile = null;
+var activePage = null;
+var activeVersion = null;
 var allSlots = [];
 var compareMode = false;
 var compareItems = [];
+var currentViewport = 'desktop';
 
-// --- Presets ---
-var PRESETS = {
-  'Minimal': {
-    layout: 'single-column', density: 'spacious', heroStyle: 'minimal',
-    navStyle: 'none', sectionCount: 3, contentTone: 'clinical',
-    colorScheme: 'light', viewport: 'desktop', spacingScale: 1.25, borderRadius: 12
-  },
-  'Bold Hero': {
-    layout: 'full-width', density: 'balanced', heroStyle: 'gradient',
-    navStyle: 'top-bar', sectionCount: 5, contentTone: 'marketing',
-    colorScheme: 'dark', viewport: 'desktop', spacingScale: 1.0, borderRadius: 8
-  },
-  'Dense Dashboard': {
-    layout: 'sidebar', density: 'compact', heroStyle: 'none',
-    navStyle: 'sidebar', sectionCount: 7, contentTone: 'technical',
-    colorScheme: 'dark', viewport: 'desktop', spacingScale: 0.75, borderRadius: 4
-  },
-  'Magazine': {
-    layout: 'two-column', density: 'spacious', heroStyle: 'image',
-    navStyle: 'top-bar', sectionCount: 6, contentTone: 'friendly',
-    colorScheme: 'light', viewport: 'desktop', spacingScale: 1.0, borderRadius: 16
+// --- DOM helpers ---
+function clearChildren(el) {
+  while (el.firstChild) el.removeChild(el.firstChild);
+}
+
+function makeText(tag, className, text) {
+  var el = document.createElement(tag);
+  if (className) el.className = className;
+  el.textContent = text;
+  return el;
+}
+
+// --- Viewport ---
+function setViewport(v) {
+  currentViewport = v;
+  var pills = document.querySelectorAll('.viewport-pill');
+  for (var i = 0; i < pills.length; i++) {
+    pills[i].classList.toggle('active', pills[i].dataset.viewport === v);
   }
-};
-
-// --- Render presets ---
-var presetsEl = document.getElementById('presets');
-Object.keys(PRESETS).forEach(function(name) {
-  var btn = document.createElement('button');
-  btn.className = 'preset-btn';
-  btn.textContent = name;
-  btn.dataset.preset = name;
-  btn.onclick = function() { applyPreset(name); };
-  presetsEl.appendChild(btn);
-});
-
-syncControlsToState();
-updateAll();
-
-// --- Tinker functions ---
-function set(key, value) {
-  state[key] = value;
-  activePreset = null;
-  updatePresetButtons();
-  updateAll();
-  emitTinkerEvent();
-}
-
-function updateAll() {
-  updatePrompt();
-}
-
-function updatePrompt() {
-  var parts = [];
-  if (state.layout !== DEFAULTS.layout) parts.push(state.layout.replace(/-/g, ' ') + ' layout');
-  if (state.density !== DEFAULTS.density) parts.push(state.density + ' density');
-  if (state.heroStyle !== DEFAULTS.heroStyle) parts.push(state.heroStyle + ' hero');
-  if (state.navStyle !== DEFAULTS.navStyle) parts.push(state.navStyle.replace(/-/g, ' ') + ' navigation');
-  if (state.sectionCount !== DEFAULTS.sectionCount) parts.push(state.sectionCount + ' sections');
-  if (state.contentTone !== DEFAULTS.contentTone) parts.push(state.contentTone + ' tone');
-  if (state.colorScheme !== DEFAULTS.colorScheme) parts.push(state.colorScheme + ' color scheme');
-  if (state.viewport !== DEFAULTS.viewport) parts.push(state.viewport + ' viewport');
-  if (state.spacingScale !== DEFAULTS.spacingScale) parts.push(state.spacingScale.toFixed(1) + 'x spacing');
-  if (state.borderRadius !== DEFAULTS.borderRadius) parts.push(state.borderRadius + 'px border radius');
-
-  var promptEl = document.getElementById('prompt-text');
-  if (parts.length === 0) {
-    promptEl.value = 'Using defaults \u2014 adjust controls to generate a prompt.';
+  var iframe = document.querySelector('.preview-iframe');
+  if (!iframe) return;
+  if (v === 'desktop') {
+    iframe.style.maxWidth = '100%';
+    iframe.style.marginLeft = '';
+    iframe.style.marginRight = '';
+  } else if (v === 'tablet') {
+    iframe.style.maxWidth = '768px';
+    iframe.style.marginLeft = 'auto';
+    iframe.style.marginRight = 'auto';
   } else {
-    promptEl.value = 'Iterate with ' + parts.join(', ') + '.';
+    iframe.style.maxWidth = '375px';
+    iframe.style.marginLeft = 'auto';
+    iframe.style.marginRight = 'auto';
   }
 }
 
-function applyPreset(name) {
-  var preset = PRESETS[name];
-  if (!preset) return;
-  Object.assign(state, preset);
-  activePreset = name;
-  syncControlsToState();
-  updatePresetButtons();
-  updateAll();
-  emitTinkerEvent();
-}
-
-function syncControlsToState() {
-  document.getElementById('ctrl-layout').value = state.layout;
-  document.getElementById('ctrl-density').value = state.density;
-  document.getElementById('ctrl-heroStyle').value = state.heroStyle;
-  document.getElementById('ctrl-navStyle').value = state.navStyle;
-  document.getElementById('ctrl-sectionCount').value = state.sectionCount;
-  document.getElementById('sections-value').textContent = state.sectionCount;
-  document.getElementById('ctrl-contentTone').value = state.contentTone;
-  document.getElementById('ctrl-colorScheme').value = state.colorScheme;
-  document.getElementById('ctrl-viewport').value = state.viewport;
-  document.getElementById('ctrl-spacingScale').value = state.spacingScale;
-  document.getElementById('spacing-value').textContent = state.spacingScale.toFixed(1);
-  document.getElementById('ctrl-borderRadius').value = state.borderRadius;
-  document.getElementById('radius-value').textContent = state.borderRadius + 'px';
-}
-
-function updatePresetButtons() {
-  var buttons = document.querySelectorAll('.preset-btn');
-  for (var i = 0; i < buttons.length; i++) {
-    var btn = buttons[i];
-    if (btn.dataset.preset === activePreset) {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
-    }
+// --- Top bar context ---
+function updateTopBarContext() {
+  var ctx = document.getElementById('top-bar-context');
+  if (activePage && activeVersion) {
+    ctx.textContent = activePage + ' / ' + activeVersion;
+  } else if (activePage) {
+    ctx.textContent = activePage;
+  } else {
+    ctx.textContent = '';
   }
 }
 
+// --- Copy prompt ---
 function copyPrompt() {
   var text = document.getElementById('prompt-text').value;
   navigator.clipboard.writeText(text).then(function() {
@@ -698,7 +558,12 @@ function setPreview(filePath) {
     var iframe = document.createElement('iframe');
     iframe.className = 'preview-iframe';
     iframe.src = url;
+    iframe.style.flex = '1';
+    iframe.style.border = 'none';
+    iframe.style.background = '#fff';
+    iframe.style.borderRadius = '8px';
     container.appendChild(iframe);
+    setViewport(currentViewport);
   }
 
   // Sync dropdown selection
@@ -710,69 +575,107 @@ function setPreview(filePath) {
     }
   }
 
-  updateActivePills(filePath);
+  updateVersionPills();
+  updateTopBarContext();
 }
 
 function selectProtoFromDropdown(filePath) {
   if (!filePath) return;
-  setPreview(filePath);
-  // Find slot/iteration for this file and send WS event
   for (var s = 0; s < allSlots.length; s++) {
     var slotData = allSlots[s];
     for (var it = 0; it < slotData.iterations.length; it++) {
       var iter = slotData.iterations[it];
       if (iter.file === filePath) {
+        activatePage(slotData.slot, false);
+        activeVersion = iter.label;
+        setPreview(filePath);
         sendEvent({ type: 'select', slot: slotData.slot, iteration: iter.slug.split('--')[1] || iter.slug });
         return;
       }
     }
   }
+  setPreview(filePath);
 }
 
-function updateActivePills(filePath) {
-  var pills = document.querySelectorAll('.slot-pill, .slot-sidebar-pill');
-  for (var i = 0; i < pills.length; i++) {
-    if (pills[i].dataset.file === filePath) {
-      pills[i].classList.add('active');
-    } else {
-      pills[i].classList.remove('active');
+// --- Pages ---
+function activatePage(slotName, autoSelectFirst) {
+  activePage = slotName;
+
+  var rows = document.querySelectorAll('.page-row');
+  for (var i = 0; i < rows.length; i++) {
+    rows[i].classList.toggle('active', rows[i].dataset.slot === slotName);
+  }
+
+  var versionsSection = document.getElementById('versions-section');
+  versionsSection.style.display = '';
+  renderVersionPills(slotName);
+
+  if (autoSelectFirst) {
+    var slotData = null;
+    for (var s = 0; s < allSlots.length; s++) {
+      if (allSlots[s].slot === slotName) { slotData = allSlots[s]; break; }
     }
+    if (slotData && slotData.iterations.length > 0) {
+      var last = slotData.iterations[slotData.iterations.length - 1];
+      activeVersion = last.label;
+      setPreview(last.file);
+      sendEvent({ type: 'select', slot: slotName, iteration: last.slug.split('--')[1] || last.slug });
+    }
+  }
+
+  updateTopBarContext();
+}
+
+function renderVersionPills(slotName) {
+  var pillsEl = document.getElementById('version-pills');
+  clearChildren(pillsEl);
+
+  var slotData = null;
+  for (var s = 0; s < allSlots.length; s++) {
+    if (allSlots[s].slot === slotName) { slotData = allSlots[s]; break; }
+  }
+  if (!slotData) return;
+
+  slotData.iterations.forEach(function(iter) {
+    var pill = document.createElement('button');
+    pill.className = 'version-pill' + (iter.label === activeVersion ? ' active' : '');
+    pill.textContent = iter.label;
+    pill.dataset.file = iter.file;
+    pill.dataset.label = iter.label;
+    pill.title = iter.file;
+    (function(sn, slug, file, label) {
+      pill.onclick = function() {
+        activeVersion = label;
+        setPreview(file);
+        sendEvent({ type: 'select', slot: sn, iteration: slug.split('--')[1] || slug });
+      };
+    })(slotName, iter.slug, iter.file, iter.label);
+    pillsEl.appendChild(pill);
+  });
+}
+
+function updateVersionPills() {
+  var pills = document.querySelectorAll('.version-pill');
+  for (var i = 0; i < pills.length; i++) {
+    pills[i].classList.toggle('active', pills[i].dataset.file === activeFile);
   }
 }
 
-function selectSlotIteration(slotName, iterSlug, filePath) {
-  setPreview(filePath);
-  sendEvent({ type: 'select', slot: slotName, iteration: iterSlug.split('--')[1] || iterSlug });
-}
-
 // --- Slot rendering ---
-function clearChildren(el) {
-  while (el.firstChild) el.removeChild(el.firstChild);
-}
-
-function makeText(tag, className, text) {
-  var el = document.createElement(tag);
-  el.className = className;
-  el.textContent = text;
-  return el;
-}
-
 function renderSlots(slots) {
   allSlots = slots;
 
-  var slotsBar = document.getElementById('slots-bar');
-  var sidebarContent = document.getElementById('slots-sidebar-content');
+  var pagesList = document.getElementById('pages-list');
   var protoSelect = document.getElementById('proto-select');
+  var versionsSection = document.getElementById('versions-section');
 
-  clearChildren(slotsBar);
-  clearChildren(sidebarContent);
+  clearChildren(pagesList);
   clearChildren(protoSelect);
+  versionsSection.style.display = 'none';
+  clearChildren(document.getElementById('version-pills'));
 
   if (!slots || slots.length === 0) {
-    var noProto = makeText('span', '', 'No prototypes found');
-    noProto.style.fontSize = '0.7rem';
-    noProto.style.color = '#475569';
-    slotsBar.appendChild(noProto);
+    pagesList.appendChild(makeText('span', 'style-no-profile', 'No prototype pages found'));
 
     var noOpt = document.createElement('option');
     noOpt.value = '';
@@ -782,81 +685,61 @@ function renderSlots(slots) {
     var ph = document.getElementById('preview-placeholder');
     if (ph) {
       ph.style.display = '';
-      document.getElementById('preview-placeholder-msg').textContent = 'No prototype files found in prototypes/';
+      document.getElementById('preview-placeholder-msg').textContent = 'No prototype files found in companion/pages/';
     }
     return;
   }
 
+  var blankOpt = document.createElement('option');
+  blankOpt.value = '';
+  blankOpt.textContent = 'Jump to...';
+  protoSelect.appendChild(blankOpt);
+
   var firstFile = null;
+  var firstSlot = null;
 
   slots.forEach(function(slotData) {
     var slotName = slotData.slot;
     var iterations = slotData.iterations;
 
-    // ---- Bottom slots bar ----
-    var groupEl = document.createElement('div');
-    groupEl.className = 'slot-group';
+    var row = document.createElement('div');
+    row.className = 'page-row';
+    row.dataset.slot = slotName;
 
-    var nameEl = makeText('span', 'slot-name', slotName);
-    groupEl.appendChild(nameEl);
+    row.appendChild(makeText('span', 'page-row-name', slotName));
+    row.appendChild(makeText('span', 'page-row-count', iterations.length + 'v'));
 
-    var pillsEl = document.createElement('div');
-    pillsEl.className = 'slot-pills';
+    (function(sn) {
+      row.onclick = function() { activatePage(sn, true); };
+    })(slotName);
+
+    pagesList.appendChild(row);
 
     iterations.forEach(function(iter) {
-      if (!firstFile) firstFile = iter.file;
-
-      // Bottom pill
-      var pill = document.createElement('button');
-      pill.className = 'slot-pill';
-      pill.textContent = iter.label;
-      pill.dataset.file = iter.file;
-      pill.title = iter.file;
-      (function(sn, slug, file) {
-        pill.onclick = function() { selectSlotIteration(sn, slug, file); };
-      })(slotName, iter.slug, iter.file);
-      pillsEl.appendChild(pill);
-
-      // Dropdown option
+      if (!firstFile) { firstFile = iter.file; firstSlot = slotName; }
       var opt = document.createElement('option');
       opt.value = iter.file;
       opt.textContent = slotName + ' / ' + iter.label;
       protoSelect.appendChild(opt);
     });
-
-    groupEl.appendChild(pillsEl);
-    slotsBar.appendChild(groupEl);
-
-    // ---- Sidebar slot group ----
-    var sidebarGroup = document.createElement('div');
-    sidebarGroup.className = 'slot-sidebar-group';
-
-    sidebarGroup.appendChild(makeText('div', 'slot-sidebar-name', slotName));
-
-    var sidebarPillsEl = document.createElement('div');
-    sidebarPillsEl.className = 'slot-sidebar-pills';
-
-    iterations.forEach(function(iter) {
-      var pill = document.createElement('button');
-      pill.className = 'slot-sidebar-pill';
-      pill.textContent = iter.label;
-      pill.dataset.file = iter.file;
-      pill.title = iter.file;
-      (function(sn, slug, file) {
-        pill.onclick = function() { selectSlotIteration(sn, slug, file); };
-      })(slotName, iter.slug, iter.file);
-      sidebarPillsEl.appendChild(pill);
-    });
-
-    sidebarGroup.appendChild(sidebarPillsEl);
-    sidebarContent.appendChild(sidebarGroup);
   });
 
-  // Select first iteration by default
-  if (firstFile) setPreview(firstFile);
+  if (firstSlot) {
+    var firstSlotData = null;
+    for (var s = 0; s < allSlots.length; s++) {
+      if (allSlots[s].slot === firstSlot) { firstSlotData = allSlots[s]; break; }
+    }
+    if (firstSlotData && firstSlotData.iterations.length > 0) {
+      var last = firstSlotData.iterations[firstSlotData.iterations.length - 1];
+      activePage = firstSlot;
+      activeVersion = last.label;
+    }
+    activatePage(firstSlot, false);
+    if (firstFile) setPreview(firstFile);
+  }
 }
 
-// --- Load slots on init ---
+// --- Load slots ---
 fetch('/api/slots')
   .then(function(r) { return r.json(); })
   .then(function(slots) { renderSlots(slots); })
@@ -866,19 +749,86 @@ fetch('/api/slots')
       ph.style.display = '';
       document.getElementById('preview-placeholder-msg').textContent = 'Failed to load slots: ' + err.message;
     }
-
-    var errSpan = makeText('span', '', 'Failed to load slots');
-    errSpan.style.fontSize = '0.7rem';
-    errSpan.style.color = '#ef4444';
-    document.getElementById('slots-bar').appendChild(errSpan);
-
     var errOpt = document.createElement('option');
     errOpt.value = '';
     errOpt.textContent = 'Error loading';
     document.getElementById('proto-select').appendChild(errOpt);
   });
 
-// --- WebSocket event bridge ---
+// --- Style Profile ---
+function renderStyleProfile(profile) {
+  var container = document.getElementById('style-profile-content');
+  clearChildren(container);
+
+  if (!profile) {
+    container.appendChild(makeText('span', 'style-no-profile', 'No profile found'));
+    return;
+  }
+
+  var c = profile.colors || {};
+  var t = profile.typography || {};
+  var r = (profile.spacing || {}).radius || {};
+
+  if (c.primary) {
+    var colorRow = document.createElement('div');
+    colorRow.className = 'style-row';
+    colorRow.appendChild(makeText('span', 'style-row-label', 'Primary'));
+    var swatch = document.createElement('span');
+    swatch.className = 'color-swatch';
+    swatch.style.background = c.primary;
+    colorRow.appendChild(swatch);
+    colorRow.appendChild(makeText('span', 'style-row-value', c.primary));
+    container.appendChild(colorRow);
+  }
+
+  if (t.sans) {
+    var fontRow = document.createElement('div');
+    fontRow.className = 'style-row';
+    fontRow.appendChild(makeText('span', 'style-row-label', 'Font'));
+    fontRow.appendChild(makeText('span', 'style-row-value', t.sans));
+    container.appendChild(fontRow);
+  }
+
+  if (r.md) {
+    var radRow = document.createElement('div');
+    radRow.className = 'style-row';
+    radRow.appendChild(makeText('span', 'style-row-label', 'Radius'));
+    radRow.appendChild(makeText('span', 'style-row-value', r.md));
+    container.appendChild(radRow);
+  }
+}
+
+function loadStyleProfile() {
+  fetch('/api/style-profile')
+    .then(function(r) {
+      if (r.status === 404) return null;
+      return r.json();
+    })
+    .then(function(profile) { renderStyleProfile(profile); })
+    .catch(function() { renderStyleProfile(null); });
+}
+
+function triggerRescan() {
+  var btn = document.getElementById('btn-rescan');
+  btn.disabled = true;
+  btn.textContent = 'Scanning...';
+  fetch('/api/scan', { method: 'POST' })
+    .then(function(r) { return r.json(); })
+    .then(function(profile) {
+      renderStyleProfile(profile && !profile.error ? profile : null);
+      btn.disabled = false;
+      btn.textContent = 'Re-scan';
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.textContent = 'Re-scan (failed)';
+      setTimeout(function() { btn.textContent = 'Re-scan'; }, 2000);
+    });
+}
+
+loadStyleProfile();
+
+// --- WebSocket ---
 var ws = null;
 var eventQueue = [];
 
@@ -920,14 +870,6 @@ function sendEvent(event) {
   }
 }
 
-var emitTimer = null;
-function emitTinkerEvent() {
-  clearTimeout(emitTimer);
-  emitTimer = setTimeout(function() {
-    sendEvent({ type: 'tinker', state: Object.assign({}, state) });
-  }, 150);
-}
-
 // --- Compare mode ---
 var savedChildren = null;
 
@@ -936,17 +878,15 @@ function enterCompareMode(items) {
   compareItems = items;
 
   var previewArea = document.querySelector('.preview-area');
-  // Save original child nodes (preserves event handlers)
   if (!savedChildren) {
     savedChildren = [];
     while (previewArea.firstChild) {
       savedChildren.push(previewArea.removeChild(previewArea.firstChild));
     }
   } else {
-    previewArea.innerHTML = '';
+    clearChildren(previewArea);
   }
 
-  // Header
   var header = document.createElement('div');
   header.className = 'compare-header';
 
@@ -962,7 +902,6 @@ function enterCompareMode(items) {
 
   previewArea.appendChild(header);
 
-  // Iframes container
   var container = document.createElement('div');
   container.className = 'compare-container';
   container.style.gridTemplateColumns = 'repeat(' + items.length + ', 1fr)';
@@ -993,7 +932,6 @@ function enterCompareMode(items) {
 
   previewArea.appendChild(container);
 
-  // Footer hint
   var footer = document.createElement('div');
   footer.className = 'compare-footer';
   footer.textContent = 'Pick in terminal: triage <slug> done';
@@ -1004,12 +942,10 @@ function exitCompareMode() {
   compareMode = false;
   compareItems = [];
   var previewArea = document.querySelector('.preview-area');
-  previewArea.innerHTML = '';
-  // Restore saved child nodes (with their event handlers intact)
+  clearChildren(previewArea);
   if (savedChildren) {
     savedChildren.forEach(function(node) { previewArea.appendChild(node); });
     savedChildren = null;
-    // Re-set iframe src since it may have been unloaded
     var iframe = document.querySelector('.preview-iframe');
     if (iframe && activeFile) {
       iframe.src = '/prototype?file=' + encodeURIComponent(activeFile);

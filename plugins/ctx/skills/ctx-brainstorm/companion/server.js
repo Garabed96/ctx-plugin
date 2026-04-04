@@ -582,6 +582,34 @@ const server = http.createServer((req, res) => {
     jsonResponse(res, 200, scanSlots());
   } else if (parsed.pathname === "/api/compare" && req.method === "POST") {
     handleCompare(req, res);
+  } else if (parsed.pathname === "/api/style-profile") {
+    const profile = readStyleProfile();
+    if (profile === null) {
+      jsonResponse(res, 404, { error: "No style profile found" });
+    } else {
+      jsonResponse(res, 200, profile);
+    }
+  } else if (parsed.pathname === "/api/scan" && req.method === "POST") {
+    if (!projectDir) {
+      jsonResponse(res, 400, { error: "No --project-dir configured" });
+    } else {
+      const { execFile } = require("child_process");
+      const scanScript = path.join(__dirname, "cli/scan-styles.js");
+      execFile(process.execPath, [scanScript, "--project-dir", projectDir], (err, stdout, stderr) => {
+        if (err) {
+          jsonResponse(res, 500, { error: err.message, stderr });
+        } else {
+          // Bust the cache so readStyleProfile() re-reads from disk
+          _styleProfileCache = null;
+          const newProfile = readStyleProfile();
+          if (newProfile === null) {
+            jsonResponse(res, 404, { error: "No style profile found after scan" });
+          } else {
+            jsonResponse(res, 200, newProfile);
+          }
+        }
+      });
+    }
   } else if (parsed.pathname === "/factory") {
     serveFactory(res);
   } else {
