@@ -262,9 +262,14 @@ function buildInjectionStyle(profile) {
   if (c.foreground  != null) vars.push(`  --cp-fg: ${c.foreground};`);
   if (c.muted       != null) vars.push(`  --cp-muted: ${c.muted};`);
   if (c.destructive != null) vars.push(`  --cp-destructive: ${c.destructive};`);
+  if (c.border      != null) vars.push(`  --cp-border: ${c.border};`);
+  if (c.card        != null) vars.push(`  --cp-card: ${c.card};`);
+  if (c.ring        != null) vars.push(`  --cp-ring: ${c.ring};`);
 
   const t = profile.typography || {};
-  if (t.sans != null) vars.push(`  --cp-font-sans: ${t.sans};`);
+  // Map display/sans to --cp-font-sans (display is the primary heading font)
+  const primaryFont = t.display || t.sans;
+  if (primaryFont != null) vars.push(`  --cp-font-sans: ${primaryFont};`);
   if (t.mono != null) vars.push(`  --cp-font-mono: ${t.mono};`);
 
   const r = (profile.spacing || {}).radius || {};
@@ -276,7 +281,46 @@ function buildInjectionStyle(profile) {
   if (unit != null) vars.push(`  --cp-spacing: ${unit};`);
 
   if (vars.length === 0) return "";
-  return `<style>:root {\n${vars.join("\n")}\n}</style>`;
+
+  // Base stylesheet: declares --cp-* vars AND applies them to common elements.
+  // Uses !important so factory controls always override prototype styles.
+  // Also disables DarkReader inside prototypes via meta + attribute.
+  const baseStyles = `
+<meta name="darkreader-lock">
+<style id="cp-base">
+:root {
+${vars.join("\n")}
+}
+/* ---- Companion base layer ---- */
+/* !important ensures factory sidebar controls always take effect,
+   regardless of what the prototype's own CSS declares. */
+body {
+  font-family: var(--cp-font-sans, system-ui, sans-serif) !important;
+  color: var(--cp-fg) !important;
+  background: var(--cp-bg) !important;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--cp-font-sans, inherit) !important;
+}
+p, li, td, th, label, span, div {
+  color: inherit;
+}
+a:not([class]) { color: var(--cp-primary) !important; }
+code, pre, kbd, samp {
+  font-family: var(--cp-font-mono, monospace) !important;
+}
+button, [role="button"] {
+  border-radius: var(--cp-radius-md, 0.375rem) !important;
+}
+input, textarea, select {
+  border-radius: var(--cp-radius-md, 0.375rem) !important;
+}
+::selection {
+  background: var(--cp-primary, highlight);
+  color: var(--cp-bg, highlighttext);
+}
+</style>`;
+  return baseStyles;
 }
 
 // ========== HTTP Routes ==========
