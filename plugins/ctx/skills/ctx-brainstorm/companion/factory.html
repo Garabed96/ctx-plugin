@@ -185,44 +185,97 @@
     box-shadow: 0 0 0 1px #818cf8;
   }
 
-  /* Style Profile section */
-  .style-row {
+  /* Style Controls section */
+  .control-group {
+    margin-bottom: 0.6rem;
+  }
+  .control-label {
+    font-size: 0.65rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+    display: block;
+  }
+  .control-color-row {
     display: flex;
     align-items: center;
-    gap: 0.45rem;
-    margin-bottom: 0.45rem;
+    gap: 0.4rem;
   }
-  .style-row-label {
-    font-size: 0.65rem;
-    color: #475569;
-    width: 44px;
+  .control-color-input {
+    width: 24px;
+    height: 24px;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    cursor: pointer;
+    background: transparent;
+    padding: 0;
     flex-shrink: 0;
+    -webkit-appearance: none;
+    appearance: none;
   }
-  .style-row-value {
-    font-size: 0.72rem;
+  .control-color-input::-webkit-color-swatch-wrapper { padding: 0; }
+  .control-color-input::-webkit-color-swatch {
+    border: none;
+    border-radius: 3px;
+  }
+  .control-color-input::-moz-color-swatch {
+    border: none;
+    border-radius: 3px;
+  }
+  .control-hex {
+    font-size: 0.68rem;
     color: #94a3b8;
     font-family: 'SF Mono', 'Fira Code', monospace;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex: 1;
-  }
-  .color-swatch {
-    width: 12px;
-    height: 12px;
-    border-radius: 2px;
+    background: #1e293b;
     border: 1px solid #334155;
+    border-radius: 3px;
+    padding: 0.2rem 0.35rem;
+    width: 70px;
+  }
+  .control-hex:focus { outline: none; border-color: #818cf8; color: #e2e8f0; }
+  .control-select {
+    width: 100%;
+    background: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 0.3rem 0.4rem;
+    font-size: 0.72rem;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .control-select:focus { outline: none; border-color: #818cf8; }
+  .control-range {
+    width: 100%;
+    accent-color: #818cf8;
+    cursor: pointer;
+  }
+  .control-range-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .control-range-value {
+    font-size: 0.65rem;
+    color: #818cf8;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    min-width: 36px;
+    text-align: right;
     flex-shrink: 0;
+  }
+  .controls-divider {
+    height: 1px;
+    background: #1e293b;
+    margin: 0.5rem 0;
   }
   .btn-rescan {
     width: 100%;
-    margin-top: 0.5rem;
+    margin-top: 0.35rem;
     background: #1e293b;
     color: #94a3b8;
     border: 1px solid #334155;
     border-radius: 5px;
-    padding: 0.35rem 0.5rem;
-    font-size: 0.72rem;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.68rem;
     cursor: pointer;
     font-family: inherit;
     transition: all 0.15s;
@@ -230,6 +283,20 @@
   }
   .btn-rescan:hover { border-color: #818cf8; color: #c7d2fe; }
   .btn-rescan:disabled { opacity: 0.5; cursor: wait; }
+  .btn-reset {
+    width: 100%;
+    background: transparent;
+    color: #475569;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.65rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .btn-reset:hover { color: #94a3b8; border-color: #334155; }
   .style-no-profile {
     font-size: 0.72rem;
     color: #475569;
@@ -445,13 +512,12 @@
       </div>
     </div>
 
-    <!-- Style Profile section -->
+    <!-- Style Controls section -->
     <div class="controls-section">
-      <div class="controls-section-title">Style Profile</div>
-      <div id="style-profile-content">
-        <span class="style-no-profile">No profile loaded</span>
+      <div class="controls-section-title">Style Controls</div>
+      <div id="style-controls-content">
+        <span class="style-no-profile">Loading profile...</span>
       </div>
-      <button class="btn-rescan" id="btn-rescan" onclick="triggerRescan()">Re-scan</button>
     </div>
 
   </div>
@@ -569,6 +635,7 @@ function setPreview(filePath) {
     iframe.style.borderRadius = '8px';
     container.appendChild(iframe);
     setViewport(currentViewport);
+    hookIframeLoad();
   }
 
   // Sync dropdown selection
@@ -709,7 +776,7 @@ function renderSlots(slots) {
     row.dataset.slot = slotName;
 
     row.appendChild(makeText('span', 'page-row-name', slotName));
-    row.appendChild(makeText('span', 'page-row-count', iterations.length + 'v'));
+    row.appendChild(makeText('span', 'page-row-count', iterations.length + ''));
 
     (function(sn) {
       row.onclick = function() { activatePage(sn, true); };
@@ -746,47 +813,236 @@ fetch('/api/slots')
     document.getElementById('proto-select').appendChild(errOpt);
   });
 
-// --- Style Profile ---
-function renderStyleProfile(profile) {
-  var container = document.getElementById('style-profile-content');
+// --- Style Controls ---
+var styleProfile = null;
+var styleOverrides = {};
+
+// CSS var mapping: profile key → --cp-* var name
+var CP_MAP = {
+  'primary': '--cp-primary',
+  'secondary': '--cp-secondary',
+  'accent': '--cp-accent',
+  'background': '--cp-bg',
+  'foreground': '--cp-fg',
+  'muted': '--cp-muted',
+  'destructive': '--cp-destructive',
+  'font-sans': '--cp-font-sans',
+  'font-display': '--cp-font-sans',
+  'font-mono': '--cp-font-mono',
+  'radius-sm': '--cp-radius-sm',
+  'radius-md': '--cp-radius-md',
+  'radius-lg': '--cp-radius-lg',
+};
+
+function injectVar(cpVar, value) {
+  var iframe = document.querySelector('.preview-iframe');
+  if (!iframe || !iframe.contentDocument) return;
+  try {
+    iframe.contentDocument.documentElement.style.setProperty(cpVar, value);
+  } catch (e) { /* cross-origin */ }
+}
+
+function injectAllOverrides() {
+  for (var key in styleOverrides) {
+    if (CP_MAP[key]) injectVar(CP_MAP[key], styleOverrides[key]);
+  }
+}
+
+// Re-inject overrides when iframe reloads
+function hookIframeLoad() {
+  var iframe = document.querySelector('.preview-iframe');
+  if (!iframe) return;
+  iframe.addEventListener('load', function() {
+    setTimeout(injectAllOverrides, 50);
+  });
+}
+
+function makeColorControl(label, key, value) {
+  var group = document.createElement('div');
+  group.className = 'control-group';
+  group.appendChild(makeText('label', 'control-label', label));
+
+  var row = document.createElement('div');
+  row.className = 'control-color-row';
+
+  var picker = document.createElement('input');
+  picker.type = 'color';
+  picker.className = 'control-color-input';
+  picker.value = value || '#000000';
+
+  var hex = document.createElement('input');
+  hex.type = 'text';
+  hex.className = 'control-hex';
+  hex.value = value || '';
+  hex.maxLength = 7;
+
+  picker.addEventListener('input', function() {
+    hex.value = picker.value;
+    styleOverrides[key] = picker.value;
+    if (CP_MAP[key]) injectVar(CP_MAP[key], picker.value);
+  });
+
+  hex.addEventListener('change', function() {
+    var v = hex.value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+      picker.value = v;
+      styleOverrides[key] = v;
+      if (CP_MAP[key]) injectVar(CP_MAP[key], v);
+    }
+  });
+
+  row.appendChild(picker);
+  row.appendChild(hex);
+  group.appendChild(row);
+  return group;
+}
+
+function makeFontControl(label, key, value) {
+  var group = document.createElement('div');
+  group.className = 'control-group';
+  group.appendChild(makeText('label', 'control-label', label));
+
+  var select = document.createElement('select');
+  select.className = 'control-select';
+
+  // Extract first font name from value for display
+  var fonts = [
+    { label: 'Profile default', value: value || '' },
+    { label: 'System UI', value: 'system-ui, -apple-system, sans-serif' },
+    { label: 'Inter', value: "'Inter', system-ui, sans-serif" },
+    { label: 'Syne', value: "'Syne', sans-serif" },
+    { label: 'DM Mono', value: "'DM Mono', monospace" },
+    { label: 'JetBrains Mono', value: "'JetBrains Mono', monospace" },
+    { label: 'Georgia', value: "Georgia, 'Times New Roman', serif" },
+  ];
+
+  fonts.forEach(function(f) {
+    var opt = document.createElement('option');
+    opt.value = f.value;
+    opt.textContent = f.label;
+    if (f.value === value) opt.selected = true;
+    select.appendChild(opt);
+  });
+
+  select.addEventListener('change', function() {
+    styleOverrides[key] = select.value;
+    if (CP_MAP[key]) injectVar(CP_MAP[key], select.value);
+  });
+
+  group.appendChild(select);
+  return group;
+}
+
+function makeRadiusControl(label, key, value) {
+  var group = document.createElement('div');
+  group.className = 'control-group';
+  group.appendChild(makeText('label', 'control-label', label));
+
+  var row = document.createElement('div');
+  row.className = 'control-range-row';
+
+  var numVal = parseFloat(value) || 0.5;
+
+  var range = document.createElement('input');
+  range.type = 'range';
+  range.className = 'control-range';
+  range.min = '0';
+  range.max = '1.5';
+  range.step = '0.0625';
+  range.value = numVal;
+
+  var display = document.createElement('span');
+  display.className = 'control-range-value';
+  display.textContent = numVal + 'rem';
+
+  range.addEventListener('input', function() {
+    var v = parseFloat(range.value).toFixed(3).replace(/\.?0+$/, '') + 'rem';
+    display.textContent = v;
+    styleOverrides[key] = v;
+    if (CP_MAP[key]) injectVar(CP_MAP[key], v);
+  });
+
+  row.appendChild(range);
+  row.appendChild(display);
+  group.appendChild(row);
+  return group;
+}
+
+function buildStyleControls(profile) {
+  var container = document.getElementById('style-controls-content');
   clearChildren(container);
 
   if (!profile) {
-    container.appendChild(makeText('span', 'style-no-profile', 'No profile found'));
+    container.appendChild(makeText('span', 'style-no-profile', 'No profile found. Run Re-scan.'));
+    var rescanBtn = document.createElement('button');
+    rescanBtn.className = 'btn-rescan';
+    rescanBtn.textContent = 'Re-scan';
+    rescanBtn.onclick = triggerRescan;
+    container.appendChild(rescanBtn);
     return;
   }
 
+  styleProfile = profile;
   var c = profile.colors || {};
   var t = profile.typography || {};
-  var r = (profile.spacing || {}).radius || {};
+  var sp = profile.spacing || {};
+  var r = sp.radius || {};
 
-  if (c.primary) {
-    var colorRow = document.createElement('div');
-    colorRow.className = 'style-row';
-    colorRow.appendChild(makeText('span', 'style-row-label', 'Primary'));
-    var swatch = document.createElement('span');
-    swatch.className = 'color-swatch';
-    swatch.style.background = c.primary;
-    colorRow.appendChild(swatch);
-    colorRow.appendChild(makeText('span', 'style-row-value', c.primary));
-    container.appendChild(colorRow);
-  }
+  // Colors
+  var colorKeys = ['primary', 'accent', 'background', 'foreground', 'muted', 'secondary', 'destructive'];
+  colorKeys.forEach(function(key) {
+    if (c[key]) {
+      container.appendChild(makeColorControl(key.charAt(0).toUpperCase() + key.slice(1), key, c[key]));
+      styleOverrides[key] = c[key];
+    }
+  });
 
-  if (t.sans) {
-    var fontRow = document.createElement('div');
-    fontRow.className = 'style-row';
-    fontRow.appendChild(makeText('span', 'style-row-label', 'Font'));
-    fontRow.appendChild(makeText('span', 'style-row-value', t.sans));
-    container.appendChild(fontRow);
-  }
+  // Divider
+  var div1 = document.createElement('div');
+  div1.className = 'controls-divider';
+  container.appendChild(div1);
 
+  // Typography — show all font entries from profile
+  var fontKeys = Object.keys(t);
+  fontKeys.forEach(function(key) {
+    var cpKey = 'font-' + key;
+    container.appendChild(makeFontControl('Font (' + key + ')', cpKey, t[key]));
+    styleOverrides[cpKey] = t[key];
+  });
+
+  // Divider
+  var div2 = document.createElement('div');
+  div2.className = 'controls-divider';
+  container.appendChild(div2);
+
+  // Radius
   if (r.md) {
-    var radRow = document.createElement('div');
-    radRow.className = 'style-row';
-    radRow.appendChild(makeText('span', 'style-row-label', 'Radius'));
-    radRow.appendChild(makeText('span', 'style-row-value', r.md));
-    container.appendChild(radRow);
+    container.appendChild(makeRadiusControl('Border Radius', 'radius-md', r.md));
+    styleOverrides['radius-md'] = r.md;
   }
+
+  // Buttons row
+  var div3 = document.createElement('div');
+  div3.className = 'controls-divider';
+  container.appendChild(div3);
+
+  var resetBtn = document.createElement('button');
+  resetBtn.className = 'btn-reset';
+  resetBtn.textContent = 'Reset to profile';
+  resetBtn.onclick = function() {
+    styleOverrides = {};
+    buildStyleControls(styleProfile);
+    // Reload iframe to reset injected vars
+    var iframe = document.querySelector('.preview-iframe');
+    if (iframe) iframe.src = iframe.src;
+  };
+  container.appendChild(resetBtn);
+
+  var rescanBtn = document.createElement('button');
+  rescanBtn.className = 'btn-rescan';
+  rescanBtn.textContent = 'Re-scan project';
+  rescanBtn.onclick = triggerRescan;
+  container.appendChild(rescanBtn);
 }
 
 function loadStyleProfile() {
@@ -795,25 +1051,30 @@ function loadStyleProfile() {
       if (r.status === 404) return null;
       return r.json();
     })
-    .then(function(profile) { renderStyleProfile(profile); })
-    .catch(function() { renderStyleProfile(null); });
+    .then(function(profile) { buildStyleControls(profile); })
+    .catch(function() { buildStyleControls(null); });
 }
 
 function triggerRescan() {
-  var btn = document.getElementById('btn-rescan');
-  btn.disabled = true;
-  btn.textContent = 'Scanning...';
+  var container = document.getElementById('style-controls-content');
+  var btns = container.querySelectorAll('.btn-rescan');
+  btns.forEach(function(b) { b.disabled = true; b.textContent = 'Scanning...'; });
+
   fetch('/api/scan', { method: 'POST' })
     .then(function(r) { return r.json(); })
     .then(function(profile) {
-      renderStyleProfile(profile && !profile.error ? profile : null);
-      btn.disabled = false;
-      btn.textContent = 'Re-scan';
+      styleOverrides = {};
+      buildStyleControls(profile && !profile.error ? profile : null);
+      // Reload iframe to get fresh server-injected vars
+      var iframe = document.querySelector('.preview-iframe');
+      if (iframe) iframe.src = iframe.src;
     })
     .catch(function() {
-      btn.disabled = false;
-      btn.textContent = 'Re-scan (failed)';
-      setTimeout(function() { btn.textContent = 'Re-scan'; }, 2000);
+      btns.forEach(function(b) {
+        b.disabled = false;
+        b.textContent = 'Re-scan (failed)';
+        setTimeout(function() { b.textContent = 'Re-scan project'; }, 2000);
+      });
     });
 }
 
