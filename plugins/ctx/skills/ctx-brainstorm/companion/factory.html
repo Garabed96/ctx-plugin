@@ -235,6 +235,11 @@
     color: #475569;
     font-style: italic;
   }
+  .empty-hint {
+    font-size: 0.72rem;
+    color: #475569;
+    font-style: italic;
+  }
 
   /* Preview area */
   .preview-area {
@@ -675,7 +680,7 @@ function renderSlots(slots) {
   clearChildren(document.getElementById('version-pills'));
 
   if (!slots || slots.length === 0) {
-    pagesList.appendChild(makeText('span', 'style-no-profile', 'No prototype pages found'));
+    pagesList.appendChild(makeText('span', 'empty-hint', 'No prototype pages found'));
 
     var noOpt = document.createElement('option');
     noOpt.value = '';
@@ -695,9 +700,6 @@ function renderSlots(slots) {
   blankOpt.textContent = 'Jump to...';
   protoSelect.appendChild(blankOpt);
 
-  var firstFile = null;
-  var firstSlot = null;
-
   slots.forEach(function(slotData) {
     var slotName = slotData.slot;
     var iterations = slotData.iterations;
@@ -716,7 +718,6 @@ function renderSlots(slots) {
     pagesList.appendChild(row);
 
     iterations.forEach(function(iter) {
-      if (!firstFile) { firstFile = iter.file; firstSlot = slotName; }
       var opt = document.createElement('option');
       opt.value = iter.file;
       opt.textContent = slotName + ' / ' + iter.label;
@@ -724,18 +725,8 @@ function renderSlots(slots) {
     });
   });
 
-  if (firstSlot) {
-    var firstSlotData = null;
-    for (var s = 0; s < allSlots.length; s++) {
-      if (allSlots[s].slot === firstSlot) { firstSlotData = allSlots[s]; break; }
-    }
-    if (firstSlotData && firstSlotData.iterations.length > 0) {
-      var last = firstSlotData.iterations[firstSlotData.iterations.length - 1];
-      activePage = firstSlot;
-      activeVersion = last.label;
-    }
-    activatePage(firstSlot, false);
-    if (firstFile) setPreview(firstFile);
+  if (slots.length > 0) {
+    activatePage(slots[0].slot, true);
   }
 }
 

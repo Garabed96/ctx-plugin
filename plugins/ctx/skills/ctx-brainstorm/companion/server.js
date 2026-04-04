@@ -108,53 +108,6 @@ if (projectDir) {
   }
 }
 
-// ========== Tinker Context ==========
-
-const TINKER_DEFAULTS = {
-  layout: "single-column", density: "balanced", heroStyle: "minimal",
-  navStyle: "top-bar", sectionCount: 4, contentTone: "clinical",
-  colorScheme: "dark", viewport: "desktop", spacingScale: 1.0, borderRadius: 8,
-};
-
-function readLatestTinkerState() {
-  const eventsFile = path.join(screenDir, ".events");
-  if (!fs.existsSync(eventsFile)) return null;
-  const lines = fs.readFileSync(eventsFile, "utf8").trim().split("\n");
-  for (let i = lines.length - 1; i >= 0; i--) {
-    try {
-      const event = JSON.parse(lines[i]);
-      if (event.type === "tinker") return event.state;
-    } catch { continue; }
-  }
-  return null;
-}
-
-function buildTinkerPrompt(state) {
-  if (!state) return "";
-  const parts = [];
-  if (state.layout !== TINKER_DEFAULTS.layout)
-    parts.push(state.layout.replace(/-/g, " ") + " layout");
-  if (state.density !== TINKER_DEFAULTS.density)
-    parts.push(state.density + " density");
-  if (state.heroStyle !== TINKER_DEFAULTS.heroStyle)
-    parts.push(state.heroStyle + " hero style");
-  if (state.navStyle !== TINKER_DEFAULTS.navStyle)
-    parts.push(state.navStyle.replace(/-/g, " ") + " navigation");
-  if (state.sectionCount !== TINKER_DEFAULTS.sectionCount)
-    parts.push(state.sectionCount + " sections");
-  if (state.contentTone !== TINKER_DEFAULTS.contentTone)
-    parts.push(state.contentTone + " content tone");
-  if (state.colorScheme !== TINKER_DEFAULTS.colorScheme)
-    parts.push(state.colorScheme + " color scheme");
-  if (state.viewport !== TINKER_DEFAULTS.viewport)
-    parts.push("optimized for " + state.viewport + " viewport");
-  if (state.spacingScale !== TINKER_DEFAULTS.spacingScale)
-    parts.push(state.spacingScale.toFixed(1) + "x spacing");
-  if (state.borderRadius !== TINKER_DEFAULTS.borderRadius)
-    parts.push(state.borderRadius + "px border radius");
-  return parts.length > 0 ? "Use " + parts.join(", ") + "." : "";
-}
-
 // ========== WebSocket ==========
 
 const clients = new Set();
@@ -518,17 +471,11 @@ async function handleIterate(req, res) {
     return;
   }
 
-  const tinkerState = readLatestTinkerState();
-  const tinkerPrompt = buildTinkerPrompt(tinkerState);
-  const mergedPrompt = tinkerPrompt
-    ? tinkerPrompt + " " + body.prompt
-    : body.prompt;
-
   serverState.iterating = true;
   serverState.target = body.target;
 
   try {
-    const result = await config.iterate(mergedPrompt, body.target);
+    const result = await config.iterate(body.prompt, body.target);
     serverState.version = result.newId || result.newPath;
     serverState.iterating = false;
     broadcast({ type: "reload" });
