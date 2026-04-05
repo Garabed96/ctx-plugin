@@ -2,7 +2,7 @@
 
 A Claude Code plugin built on **context economy** — deterministic operations run as shell scripts at CPU speed, skills handle judgment only.
 
-17 skills, 5 scripts, 3 agents, and 3 hooks covering the full development lifecycle: brainstorm, plan, execute, ship, debug, test, verify, QA.
+20 skills, 11 scripts, 3 agents, and 7 hooks covering the full development lifecycle: brainstorm, plan, execute, ship, debug, test, verify, QA.
 
 ## Why this exists
 
@@ -71,10 +71,18 @@ Shell scripts that handle deterministic operations. Each follows the same contra
 | Script | What it does |
 |--------|-------------|
 | `worktree-create.sh` | Creates git worktree, symlinks gitignored env files (including nested monorepo), installs deps. |
+| `worktree-post-setup.sh` | Symlinks env files and installs deps in an existing worktree. Runs after `EnterWorktree` creates the worktree. |
+| `worktree-open.sh` | Opens a new terminal window (tmux, iTerm2, or Terminal.app) with Claude in the given worktree. |
 | `park-scan.sh` | Scans worktree for artifacts (plans, specs, docs), reads skill invocation log. |
 | `grab-restore.sh` | Finds handoff file, reads content, archives with date stamp, gathers git log. |
 | `ship-preflight.sh` | Gathers git context, counts production files/lines, detects risk signals (auth, data model, config). |
 | `ship-pr.sh` | Stages files, commits, pushes, creates PR — all from args. |
+| `auto-pr.sh` | Post-push hook: typechecks and creates a draft PR using commit messages. Zero LLM tokens on happy path. |
+| `kill-wt.sh` | Teardown: kills dev server port, removes worktree, deletes branch. Supports `--detach` for self-teardown. |
+| `open-webstorm.sh` | Opens a directory in WebStorm. macOS only. |
+| `sim-interact.sh` | Xcode iOS Simulator CLI: screenshot, scroll, tap, open URL, boot/list devices. For QA workflows. |
+
+`test-scripts.sh` provides integration tests for the above — creates a throwaway git repo and exercises each script.
 
 ## Skills
 
@@ -96,6 +104,7 @@ Skills are namespaced `ctx-*` and invoked with `/ctx:<skill-name>`.
 | `ctx-plan` | Reads complexity tags from brainstorm specs and produces an implementation plan with task breakdown and agent budgets. |
 | `ctx-execute` | Dispatches subagents per task, gated by complexity tags — `[LOW]` gets 1 agent, `[MED]` gets 2, `[HIGH]` gets full review. |
 | `ctx-ship` | Full gated pipeline: preflight, architect, implement, verify, PR, ship. Each phase requires user confirmation. Uses DORA two-stage verification. |
+| `ctx-parallel` | Ad-hoc parallel subagent dispatch. Decision framework for when to parallelize vs. sequence. Complements `ctx-execute`. |
 
 ### Quality & Verification
 
@@ -112,15 +121,17 @@ Skills are namespaced `ctx-*` and invoked with `/ctx:<skill-name>`.
 | Skill | What it does |
 |-------|-------------|
 | `ctx-engineering` | Prompt calibration coach. Flags prompts that are too specific (brittle) or too vague (no success criteria) and guides toward the "just right" zone. |
-| `ctx-parallel` | Ad-hoc parallel subagent dispatch. Decision framework for when to parallelize vs. sequence. Complements `ctx-execute`. |
 
-### Session Management
+### Session & Workspace Management
 
 | Skill | What it does |
 |-------|-------------|
 | `ctx-park` | End-of-session handoff. Scans worktree for artifacts, distills insights, writes a structured handoff file for the next session. |
 | `ctx-grab` | Start-of-session restore. Reads the handoff from `ctx-park`, follows artifact links, and re-aligns context. |
+| `ctx-resume` | Resume after crash or context loss. Lists active plans from global storage and relaunches into the correct worktree. |
 | `ctx-worktree` | Creates an isolated git worktree with env symlinks and dependency install so parallel work is immediately runnable. |
+| `ctx-kill-wt` | Teardown a worktree — kills dev server port, removes worktree, deletes branch. Safe from inside or outside the worktree. |
+| `ctx-open` | Opens the current working directory in WebStorm. |
 
 ## Agents
 
@@ -192,7 +203,7 @@ Pages and events are stored in `<project-dir>/companion/pages/<page>/.events`.
 
 ## Status
 
-**v0.2.8.1** — Private, actively iterating. Companion factory MVP, cross-repo guard, session continuity stable.
+**v0.2.9** — Private, actively iterating. Safe worktree teardown, auto-PR hooks, enforce-ship-pr guard, companion factory, iOS simulator interaction.
 
 ## License
 
