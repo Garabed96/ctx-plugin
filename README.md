@@ -134,7 +134,7 @@ See `ctx-engineering/references/hidden_token_costs.md` for the full breakdown of
 
 ## Status
 
-**v0.2.5** — Private, actively iterating. Skill-script symbiosis pattern established. Structure is stable.
+**v0.2.8** — Private, actively iterating. Companion factory MVP, cross-repo guard, session continuity stable.
 
 ## License
 
