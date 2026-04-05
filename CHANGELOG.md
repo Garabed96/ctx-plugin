@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.9 (2026-04-05)
+
+- **Enforce ship-pr.sh** — PreToolUse hook blocks manual `gh pr create`, redirects to script
+- **ship-pr.sh handles pre-committed work** — `--files`/`--message` optional, skips stage/commit when nothing to do
+- **Path audit** — worktree-guard auto-detects siblings from git root parent, worktree-open.sh supports tmux + iTerm2 + Terminal.app
+- **Worktree-guard same-repo fix** — worktrees of the same repo no longer blocked as cross-repo edits
+- **kill-wt fetch before teardown** — `git fetch origin` before branch delete to verify merge status
+- **grab-restore.sh bugfix** — `set -e` no longer kills script before outputting `status=not_found`
+- **Script tests** — kill-wt + worktree-guard regression tests, 47/47 passing
+- **Docs** — Getting Started workflow, companion server setup, updated hooks table
+- **iOS Simulator QA pipeline** — `sim-interact.sh` (boot, open, screenshot, scroll, tap) + `preview-device.sh` for real WebKit QA on iPhone
+- **iOS mobile reference** — `ios-mobile.md` checklist for safe areas, dvh, form controls, touch targets
+
 ## 0.2.8.1 (2026-04-05)
 
 - **kill-wt safe teardown** — `--worktree` flag for remote kill from main repo, `--detach` flag for background teardown when session is inside the worktree being killed. Prevents destroying Claude Code session.
