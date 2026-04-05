@@ -292,8 +292,7 @@ function buildInjectionStyle(profile) {
 ${vars.join("\n")}
 }
 /* ---- Companion base layer ---- */
-/* !important ensures factory sidebar controls always take effect,
-   regardless of what the prototype's own CSS declares. */
+/* !important ensures factory sidebar controls always take effect. */
 body {
   font-family: var(--cp-font-sans, system-ui, sans-serif) !important;
   color: var(--cp-fg) !important;
@@ -319,7 +318,28 @@ input, textarea, select {
   background: var(--cp-primary, highlight);
   color: var(--cp-bg, highlighttext);
 }
-</style>`;
+</style>
+<script>
+// Companion click-to-select: elements with data-option become clickable.
+// Clicking posts selection to the factory parent frame.
+document.addEventListener('click', function(e) {
+  var el = e.target.closest('[data-option]');
+  if (!el) return;
+  var value = el.getAttribute('data-option');
+  var label = el.getAttribute('data-label') || value;
+  // Visual feedback
+  document.querySelectorAll('[data-option]').forEach(function(o) {
+    o.style.outline = '';
+    o.style.outlineOffset = '';
+  });
+  el.style.outline = '2px solid var(--cp-primary, #1eb3b8)';
+  el.style.outlineOffset = '2px';
+  // Notify factory
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'option-select', value: value, label: label }, '*');
+  }
+});
+</script>`;
   return baseStyles;
 }
 

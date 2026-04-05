@@ -1098,6 +1098,11 @@ function buildStyleControls(profile) {
   };
   container.appendChild(resetBtn);
 
+  var rescanDesc = document.createElement('p');
+  rescanDesc.style.cssText = 'font-size:0.62rem;color:#475569;line-height:1.4;margin-bottom:0.35rem;';
+  rescanDesc.textContent = 'Re-reads your project\u2019s tailwind config, CSS vars, and package.json to update the controls above.';
+  container.appendChild(rescanDesc);
+
   var rescanBtn = document.createElement('button');
   rescanBtn.className = 'btn-rescan';
   rescanBtn.textContent = 'Re-scan project';
@@ -1272,6 +1277,21 @@ document.addEventListener('keydown', function(e) {
 });
 
 wsConnect();
+
+// --- Listen for option-select from prototype iframe ---
+window.addEventListener('message', function(e) {
+  if (!e.data || e.data.type !== 'option-select') return;
+  var promptEl = document.getElementById('prompt-text');
+  var current = promptEl.value;
+  var selection = 'Selected: ' + (e.data.label || e.data.value);
+  // Prepend selection to existing prompt text
+  if (current && !current.startsWith('Selected:')) {
+    promptEl.value = selection + '. ' + current;
+  } else {
+    promptEl.value = selection;
+  }
+  sendEvent({ type: 'option-select', value: e.data.value, label: e.data.label });
+});
 </script>
 </body>
 </html>
