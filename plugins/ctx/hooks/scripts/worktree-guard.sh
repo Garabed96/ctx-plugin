@@ -71,8 +71,8 @@ FILE_REPO=$(git -C "$CHECK_DIR" rev-parse --show-toplevel 2>/dev/null) || exit 0
 
 # If the file is in a different repo, check if it's a sibling project repo (cross-repo edit)
 if [ "$FILE_REPO" != "$PROJECT_ROOT" ]; then
-  # Block edits to other project repos under ~/WebstormProjects/
-  PROJECTS_DIR="$HOME/WebstormProjects"
+  # Block edits to sibling project repos (repos sharing the same parent directory)
+  PROJECTS_DIR=$(dirname "$PROJECT_ROOT")
   case "$FILE_REPO" in
     "$PROJECTS_DIR"/*)
       TARGET_NAME=$(basename "$FILE_REPO")
