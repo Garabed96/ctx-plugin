@@ -800,7 +800,18 @@ function renderSlots(slots) {
 // --- Load slots ---
 fetch('/api/slots')
   .then(function(r) { return r.json(); })
-  .then(function(slots) { renderSlots(slots); })
+  .then(function(slots) {
+    renderSlots(slots);
+    if (window.__factoryPage) {
+      var target = window.__factoryPage;
+      for (var s = 0; s < allSlots.length; s++) {
+        if (allSlots[s].slot === target) {
+          activatePage(target, true);
+          return;
+        }
+      }
+    }
+  })
   .catch(function(err) {
     var ph = document.getElementById('preview-placeholder');
     if (ph) {
@@ -1187,6 +1198,7 @@ function wsConnect() {
 
 function sendEvent(event) {
   event.timestamp = Date.now();
+  if (activePage) event.page = activePage;
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify(event));
   } else {

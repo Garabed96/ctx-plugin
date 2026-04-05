@@ -170,6 +170,15 @@ function handleMessage(text) {
   let event;
   try { event = JSON.parse(text); } catch { return; }
   if (event.type) {
+    // Per-page events: persist to companion/pages/<page>/.events when page is set
+    if (event.page && projectDir) {
+      const pageEventsFile = path.join(projectDir, "companion/pages", event.page, ".events");
+      if (fs.existsSync(path.dirname(pageEventsFile))) {
+        fs.appendFileSync(pageEventsFile, JSON.stringify(event) + "\n");
+        return;
+      }
+    }
+    // Fallback: screenDir (brainstorm mode)
     const eventsFile = path.join(screenDir, ".events");
     fs.appendFileSync(eventsFile, JSON.stringify(event) + "\n");
   }
@@ -369,14 +378,18 @@ function servePlayground(res) {
   res.end(content);
 }
 
-function serveFactory(res) {
+function serveFactory(res, targetPage) {
   const factoryPath = path.join(__dirname, "factory.html");
   if (!fs.existsSync(factoryPath)) {
     res.writeHead(404, { "Content-Type": "text/plain" });
     res.end("factory.html not found");
     return;
   }
-  const content = fs.readFileSync(factoryPath, "utf8");
+  let content = fs.readFileSync(factoryPath, "utf8");
+  if (targetPage) {
+    content = content.replace("</body>",
+      '<script>window.__factoryPage = ' + JSON.stringify(targetPage) + ';</script>\n</body>');
+  }
   res.writeHead(200, { "Content-Type": "text/html" });
   res.end(content);
 }
@@ -596,6 +609,57 @@ async function handleWrite(req, res) {
   jsonResponse(res, 200, { file: relativePath, version });
 }
 
+function handlePageStatus(req, res) {
+  const slots = scanSlots();
+  const result = slots.map(function(slotData) {
+    const page = slotData.slot;
+    const versions = slotData.iterations.length;
+    const latest = slotData.iterations[slotData.iterations.length - 1];
+    const latestFile = latest ? latest.file : null;
+
+    // Read per-page .events for selected option
+    let selectedOption = null;
+    if (projectDir) {
+      const eventsPath = path.join(projectDir, "companion/pages", page, ".events");
+      if (fs.existsSync(eventsPath)) {
+        const lines = fs.readFileSync(eventsPath, "utf8").trim().split("\n").filter(Boolean);
+        for (let i = lines.length - 1; i >= 0; i--) {
+          try {
+            const ev = JSON.parse(lines[i]);
+            if (ev.type === "option-select") {
+              selectedOption = ev.label || ev.value;
+              break;
+            }
+          } catch {}
+        }
+      }
+    }
+
+    // Last modified from latest file
+    let lastModified = null;
+    if (latestFile && projectDir) {
+      const filePath = path.join(projectDir, "companion/pages", latestFile);
+      if (fs.existsSync(filePath)) {
+        lastModified = fs.statSync(filePath).mtime.toISOString();
+      }
+    }
+
+    return { page, versions, latestFile, selectedOption, lastModified };
+  });
+  jsonResponse(res, 200, result);
+}
+
+function servePortfolio(res) {
+  const portfolioPath = path.join(__dirname, "portfolio.html");
+  if (!fs.existsSync(portfolioPath)) {
+    serveFactory(res);
+    return;
+  }
+  const content = fs.readFileSync(portfolioPath, "utf8");
+  res.writeHead(200, { "Content-Type": "text/html" });
+  res.end(content);
+}
+
 async function handleCompare(req, res) {
   const body = await readBody(req);
   if (!body || !Array.isArray(body.slugs) || body.slugs.length < 2) {
@@ -632,6 +696,8 @@ const server = http.createServer((req, res) => {
     jsonResponse(res, 200, scanSlots());
   } else if (parsed.pathname === "/api/write" && req.method === "POST") {
     handleWrite(req, res);
+  } else if (parsed.pathname === "/api/page-status") {
+    handlePageStatus(req, res);
   } else if (parsed.pathname === "/api/compare" && req.method === "POST") {
     handleCompare(req, res);
   } else if (parsed.pathname === "/api/style-profile") {
@@ -662,8 +728,15 @@ const server = http.createServer((req, res) => {
         }
       });
     }
-  } else if (parsed.pathname === "/factory") {
-    serveFactory(res);
+  } else if (parsed.pathname.startsWith("/factory")) {
+    const tail = parsed.pathname.slice("/factory".length);
+    if (!tail || tail === "/") {
+      servePortfolio(res);
+    } else if (tail.startsWith("/")) {
+      serveFactory(res, tail.slice(1));
+    } else {
+      serveFactory(res);
+    }
   } else {
     serveBrainstorm(res);
   }
