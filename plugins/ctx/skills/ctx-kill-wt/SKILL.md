@@ -21,14 +21,37 @@ You need:
 
 ## 2. Run teardown
 
-Must be run from inside the worktree being killed:
+**Critical: avoid destroying your own working directory.**
+
+Check: is this session's project root the worktree you're about to kill?
+- Run `pwd` — if it matches the worktree path, you're inside it.
+
+### Case A: Session is in the main repo (or a different worktree)
+
+Safe to kill directly with `--worktree`:
 
 ```bash
-bash ${CLAUDE_PLUGIN_ROOT}/scripts/kill-wt.sh --port <port>
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/kill-wt.sh --worktree <worktree-path> --port <port>
 ```
 
-The script:
-1. Validates you're in a linked worktree (not main)
+### Case B: Session started from inside the worktree being killed
+
+Claude Code's project root IS the worktree — `cd` won't persist, and removing the directory kills the session. Use `--detach` to spawn the teardown in a background process:
+
+```bash
+bash ${CLAUDE_PLUGIN_ROOT}/scripts/kill-wt.sh --detach --port <port>
+```
+
+This:
+1. Spawns `nohup` teardown from the main repo
+2. Returns immediately with `detached=true` and a log path
+3. Leaves the session alive long enough to show the result
+
+After showing the result, tell the user: **"This session's directory will be removed. Close this tab and open a new session from `<main_repo>`."**
+
+### What the script does
+
+1. Validates the target is a linked worktree (not main — hard block)
 2. Kills processes on the port
 3. `cd`s to the main repo and runs `git worktree remove`
 4. Deletes the branch if it's fully merged (safe `git branch -d`)
@@ -45,4 +68,4 @@ Worktree killed:
   Main repo: <path>
 ```
 
-After teardown, you're back in the main repo. Let the user know they can `cd` there or that the terminal session should be closed.
+If detached, also show the log path and remind the user to close the session.
