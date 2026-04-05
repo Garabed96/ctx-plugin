@@ -15,6 +15,14 @@ This **skill-script symbiosis** reduces tool calls by 87% and wall-clock time by
 
 **Lineage:** Inspired by the discipline patterns in [superpowers](https://github.com/obra/superpowers) (verification gates, rationalization tables, hard gates). Restructured for token economy and extended with original systems: session continuity, QA testing, critical thinking coaching, prompt calibration, complexity gating, and the shell-native execution model.
 
+## Important: Path Configuration
+
+This plugin is in early development (v0.2.5). Several scripts reference `~/WebstormProjects/` as the projects directory — this matches the default JetBrains (WebStorm/IntelliJ) layout. If your projects live elsewhere (e.g., `~/Projects/`, `~/dev/`, `~/cursor-projects/`), you'll need to update these paths:
+
+- `plugins/ctx/hooks/scripts/worktree-guard.sh` — the `PROJECTS_DIR` variable controls where cross-repo edit blocking applies
+
+This will be auto-detected in v1.0.0. For now, grep for `WebstormProjects` and adjust to your setup.
+
 ## Install
 
 ```sh
@@ -94,6 +102,7 @@ Dispatched automatically by `ctx-execute` and `ctx-ship` based on task complexit
 
 | Event | Hook | Purpose |
 |-------|------|---------|
+| `PreToolUse` | `worktree-guard` | Blocks Edit/Write/Bash mutations outside the current repo's worktree. Also blocks cross-repo edits to sibling projects. |
 | `SessionStart` | `session-start` | Injects context at the start of every session. |
 | `PostToolUse` | `log-skill-invocation` | Logs which skills are invoked (fires on `Skill` tool use). |
 | `UserPromptSubmit` | `altitude-check` | Nudges when it detects altitude oscillation — micromanaging vs. hand-waving. |
