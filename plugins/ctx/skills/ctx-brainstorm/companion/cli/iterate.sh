@@ -58,7 +58,3 @@ if [ -n "$FACTORY_CONTEXT" ]; then
 fi
 echo "  Instruction: $INSTRUCTION"
 echo "  Merged: $MERGED"
-echo ""
-
-# Call protosmith iterate (this calls Claude)
-cd "$PROJECT_DIR" && pnpm exec protosmith iterate "$SLUG" --instruction "$MERGED"

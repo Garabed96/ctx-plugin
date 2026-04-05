@@ -1,0 +1,11 @@
+# IDE
+.idea/
+
+# Claude Code local state
+.claude/
+
+# Session artifacts (park files, ctx handoffs)
+docs/ctx/
+
+# Session-local specs (design docs from brainstorm sessions)
+docs/specs/
