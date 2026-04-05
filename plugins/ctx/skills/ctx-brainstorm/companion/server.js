@@ -480,6 +480,25 @@ function scanSlots() {
   return result;
 }
 
+// ========== Auto-Versioning ==========
+
+function nextVersionPath(page) {
+  const pagesDir = path.join(projectDir, "companion/pages", page);
+  fs.mkdirSync(pagesDir, { recursive: true });
+  const existing = fs.readdirSync(pagesDir).filter(f => f.endsWith(".html"));
+  let maxVersion = 0;
+  for (const f of existing) {
+    const m = f.match(/-v(\d+)/);
+    if (m) maxVersion = Math.max(maxVersion, parseInt(m[1]));
+  }
+  const next = maxVersion + 1;
+  return {
+    filePath: path.join(pagesDir, `${page}-v${next}.html`),
+    relativePath: `${page}/${page}-v${next}.html`,
+    version: `v${next}`,
+  };
+}
+
 // ========== API Routes ==========
 
 const serverState = { target: null, version: null, iterating: false };
@@ -557,6 +576,26 @@ function handleStatus(req, res) {
   });
 }
 
+async function handleWrite(req, res) {
+  if (!projectDir) {
+    jsonResponse(res, 400, { error: "No --project-dir configured" });
+    return;
+  }
+  const body = await readBody(req);
+  if (!body || !body.page || !body.content) {
+    jsonResponse(res, 400, { error: "Missing page or content" });
+    return;
+  }
+  const page = body.page.replace(/[^a-zA-Z0-9_-]/g, "");
+  if (!page) {
+    jsonResponse(res, 400, { error: "Invalid page name" });
+    return;
+  }
+  const { filePath, relativePath, version } = nextVersionPath(page);
+  fs.writeFileSync(filePath, body.content);
+  jsonResponse(res, 200, { file: relativePath, version });
+}
+
 async function handleCompare(req, res) {
   const body = await readBody(req);
   if (!body || !Array.isArray(body.slugs) || body.slugs.length < 2) {
@@ -591,6 +630,8 @@ const server = http.createServer((req, res) => {
     servePrototype(res, parsed.searchParams.get("file"));
   } else if (parsed.pathname === "/api/slots") {
     jsonResponse(res, 200, scanSlots());
+  } else if (parsed.pathname === "/api/write" && req.method === "POST") {
+    handleWrite(req, res);
   } else if (parsed.pathname === "/api/compare" && req.method === "POST") {
     handleCompare(req, res);
   } else if (parsed.pathname === "/api/style-profile") {

@@ -22,7 +22,12 @@ before the spec is written and approved.
 
 1. **Explore context** — check files, docs, recent commits relevant to the idea
 2. **Scope check** — if the request covers multiple independent systems, decompose first. If scope is large or ambiguity is high, suggest `/ctx-brainstorm-ss` (see Escalation below)
-3. **Visual companion gate** — before asking any questions, evaluate: will this brainstorm involve architecture diagrams, layout comparisons, option cards, or spatial content? If yes, offer the companion as its own message and wait for the user's response before continuing (read `${CLAUDE_SKILL_DIR}/references/companion-guide.md`). If no, proceed directly to questions — no extra message.
+3. **Visual companion gate** — before asking any questions, evaluate: will this brainstorm involve architecture diagrams, layout comparisons, option cards, or spatial content? If yes, offer the companion as its own message and wait for the user's response before continuing (read `${CLAUDE_SKILL_DIR}/references/companion-guide.md`). If the project has a `companion/style-profile.json`, suggest factory mode (`/factory` URL) for style-aware prototyping.
+3b. **Factory mode** — when the companion is running at `/factory`:
+    - Read `companion/style-profile.json` for design tokens when generating prototypes (just-in-time — don't preload)
+    - Write prototypes via `POST http://localhost:<port>/api/write` with `{ "page": "<name>", "content": "<html>" }` — auto-versions and reloads
+    - Read `<screen-dir>/.events` for `option-select` (user clicked a choice) and `style` (user changed controls) events
+    - Use `data-option` on comparison pages — see "Prototype structure" in companion-guide.md
 4. **Ask questions** — one at a time, prefer multiple choice, understand purpose/constraints/success criteria
 5. **Propose 2-3 approaches** — with tradeoffs, lead with your recommendation. If companion is active, present visually.
 6. **Present design** — sections scaled to complexity, get approval incrementally

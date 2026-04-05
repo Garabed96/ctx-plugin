@@ -117,3 +117,46 @@ The companion auto-scans the project on first start (`start.sh` runs `cli/scan-s
 Output: `<project-root>/companion/style-profile.json`
 
 Re-scan: `start.sh --rescan` or click "Re-scan project" in the factory sidebar.
+
+## Prototype structure
+
+### Comparison page (A/B/C options)
+
+Each selectable option MUST have `data-option` and `data-label`. The base layer JS handles click → visual feedback → event propagation. No JS needed in the prototype.
+
+```html
+<div class="option-card" data-option="A" data-label="A — Minimal sidebar">
+  <!-- option A content -->
+</div>
+<div class="option-card" data-option="B" data-label="B — Grouped navigation">
+  <!-- option B content -->
+</div>
+```
+
+### Single page prototype
+
+Clean HTML. No `data-option` needed. The base layer handles font, color, background, and radius automatically.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page Title</title>
+  <style>
+    /* Your layout CSS here. Use var(--cp-primary) etc. for accent elements. */
+  </style>
+</head>
+<body>
+  <!-- Content — base layer applies profile font, colors, radius -->
+</body>
+</html>
+```
+
+### What NOT to do
+
+- Don't set `body { font-family: ... }` — the base layer handles it via `!important`
+- Don't hardcode the profile's hex colors — use `var(--cp-primary)` or let inheritance work
+- Don't add `<meta name="darkreader-lock">` — the base layer injects it
+- Don't import Google Fonts for the profile font — the base layer sets `font-family` on body/headings

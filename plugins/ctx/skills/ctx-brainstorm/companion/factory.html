@@ -834,6 +834,9 @@ var CP_MAP = {
   'radius-lg': '--cp-radius-lg',
 };
 
+// Track current option selection separately from style overrides
+var selectedOption = null;
+
 // Debounced style event emitter
 var _styleEmitTimer = null;
 function emitStyleEvent() {
@@ -877,11 +880,15 @@ function updateStylePrompt() {
   }
 
   var promptEl = document.getElementById('prompt-text');
-  if (parts.length === 0) {
+  var segments = [];
+  if (selectedOption) segments.push('Selected: ' + selectedOption);
+  if (parts.length > 0) segments.push('Iterate with ' + parts.join(', ') + '.');
+
+  if (segments.length === 0) {
     promptEl.value = '';
     promptEl.placeholder = 'Describe what you want to iterate on...';
   } else {
-    promptEl.value = 'Iterate with ' + parts.join(', ') + '.';
+    promptEl.value = segments.join('. ');
   }
 }
 
@@ -1281,15 +1288,8 @@ wsConnect();
 // --- Listen for option-select from prototype iframe ---
 window.addEventListener('message', function(e) {
   if (!e.data || e.data.type !== 'option-select') return;
-  var promptEl = document.getElementById('prompt-text');
-  var current = promptEl.value;
-  var selection = 'Selected: ' + (e.data.label || e.data.value);
-  // Prepend selection to existing prompt text
-  if (current && !current.startsWith('Selected:')) {
-    promptEl.value = selection + '. ' + current;
-  } else {
-    promptEl.value = selection;
-  }
+  selectedOption = e.data.label || e.data.value;
+  updateStylePrompt();
   sendEvent({ type: 'option-select', value: e.data.value, label: e.data.label });
 });
 </script>
