@@ -71,6 +71,13 @@ FILE_REPO=$(git -C "$CHECK_DIR" rev-parse --show-toplevel 2>/dev/null) || exit 0
 
 # If the file is in a different repo, check if it's a sibling project repo (cross-repo edit)
 if [ "$FILE_REPO" != "$PROJECT_ROOT" ]; then
+  # Allow writes to worktrees of the same repo (they share a git common dir)
+  PROJECT_GIT=$(git -C "$PROJECT_ROOT" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+  FILE_GIT=$(git -C "$FILE_REPO" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+  if [ "$PROJECT_GIT" = "$FILE_GIT" ]; then
+    exit 0
+  fi
+
   # Block edits to sibling project repos (repos sharing the same parent directory)
   PROJECTS_DIR=$(dirname "$PROJECT_ROOT")
   case "$FILE_REPO" in
