@@ -11,4 +11,4 @@ user-invocable: true
 
 Open the current working directory in WebStorm.
 
-Run `~/.claude/scripts/open-web.sh` — no confirmation needed.
+Run `bash ${CLAUDE_PLUGIN_ROOT}/scripts/open-webstorm.sh` — no confirmation needed.
