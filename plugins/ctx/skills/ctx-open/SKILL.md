@@ -1,0 +1,14 @@
+---
+name: ctx-open
+description: >
+  Open current working directory in WebStorm.
+  Use when the user says "open in WebStorm", "open IDE", "open editor",
+  or invokes /ctx-open.
+user-invocable: true
+---
+
+# /ctx-open
+
+Open the current working directory in WebStorm.
+
+Run `bash ${CLAUDE_PLUGIN_ROOT}/scripts/open-webstorm.sh` — no confirmation needed.
