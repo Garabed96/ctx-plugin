@@ -326,6 +326,52 @@ fi
 
 # ══════════════════════════════════════════════════════════
 echo ""
+echo "=== TEST: kill-wt.sh ==="
+
+# Setup: go back to main test repo, create a worktree to kill
+cd "$TEMP_DIR/test-repo"
+git checkout -q main 2>/dev/null || true
+
+git worktree add -b kill-test "$TEMP_DIR/test-repo-kill-wt" main 2>/dev/null
+
+# Main repo hard block (no args, from main repo)
+OUTPUT=$(bash "$SCRIPT_DIR/kill-wt.sh" 2>&1 || true)
+assert_contains "blocks main repo" "$OUTPUT" "main worktree"
+
+# Main repo hard block (--worktree pointing at main)
+OUTPUT=$(bash "$SCRIPT_DIR/kill-wt.sh" --worktree "$TEMP_DIR/test-repo" 2>&1 || true)
+assert_contains "blocks --worktree=main" "$OUTPUT" "main worktree"
+
+# Invalid path
+OUTPUT=$(bash "$SCRIPT_DIR/kill-wt.sh" --worktree "/nonexistent" 2>&1 || true)
+assert_contains "rejects invalid path" "$OUTPUT" "not a valid git worktree"
+
+# Happy path: kill via --worktree from main repo
+OUTPUT=$(bash "$SCRIPT_DIR/kill-wt.sh" --worktree "$TEMP_DIR/test-repo-kill-wt" 2>/dev/null)
+assert_contains "outputs worktree path" "$OUTPUT" "worktree=$TEMP_DIR/test-repo-kill-wt"
+assert_contains "outputs branch" "$OUTPUT" "branch=kill-test"
+assert_contains "branch deleted" "$OUTPUT" "branch_status=deleted"
+
+# Verify worktree is gone
+if [[ ! -d "$TEMP_DIR/test-repo-kill-wt" ]]; then
+  echo "  PASS: worktree directory removed"
+  PASS=$((PASS + 1))
+else
+  echo "  FAIL: worktree directory still exists"
+  FAIL=$((FAIL + 1))
+fi
+
+# Verify branch is gone
+if ! git branch --list kill-test | grep -q kill-test; then
+  echo "  PASS: branch deleted"
+  PASS=$((PASS + 1))
+else
+  echo "  FAIL: branch still exists"
+  FAIL=$((FAIL + 1))
+fi
+
+# ══════════════════════════════════════════════════════════
+echo ""
 echo "════════════════════════════════"
 echo "Results: $PASS passed, $FAIL failed"
 echo "════════════════════════════════"
