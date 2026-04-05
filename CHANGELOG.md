@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.8.1 (2026-04-05)
+
+- **kill-wt safe teardown** — `--worktree` flag for remote kill from main repo, `--detach` flag for background teardown when session is inside the worktree being killed. Prevents destroying Claude Code session.
+
 ## 0.2.8 (2026-04-05)
 
 - **Companion factory MVP** — portfolio landing page at `/factory`, per-page events persisted to `companion/pages/<page>/.events`, `/factory/<page>` deep-linking, `/api/page-status` endpoint
