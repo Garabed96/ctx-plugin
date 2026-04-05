@@ -92,6 +92,9 @@ fi
 # ── Switch to main repo before removal ───────────────────
 cd "$MAIN_REPO"
 
+# ── Fetch latest so branch -d knows what's merged ───────
+git fetch origin 2>/dev/null && echo "Fetched latest from origin" >&2 || echo "warn: fetch failed (offline?)" >&2
+
 # ── Remove worktree ──────────────────────────────────────
 if [[ "$FORCE" == true ]]; then
   git worktree remove --force "$WORKTREE_PATH" 2>&1 >&2

@@ -43,30 +43,36 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-[[ ${#FILES[@]} -eq 0 ]] && { echo "Error: --files is required" >&2; exit 1; }
-[[ -z "$MESSAGE" ]] && { echo "Error: --message is required" >&2; exit 1; }
 [[ -z "$TITLE" ]] && { echo "Error: --title is required" >&2; exit 1; }
 [[ -z "$BODY" ]] && { echo "Error: --body is required" >&2; exit 1; }
 
 BRANCH=$(git branch --show-current 2>/dev/null || echo "detached")
-
-# ── Stage files ───────────────────────────────────────────
-echo "Staging ${#FILES[@]} file(s)..." >&2
-git add "${FILES[@]}" 2>&1 >&2 || { echo "Error: git add failed" >&2; exit 2; }
-
-# Verify staging
-STAGED=$(git diff --cached --name-only)
-echo "Staged: $(echo "$STAGED" | wc -l | tr -d ' ') file(s)" >&2
-
-# ── Commit ────────────────────────────────────────────────
-echo "Committing..." >&2
-git commit -m "$MESSAGE" 2>&1 >&2 || { echo "Error: git commit failed" >&2; exit 2; }
 COMMIT_SHA=$(git rev-parse --short HEAD)
-echo "Committed: $COMMIT_SHA" >&2
 
-# ── Push ──────────────────────────────────────────────────
+# ── Stage + Commit (skip if nothing to commit) ───────────
+if [[ ${#FILES[@]} -gt 0 ]]; then
+  [[ -z "$MESSAGE" ]] && { echo "Error: --message is required when --files are provided" >&2; exit 1; }
+
+  echo "Staging ${#FILES[@]} file(s)..." >&2
+  git add "${FILES[@]}" 2>&1 >&2 || { echo "Error: git add failed" >&2; exit 2; }
+
+  STAGED=$(git diff --cached --name-only)
+  if [[ -n "$STAGED" ]]; then
+    echo "Staged: $(echo "$STAGED" | wc -l | tr -d ' ') file(s)" >&2
+    echo "Committing..." >&2
+    git commit -m "$MESSAGE" 2>&1 >&2 || { echo "Error: git commit failed" >&2; exit 2; }
+    COMMIT_SHA=$(git rev-parse --short HEAD)
+    echo "Committed: $COMMIT_SHA" >&2
+  else
+    echo "Nothing to commit — files already committed" >&2
+  fi
+else
+  echo "No --files provided — skipping stage/commit" >&2
+fi
+
+# ── Push (skip if already up to date) ────────────────────
 echo "Pushing $BRANCH..." >&2
-git push -u origin "$BRANCH" 2>&1 >&2 || { echo "Error: git push failed" >&2; exit 2; }
+git push -u origin "$BRANCH" 2>&1 >&2 || echo "Already up to date" >&2
 
 # ── Create PR ─────────────────────────────────────────────
 echo "Creating PR..." >&2
@@ -88,5 +94,4 @@ echo "commit=$COMMIT_SHA"
 echo "branch=$BRANCH"
 echo "base=$BASE"
 echo "pr_url=$PR_URL"
-echo "files_staged=$(echo "$STAGED" | wc -l | tr -d ' ')"
 echo "draft=$DRAFT"

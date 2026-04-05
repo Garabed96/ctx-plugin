@@ -17,19 +17,51 @@ This **skill-script symbiosis** reduces tool calls by 87% and wall-clock time by
 
 ## Important: Setup Notes
 
-**Platform:** macOS-first. Core skills, scripts, and hooks are POSIX-compatible (Linux works), but `worktree-open.sh` uses AppleScript/iTerm2 (macOS only). Windows is untested.
+**Platform:** macOS. Terminal support: tmux, iTerm2, Terminal.app. Core skills and scripts are POSIX-compatible. Windows is untested.
 
-**Path configuration:** This plugin is in early development (v0.2.5). Several scripts reference `~/WebstormProjects/` as the projects directory — this matches the default JetBrains (WebStorm/IntelliJ) layout. If your projects live elsewhere (e.g., `~/Projects/`, `~/dev/`, `~/cursor-projects/`), you'll need to update these paths:
-
-- `plugins/ctx/hooks/scripts/worktree-guard.sh` — the `PROJECTS_DIR` variable controls where cross-repo edit blocking applies
-
-This will be auto-detected in v1.0.0. For now, grep for `WebstormProjects` and adjust to your setup.
+**Path detection:** Cross-repo edit blocking auto-detects sibling projects from your git repo's parent directory — no hardcoded paths.
 
 ## Install
 
 ```sh
 /plugin marketplace add Garabed96/ctx-plugin
 /plugin install ctx@ctx-plugin
+```
+
+## Getting Started
+
+The core loop is: **brainstorm → plan → worktree → execute → ship**
+
+```
+/ctx-brainstorm          # Explore the problem, surface blind spots
+/ctx-plan                # Produce a tagged implementation plan
+/ctx-worktree            # Create an isolated git worktree for the work
+/ctx-execute             # Dispatch subagents per plan task
+/ctx-ship                # Preflight → verify → PR (gated at each phase)
+```
+
+**Minimal workflow** (skip brainstorm/plan for small fixes):
+
+```
+/ctx-worktree            # Isolate the work
+# ... make changes ...
+/ctx-verify              # Evidence before claims
+/ctx-ship                # Create PR
+```
+
+**Session continuity** — when you need to stop and resume later:
+
+```
+/ctx-park                # Save context handoff for next session
+# ... close session, reopen later ...
+/ctx-grab                # Restore context from park file
+```
+
+**Debugging:**
+
+```
+/ctx-debug               # Systematic root cause investigation (blocks premature fixes)
+/ctx-tdd                 # Red-Green-Refactor with enforcement
 ```
 
 ## Scripts
@@ -105,8 +137,11 @@ Dispatched automatically by `ctx-execute` and `ctx-ship` based on task complexit
 | Event | Hook | Purpose |
 |-------|------|---------|
 | `PreToolUse` | `worktree-guard` | Blocks Edit/Write/Bash mutations outside the current repo's worktree. Also blocks cross-repo edits to sibling projects. |
+| `PreToolUse` | `enforce-ship-pr` | Blocks manual `gh pr create` — redirects to `ship-pr.sh` to save tokens. |
 | `SessionStart` | `session-start` | Injects context at the start of every session. |
 | `PostToolUse` | `log-skill-invocation` | Logs which skills are invoked (fires on `Skill` tool use). |
+| `PostToolUse` | `auto-pr` | After `git push`, runs typecheck and creates a draft PR. |
+| `PostToolUse` | test coverage nudge | After test runs, checks if tests cover service-layer concerns or only unit-level. |
 | `UserPromptSubmit` | `altitude-check` | Nudges when it detects altitude oscillation — micromanaging vs. hand-waving. |
 
 ## Philosophy
@@ -132,9 +167,32 @@ Claude Code runs background forks that silently consume tokens (prompt suggestio
 
 See `ctx-engineering/references/hidden_token_costs.md` for the full breakdown of what each system does.
 
+## Companion Server
+
+The brainstorm skill includes an optional companion web UI for visual design exploration.
+
+```bash
+# Start the companion server
+bash plugins/ctx/skills/ctx-brainstorm/companion/start.sh \
+  --project-dir /path/to/your/project \
+  --port 52341
+
+# Options:
+#   --project-dir <path>  Required. The project to brainstorm against.
+#   --port <port>         Default: 52341
+#   --rescan              Force re-scan of project styles (normally cached)
+```
+
+The server provides:
+- **Portfolio** at `http://localhost:<port>/` — landing page for design prototypes
+- **Factory** at `http://localhost:<port>/factory` — per-page visual brainstorming with click-to-select options
+- **API** at `/api/write`, `/api/page-status` — used by the brainstorm skill to persist events
+
+Pages and events are stored in `<project-dir>/companion/pages/<page>/.events`.
+
 ## Status
 
-**v0.2.8** — Private, actively iterating. Companion factory MVP, cross-repo guard, session continuity stable.
+**v0.2.8.1** — Private, actively iterating. Companion factory MVP, cross-repo guard, session continuity stable.
 
 ## License
 

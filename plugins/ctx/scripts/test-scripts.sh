@@ -237,8 +237,11 @@ else
 fi
 
 # Missing args
-OUTPUT=$(bash "$SCRIPT_DIR/ship-pr.sh" --files bar.ts 2>&1 || true)
-assert_contains "requires --message" "$OUTPUT" "--message is required"
+OUTPUT=$(bash "$SCRIPT_DIR/ship-pr.sh" 2>&1 || true)
+assert_contains "requires --title" "$OUTPUT" "--title is required"
+
+OUTPUT=$(bash "$SCRIPT_DIR/ship-pr.sh" --files bar.ts --title "t" --body "b" 2>&1 || true)
+assert_contains "requires --message with --files" "$OUTPUT" "--message is required"
 
 # ══════════════════════════════════════════════════════════
 echo ""
@@ -323,6 +326,75 @@ else
   echo "  FAIL: no [post-setup] logging in stderr"
   FAIL=$((FAIL + 1))
 fi
+
+# ══════════════════════════════════════════════════════════
+echo ""
+echo "=== TEST: kill-wt.sh ==="
+
+# Setup: go back to main test repo, create a worktree to kill
+cd "$TEMP_DIR/test-repo"
+git checkout -q main 2>/dev/null || true
+
+git worktree add -b kill-test "$TEMP_DIR/test-repo-kill-wt" main 2>/dev/null
+
+# Main repo hard block (no args, from main repo)
+OUTPUT=$(bash "$SCRIPT_DIR/kill-wt.sh" 2>&1 || true)
+assert_contains "blocks main repo" "$OUTPUT" "main worktree"
+
+# Main repo hard block (--worktree pointing at main)
+OUTPUT=$(bash "$SCRIPT_DIR/kill-wt.sh" --worktree "$TEMP_DIR/test-repo" 2>&1 || true)
+assert_contains "blocks --worktree=main" "$OUTPUT" "main worktree"
+
+# Invalid path
+OUTPUT=$(bash "$SCRIPT_DIR/kill-wt.sh" --worktree "/nonexistent" 2>&1 || true)
+assert_contains "rejects invalid path" "$OUTPUT" "not a valid git worktree"
+
+# Happy path: kill via --worktree from main repo
+OUTPUT=$(bash "$SCRIPT_DIR/kill-wt.sh" --worktree "$TEMP_DIR/test-repo-kill-wt" 2>/dev/null)
+assert_contains "outputs worktree path" "$OUTPUT" "worktree=$TEMP_DIR/test-repo-kill-wt"
+assert_contains "outputs branch" "$OUTPUT" "branch=kill-test"
+assert_contains "branch deleted" "$OUTPUT" "branch_status=deleted"
+
+# Verify worktree is gone
+if [[ ! -d "$TEMP_DIR/test-repo-kill-wt" ]]; then
+  echo "  PASS: worktree directory removed"
+  PASS=$((PASS + 1))
+else
+  echo "  FAIL: worktree directory still exists"
+  FAIL=$((FAIL + 1))
+fi
+
+# Verify branch is gone
+if ! git branch --list kill-test | grep -q kill-test; then
+  echo "  PASS: branch deleted"
+  PASS=$((PASS + 1))
+else
+  echo "  FAIL: branch still exists"
+  FAIL=$((FAIL + 1))
+fi
+
+# ══════════════════════════════════════════════════════════
+echo ""
+echo "=== TEST: worktree-guard.sh ==="
+
+GUARD="$SCRIPT_DIR/../hooks/scripts/worktree-guard.sh"
+
+# Create a worktree for same-repo testing
+git worktree add -b guard-test "$TEMP_DIR/test-repo-guard-wt" main 2>/dev/null
+
+# Same-repo worktree should be allowed (shares git common dir)
+OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"mkdir -p '"$TEMP_DIR"'/test-repo-guard-wt/docs"}}' | bash "$GUARD" 2>&1)
+EXIT_CODE=$?
+assert_exit_code "allows same-repo worktree" "$EXIT_CODE" "0"
+
+# Main repo edit (we're in main checkout of ctx-plugin test repo — should be allowed since it's a worktree-based flow)
+OUTPUT=$(echo '{"tool_name":"Edit","tool_input":{"file_path":"'"$TEMP_DIR"'/test-repo/file.txt"}}' | bash "$GUARD" 2>&1)
+EXIT_CODE=$?
+assert_exit_code "allows own repo edit" "$EXIT_CODE" "0"
+
+# Clean up guard test worktree
+git worktree remove "$TEMP_DIR/test-repo-guard-wt" 2>/dev/null
+git branch -d guard-test 2>/dev/null
 
 # ══════════════════════════════════════════════════════════
 echo ""

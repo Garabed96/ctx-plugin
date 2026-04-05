@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# worktree-open.sh — Open a new iTerm2 window with claude in the given worktree.
+# worktree-open.sh — Open a new terminal window with claude in the given worktree.
+# Supports: tmux, iTerm2, Terminal.app. Falls back to manual instructions.
 # Usage: worktree-open.sh <worktree-path>
 
 set -euo pipefail
@@ -13,17 +14,33 @@ fi
 
 # IMPORTANT: Never use `claude -p` or `claude '<prompt>'` — both run one prompt
 # and exit. Launch interactive `claude`, then send /ctx-grab via keystroke after delay.
-osascript -e "
-  tell application \"iTerm2\"
-    set newWindow to (create window with default profile)
-    tell current session of newWindow
-      write text \"cd '${WORKTREE_PATH}' && claude\"
-      delay 5
-      write text \"/ctx-grab\"
+
+OPENED=false
+
+# ── tmux (terminal-agnostic, works inside any emulator) ──
+if [[ -n "${TMUX:-}" ]]; then
+  tmux new-window -c "$WORKTREE_PATH" "claude"
+  # Send /ctx-grab after delay in background
+  (sleep 5 && tmux send-keys "/ctx-grab" Enter) &
+  OPENED=true
+fi
+
+# ── iTerm2 ───────────────────────────────────────────────
+if [[ "$OPENED" == false ]] && pgrep -q iTerm2 2>/dev/null; then
+  osascript -e "
+    tell application \"iTerm2\"
+      set newWindow to (create window with default profile)
+      tell current session of newWindow
+        write text \"cd '${WORKTREE_PATH}' && claude\"
+        delay 5
+        write text \"/ctx-grab\"
+      end tell
     end tell
-  end tell
-" 2>/dev/null || {
-  # Fallback: try Terminal.app
+  " 2>/dev/null && OPENED=true
+fi
+
+# ── Terminal.app ─────────────────────────────────────────
+if [[ "$OPENED" == false ]]; then
   osascript -e "
     tell application \"Terminal\"
       do script \"cd '${WORKTREE_PATH}' && claude\"
@@ -32,11 +49,14 @@ osascript -e "
         do script \"/ctx-grab\" in selected tab
       end tell
     end tell
-  " 2>/dev/null || {
-    echo "warn: could not open terminal — run manually: cd '${WORKTREE_PATH}' && claude" >&2
-    exit 0
-  }
-}
+  " 2>/dev/null && OPENED=true
+fi
+
+# ── Fallback ─────────────────────────────────────────────
+if [[ "$OPENED" == false ]]; then
+  echo "warn: could not open terminal — run manually: cd '${WORKTREE_PATH}' && claude" >&2
+  exit 0
+fi
 
 echo "opened=true"
 echo "path=${WORKTREE_PATH}"

@@ -10,7 +10,7 @@ user-invocable: true
 
 # /worktree — Create an Isolated Git Worktree
 
-Creates a durable worktree via `${CLAUDE_PLUGIN_ROOT}/scripts/worktree-create.sh`, parks conversation context into it, then opens a new iTerm2 tab with claude. The new session can `/ctx-grab` to restore context instantly.
+Creates a durable worktree via `${CLAUDE_PLUGIN_ROOT}/scripts/worktree-create.sh`, parks conversation context into it, then opens a new terminal window with claude. The new session can `/ctx-grab` to restore context instantly.
 
 ## 1. Gather inputs
 
