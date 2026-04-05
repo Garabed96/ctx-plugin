@@ -834,6 +834,62 @@ var CP_MAP = {
   'radius-lg': '--cp-radius-lg',
 };
 
+// Debounced style event emitter
+var _styleEmitTimer = null;
+function emitStyleEvent() {
+  clearTimeout(_styleEmitTimer);
+  _styleEmitTimer = setTimeout(function() {
+    sendEvent({ type: 'style', overrides: Object.assign({}, styleOverrides) });
+  }, 150);
+}
+
+// Build prompt text from current overrides vs profile defaults
+function updateStylePrompt() {
+  if (!styleProfile) return;
+  var parts = [];
+  var pc = styleProfile.colors || {};
+  var pt = styleProfile.typography || {};
+  var pr = (styleProfile.spacing || {}).radius || {};
+
+  // Color changes
+  var colorLabels = { primary: 'primary', accent: 'accent', background: 'background',
+    foreground: 'foreground', muted: 'muted', secondary: 'secondary', destructive: 'destructive' };
+  for (var ck in colorLabels) {
+    if (styleOverrides[ck] && styleOverrides[ck] !== pc[ck]) {
+      parts.push(colorLabels[ck] + ' ' + styleOverrides[ck]);
+    }
+  }
+
+  // Font changes
+  var profileDisplay = pt.display || pt.sans || '';
+  if (styleOverrides['font-display'] && styleOverrides['font-display'] !== profileDisplay) {
+    var fontName = styleOverrides['font-display'].replace(/'/g, '').split(',')[0].trim();
+    parts.push(fontName + ' font');
+  }
+  if (styleOverrides['font-mono'] && styleOverrides['font-mono'] !== (pt.mono || '')) {
+    var monoName = styleOverrides['font-mono'].replace(/'/g, '').split(',')[0].trim();
+    parts.push(monoName + ' mono');
+  }
+
+  // Radius changes
+  if (styleOverrides['radius-md'] && styleOverrides['radius-md'] !== (pr.md || '')) {
+    parts.push(styleOverrides['radius-md'] + ' radius');
+  }
+
+  var promptEl = document.getElementById('prompt-text');
+  if (parts.length === 0) {
+    promptEl.value = '';
+    promptEl.placeholder = 'Describe what you want to iterate on...';
+  } else {
+    promptEl.value = 'Iterate with ' + parts.join(', ') + '.';
+  }
+}
+
+function onStyleChange() {
+  emitStyleEvent();
+  updateStylePrompt();
+}
+
 function injectVar(cpVar, value) {
   var iframe = document.querySelector('.preview-iframe');
   if (!iframe || !iframe.contentDocument) return;
@@ -880,6 +936,7 @@ function makeColorControl(label, key, value) {
     hex.value = picker.value;
     styleOverrides[key] = picker.value;
     if (CP_MAP[key]) injectVar(CP_MAP[key], picker.value);
+    onStyleChange();
   });
 
   hex.addEventListener('change', function() {
@@ -888,6 +945,7 @@ function makeColorControl(label, key, value) {
       picker.value = v;
       styleOverrides[key] = v;
       if (CP_MAP[key]) injectVar(CP_MAP[key], v);
+      onStyleChange();
     }
   });
 
@@ -927,6 +985,7 @@ function makeFontControl(label, key, value) {
   select.addEventListener('change', function() {
     styleOverrides[key] = select.value;
     if (CP_MAP[key]) injectVar(CP_MAP[key], select.value);
+    onStyleChange();
   });
 
   group.appendChild(select);
@@ -960,6 +1019,7 @@ function makeRadiusControl(label, key, value) {
     display.textContent = v;
     styleOverrides[key] = v;
     if (CP_MAP[key]) injectVar(CP_MAP[key], v);
+    onStyleChange();
   });
 
   row.appendChild(range);
