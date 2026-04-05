@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Companion Portfolio</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #0a0e17;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1.25rem;
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+  }
+  .top-bar-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+  .top-bar-subtitle {
+    font-size: 0.72rem;
+    color: #64748b;
+    margin-left: 0.5rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .card:hover {
+    border-color: #818cf8;
+    box-shadow: 0 0 0 1px #818cf8;
+  }
+
+  .card-thumb {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .card-thumb iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1280px;
+    height: 720px;
+    transform: scale(0.234375);
+    transform-origin: top left;
+    border: none;
+    pointer-events: none;
+  }
+
+  .card-body {
+    padding: 0.75rem 0.85rem;
+  }
+  .card-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    margin-bottom: 0.4rem;
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-size: 0.62rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 9999px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .badge-versions {
+    background: #1e1b4b;
+    color: #a5b4fc;
+    border: 1px solid #312e81;
+  }
+  .badge-selected {
+    background: #042f2e;
+    color: #5eead4;
+    border: 1px solid #115e59;
+  }
+  .badge-time {
+    color: #475569;
+    font-size: 0.62rem;
+    margin-left: auto;
+  }
+
+  .empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    color: #475569;
+    font-size: 0.9rem;
+    text-align: center;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div style="display:flex;align-items:baseline;">
+    <span class="top-bar-title">Companion Portfolio</span>
+    <span class="top-bar-subtitle" id="page-count"></span>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty" style="display:none;">
+  <p>No pages yet.<br>Use the factory to brainstorm your first page.</p>
+</div>
+
+<script>
+function relativeTime(iso) {
+  if (!iso) return '';
+  var diff = Date.now() - new Date(iso).getTime();
+  var mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  var hours = Math.floor(mins / 60);
+  if (hours < 24) return hours + 'h ago';
+  var days = Math.floor(hours / 24);
+  return days + 'd ago';
+}
+
+function renderCards(pages) {
+  var grid = document.getElementById('grid');
+  var empty = document.getElementById('empty');
+  var count = document.getElementById('page-count');
+
+  if (!pages || pages.length === 0) {
+    grid.style.display = 'none';
+    empty.style.display = '';
+    return;
+  }
+
+  count.textContent = pages.length + (pages.length === 1 ? ' page' : ' pages');
+
+  pages.forEach(function(p) {
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.onclick = function() { window.location.href = '/factory/' + encodeURIComponent(p.page); };
+
+    // Thumbnail
+    var thumb = document.createElement('div');
+    thumb.className = 'card-thumb';
+    if (p.latestFile) {
+      var iframe = document.createElement('iframe');
+      iframe.src = '/prototype?file=' + encodeURIComponent(p.latestFile);
+      iframe.setAttribute('loading', 'lazy');
+      iframe.setAttribute('tabindex', '-1');
+      thumb.appendChild(iframe);
+    }
+    card.appendChild(thumb);
+
+    // Body
+    var body = document.createElement('div');
+    body.className = 'card-body';
+
+    var name = document.createElement('div');
+    name.className = 'card-name';
+    name.textContent = p.page;
+    body.appendChild(name);
+
+    var meta = document.createElement('div');
+    meta.className = 'card-meta';
+
+    var vBadge = document.createElement('span');
+    vBadge.className = 'badge badge-versions';
+    vBadge.textContent = p.versions + (p.versions === 1 ? ' version' : ' versions');
+    meta.appendChild(vBadge);
+
+    if (p.selectedOption) {
+      var sBadge = document.createElement('span');
+      sBadge.className = 'badge badge-selected';
+      sBadge.textContent = p.selectedOption;
+      meta.appendChild(sBadge);
+    }
+
+    if (p.lastModified) {
+      var time = document.createElement('span');
+      time.className = 'badge-time';
+      time.textContent = relativeTime(p.lastModified);
+      meta.appendChild(time);
+    }
+
+    body.appendChild(meta);
+    card.appendChild(body);
+    grid.appendChild(card);
+  });
+}
+
+fetch('/api/page-status')
+  .then(function(r) { return r.json(); })
+  .then(function(pages) { renderCards(pages); })
+  .catch(function(err) {
+    document.getElementById('empty').style.display = '';
+    document.getElementById('empty').querySelector('p').textContent = 'Failed to load: ' + err.message;
+  });
+</script>
+</body>
+</html>

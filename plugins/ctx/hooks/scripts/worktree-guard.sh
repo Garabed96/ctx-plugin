@@ -69,8 +69,21 @@ PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 case "$CHECK_DIR" in "$HOME/.claude"*) exit 0 ;; esac
 FILE_REPO=$(git -C "$CHECK_DIR" rev-parse --show-toplevel 2>/dev/null) || exit 0
 
-# If the file is in a different repo (e.g. plugin cache, dotfiles), let it through
-[ "$FILE_REPO" != "$PROJECT_ROOT" ] && exit 0
+# If the file is in a different repo, check if it's a sibling project repo (cross-repo edit)
+if [ "$FILE_REPO" != "$PROJECT_ROOT" ]; then
+  # Block edits to other project repos under ~/WebstormProjects/
+  PROJECTS_DIR="$HOME/WebstormProjects"
+  case "$FILE_REPO" in
+    "$PROJECTS_DIR"/*)
+      TARGET_NAME=$(basename "$FILE_REPO")
+      echo "BLOCKED — cross-repo edit into '$TARGET_NAME' from '$(basename "$PROJECT_ROOT")'." >&2
+      echo "Switch to that project or use a worktree." >&2
+      exit 2
+      ;;
+  esac
+  # Otherwise (plugin cache, dotfiles, /tmp, etc.) let it through
+  exit 0
+fi
   
   # Allow writes to plugin dev repos (constantly edited via sed, etc.)
   REPO_NAME=$(basename "$FILE_REPO")

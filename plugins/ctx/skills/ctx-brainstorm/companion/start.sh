@@ -4,11 +4,13 @@
 
 PROJECT_DIR=""
 PORT="52341"
+RESCAN=0
 
 while [[ $# -gt 0 ]]; do
   case $1 in
     --project-dir) PROJECT_DIR="$2"; shift 2 ;;
     --port) PORT="$2"; shift 2 ;;
+    --rescan) RESCAN=1; shift ;;
     *) shift ;;
   esac
 done
@@ -23,6 +25,15 @@ SCREEN_DIR="$PROJECT_DIR/.ctx-brainstorm/$TIMESTAMP"
 mkdir -p "$SCREEN_DIR"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Style profile check
+STYLE_PROFILE="$PROJECT_DIR/companion/style-profile.json"
+if [ "$RESCAN" -eq 1 ] || [ ! -f "$STYLE_PROFILE" ]; then
+  echo "[companion] Scanning styles..." >&2
+  node "$SCRIPT_DIR/cli/scan-styles.js" --project-dir "$PROJECT_DIR"
+else
+  echo "[companion] Using existing style profile" >&2
+fi
 
 # Start server in background
 node "$SCRIPT_DIR/server.js" --dir "$SCREEN_DIR" --port "$PORT" --project-dir "$PROJECT_DIR" &
