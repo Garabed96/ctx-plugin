@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.9.1 (2026-04-06)
+
+- **Terminal detection fix** — `worktree-open.sh` now uses `$TERM_PROGRAM` env var to detect the current terminal emulator instead of `pgrep`. Prevents silent fall-through from iTerm2 to Terminal.app when AppleScript permissions block automation.
+
 ## 0.2.9 (2026-04-05)
 
 - **Enforce ship-pr.sh** — PreToolUse hook blocks manual `gh pr create`, redirects to script
