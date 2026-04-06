@@ -16,6 +16,7 @@ fi
 # and exit. Launch interactive `claude`, then send /ctx-grab via keystroke after delay.
 
 OPENED=false
+TERM_APP="${TERM_PROGRAM:-}"
 
 # ── tmux (terminal-agnostic, works inside any emulator) ──
 if [[ -n "${TMUX:-}" ]]; then
@@ -23,10 +24,9 @@ if [[ -n "${TMUX:-}" ]]; then
   # Send /ctx-grab after delay in background
   (sleep 5 && tmux send-keys "/ctx-grab" Enter) &
   OPENED=true
-fi
 
-# ── iTerm2 ───────────────────────────────────────────────
-if [[ "$OPENED" == false ]] && pgrep -q iTerm2 2>/dev/null; then
+# ── iTerm2 (prefer env var, fall back to process check) ──
+elif [[ "$TERM_APP" == "iTerm.app" ]] || pgrep -q iTerm2 2>/dev/null; then
   osascript -e "
     tell application \"iTerm2\"
       set newWindow to (create window with default profile)
@@ -37,10 +37,9 @@ if [[ "$OPENED" == false ]] && pgrep -q iTerm2 2>/dev/null; then
       end tell
     end tell
   " 2>/dev/null && OPENED=true
-fi
 
 # ── Terminal.app ─────────────────────────────────────────
-if [[ "$OPENED" == false ]]; then
+elif [[ "$TERM_APP" == "Apple_Terminal" ]] || [[ -z "$TERM_APP" ]]; then
   osascript -e "
     tell application \"Terminal\"
       do script \"cd '${WORKTREE_PATH}' && claude\"
