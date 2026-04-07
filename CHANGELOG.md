@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.9.3 (2026-04-07)
+
+- **Spec reviewer verification protocol** — `ctx-brainstorm-ss` reviewer now verifies claims before flagging. Unverifiable claims go to Recommendations, not Issues. Three sentences added to the existing Calibration section in `spec-reviewer-prompt.md` — no new sections, no new vocabulary. Fixes false positives where reviewers escalated unverified theoretical risks (#17).
+
 ## 0.2.9.2 (2026-04-07)
 
 - **Factory rename** — `companion/pages/` → `factory/pages/`, `companion/style-profile.json` → `factory/style-profile.json`. Plugin interface file at project root (`companion.config.js`) unchanged.
