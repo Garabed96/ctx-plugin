@@ -83,6 +83,7 @@ fi
 
 PR_URL=$(gh pr create \
   --base "$BASE" \
+  --head "$BRANCH" \
   --title "$TITLE" \
   --body "$BODY" \
   $DRAFT_FLAG 2>&1) || { echo "Error: gh pr create failed" >&2; echo "$PR_URL" >&2; exit 3; }
