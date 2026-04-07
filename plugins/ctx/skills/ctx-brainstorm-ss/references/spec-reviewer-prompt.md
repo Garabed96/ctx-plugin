@@ -26,6 +26,10 @@ prompt: |
   interpreted two different ways — those are issues. Minor wording improvements,
   stylistic preferences, and "sections less detailed than others" are not.
 
+  **Verify before flagging.** If you can't verify a claim against the code, file, or
+  data, it goes in Recommendations, not Issues. Say "I don't know" — that's the
+  right answer, not a failure.
+
   Approve unless there are serious gaps that would lead to a flawed plan.
 
   ## Output Format
