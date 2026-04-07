@@ -79,6 +79,32 @@ if (!screenDir) {
 
 fs.mkdirSync(screenDir, { recursive: true });
 
+// ========== Pages Root Resolution ==========
+// Factory pages live in the MAIN repo, not per-worktree. So all worktrees of a
+// project share one portfolio. Detect via `git rev-parse --git-common-dir`:
+// - Main repo → outputs ".git" (relative) → parent = projectDir
+// - Worktree  → outputs absolute path to main/.git → parent = main repo root
+// Fall back to projectDir if not a git repo.
+let pagesRoot = projectDir;
+if (projectDir) {
+  try {
+    const { execFileSync } = require("child_process");
+    const commonDir = execFileSync("git", ["rev-parse", "--git-common-dir"], {
+      cwd: projectDir,
+      stdio: ["ignore", "pipe", "ignore"],
+    }).toString().trim();
+    const resolvedCommon = path.resolve(projectDir, commonDir);
+    pagesRoot = path.dirname(resolvedCommon);
+  } catch {
+    // Not a git repo or git unavailable — use projectDir
+  }
+  // Auto-create factory dirs on first run
+  fs.mkdirSync(path.join(pagesRoot, "factory/pages"), { recursive: true });
+  if (pagesRoot !== projectDir) {
+    console.error("[factory] Worktree detected — pages root: " + pagesRoot);
+  }
+}
+
 const frameTemplate = fs.readFileSync(
   path.join(__dirname, "frame-template.html"),
   "utf8"
@@ -170,9 +196,9 @@ function handleMessage(text) {
   let event;
   try { event = JSON.parse(text); } catch { return; }
   if (event.type) {
-    // Per-page events: persist to companion/pages/<page>/.events when page is set
-    if (event.page && projectDir) {
-      const pageEventsFile = path.join(projectDir, "companion/pages", event.page, ".events");
+    // Per-page events: persist to factory/pages/<page>/.events when page is set
+    if (event.page && pagesRoot) {
+      const pageEventsFile = path.join(pagesRoot, "factory/pages", event.page, ".events");
       if (fs.existsSync(path.dirname(pageEventsFile))) {
         fs.appendFileSync(pageEventsFile, JSON.stringify(event) + "\n");
         return;
@@ -218,8 +244,8 @@ fs.watch(screenDir, (eventType, filename) => {
   }, 100));
 });
 
-if (projectDir) {
-  const pagesDir = path.join(projectDir, "companion/pages");
+if (pagesRoot) {
+  const pagesDir = path.join(pagesRoot, "factory/pages");
   fs.mkdirSync(pagesDir, { recursive: true });
   fs.watch(pagesDir, { recursive: true }, (eventType, filename) => {
     if (!filename || !filename.endsWith(".html")) return;
@@ -237,10 +263,10 @@ if (projectDir) {
 let _styleProfileCache = null;
 
 function readStyleProfile() {
-  if (!projectDir) return null;
+  if (!pagesRoot) return null;
   if (_styleProfileCache !== null) return _styleProfileCache;
 
-  const profilePath = path.join(projectDir, "companion/style-profile.json");
+  const profilePath = path.join(pagesRoot, "factory/style-profile.json");
   if (!fs.existsSync(profilePath)) return null;
 
   try {
@@ -395,13 +421,13 @@ function serveFactory(res, targetPage) {
 }
 
 function servePrototype(res, filePath) {
-  if (!projectDir) {
+  if (!pagesRoot) {
     res.writeHead(400, { "Content-Type": "text/plain" });
     res.end("No --project-dir configured");
     return;
   }
-  const resolved = path.resolve(projectDir, "companion/pages", filePath);
-  if (!resolved.startsWith(path.resolve(projectDir, "companion/pages"))) {
+  const resolved = path.resolve(pagesRoot, "factory/pages", filePath);
+  if (!resolved.startsWith(path.resolve(pagesRoot, "factory/pages"))) {
     res.writeHead(403, { "Content-Type": "text/plain" });
     res.end("Forbidden");
     return;
@@ -450,8 +476,8 @@ function serveBrainstorm(res) {
 // ========== Slot Scanner ==========
 
 function scanSlots() {
-  if (!projectDir) return [];
-  const prototypesDir = path.join(projectDir, "companion/pages");
+  if (!pagesRoot) return [];
+  const prototypesDir = path.join(pagesRoot, "factory/pages");
   if (!fs.existsSync(prototypesDir)) return [];
 
   const slots = new Map();
@@ -496,7 +522,7 @@ function scanSlots() {
 // ========== Auto-Versioning ==========
 
 function nextVersionPath(page) {
-  const pagesDir = path.join(projectDir, "companion/pages", page);
+  const pagesDir = path.join(pagesRoot, "factory/pages", page);
   fs.mkdirSync(pagesDir, { recursive: true });
   const existing = fs.readdirSync(pagesDir).filter(f => f.endsWith(".html"));
   let maxVersion = 0;
@@ -619,8 +645,8 @@ function handlePageStatus(req, res) {
 
     // Read per-page .events for selected option
     let selectedOption = null;
-    if (projectDir) {
-      const eventsPath = path.join(projectDir, "companion/pages", page, ".events");
+    if (pagesRoot) {
+      const eventsPath = path.join(pagesRoot, "factory/pages", page, ".events");
       if (fs.existsSync(eventsPath)) {
         const lines = fs.readFileSync(eventsPath, "utf8").trim().split("\n").filter(Boolean);
         for (let i = lines.length - 1; i >= 0; i--) {
@@ -637,8 +663,8 @@ function handlePageStatus(req, res) {
 
     // Last modified from latest file
     let lastModified = null;
-    if (latestFile && projectDir) {
-      const filePath = path.join(projectDir, "companion/pages", latestFile);
+    if (latestFile && pagesRoot) {
+      const filePath = path.join(pagesRoot, "factory/pages", latestFile);
       if (fs.existsSync(filePath)) {
         lastModified = fs.statSync(filePath).mtime.toISOString();
       }
@@ -708,12 +734,12 @@ const server = http.createServer((req, res) => {
       jsonResponse(res, 200, profile);
     }
   } else if (parsed.pathname === "/api/scan" && req.method === "POST") {
-    if (!projectDir) {
+    if (!pagesRoot) {
       jsonResponse(res, 400, { error: "No --project-dir configured" });
     } else {
       const { execFile } = require("child_process");
       const scanScript = path.join(__dirname, "cli/scan-styles.js");
-      execFile(process.execPath, [scanScript, "--project-dir", projectDir], (err, stdout, stderr) => {
+      execFile(process.execPath, [scanScript, "--project-dir", pagesRoot], (err, stdout, stderr) => {
         if (err) {
           jsonResponse(res, 500, { error: err.message, stderr });
         } else {

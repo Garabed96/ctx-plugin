@@ -9,7 +9,7 @@
  *   2. CSS custom properties from :root blocks
  *   3. package.json for component libraries + frameworks
  *
- * Outputs: <project-dir>/companion/style-profile.json
+ * Outputs: <project-dir>/factory/style-profile.json
  */
 
 "use strict";
@@ -771,7 +771,7 @@ function main() {
   const profile = buildProfile(tailwindResult, cssResult, pkgResult);
 
   // 5. Write output
-  const outputDir = path.join(projectDir, "companion");
+  const outputDir = path.join(projectDir, "factory");
   fs.mkdirSync(outputDir, { recursive: true });
   const outputPath = path.join(outputDir, "style-profile.json");
   fs.writeFileSync(outputPath, JSON.stringify(profile, null, 2) + "\n");

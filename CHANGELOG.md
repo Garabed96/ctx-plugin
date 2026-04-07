@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.9.2 (2026-04-07)
+
+- **Factory rename** — `companion/pages/` → `factory/pages/`, `companion/style-profile.json` → `factory/style-profile.json`. Plugin interface file at project root (`companion.config.js`) unchanged.
+- **Main-repo-rooted pages** — factory pages now live at the main repo root, not per-worktree. All worktrees of a project share one portfolio. Server auto-resolves via `git rev-parse --git-common-dir` with fallback to `--project-dir` for non-git projects.
+- **Auto-setup** — `factory/pages/` is created on first server start. No manual setup needed per project.
+- **Migration required** — existing users: `mv <main-repo>/companion <main-repo>/factory` once. Per-worktree `companion/` dirs become orphaned and can be deleted.
+
 ## 0.2.9.1 (2026-04-06)
 
 - **Terminal detection fix** — `worktree-open.sh` now uses `$TERM_PROGRAM` env var to detect the current terminal emulator instead of `pgrep`. Prevents silent fall-through from iTerm2 to Terminal.app when AppleScript permissions block automation.

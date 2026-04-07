@@ -26,13 +26,23 @@ mkdir -p "$SCREEN_DIR"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Style profile check
-STYLE_PROFILE="$PROJECT_DIR/companion/style-profile.json"
+# Resolve pages root — main repo if in a worktree, else PROJECT_DIR
+PAGES_ROOT="$PROJECT_DIR"
+COMMON_DIR=$(cd "$PROJECT_DIR" && git rev-parse --git-common-dir 2>/dev/null)
+if [ -n "$COMMON_DIR" ]; then
+  case "$COMMON_DIR" in
+    /*) PAGES_ROOT=$(dirname "$COMMON_DIR") ;;  # Absolute → worktree case
+    *)  PAGES_ROOT="$PROJECT_DIR" ;;            # Relative (.git) → main repo case
+  esac
+fi
+
+# Style profile check (pagesRoot = main repo, shared across worktrees)
+STYLE_PROFILE="$PAGES_ROOT/factory/style-profile.json"
 if [ "$RESCAN" -eq 1 ] || [ ! -f "$STYLE_PROFILE" ]; then
-  echo "[companion] Scanning styles..." >&2
-  node "$SCRIPT_DIR/cli/scan-styles.js" --project-dir "$PROJECT_DIR"
+  echo "[factory] Scanning styles..." >&2
+  node "$SCRIPT_DIR/cli/scan-styles.js" --project-dir "$PAGES_ROOT"
 else
-  echo "[companion] Using existing style profile" >&2
+  echo "[factory] Using existing style profile at $STYLE_PROFILE" >&2
 fi
 
 # Start server in background
