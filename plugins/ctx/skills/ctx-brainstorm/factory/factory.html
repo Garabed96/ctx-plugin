@@ -97,6 +97,26 @@
   .status-dot.connected .status-dot-circle { background: #22c55e; }
   .status-dot.connected .status-dot-label { color: #86efac; }
 
+  /* Sidebar toggle (lives in top-bar) */
+  .sidebar-toggle {
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: #94a3b8;
+    border-radius: 4px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    padding: 0;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .sidebar-toggle:hover { border-color: #818cf8; color: #c7d2fe; }
+
   /* Main layout */
   .main {
     display: flex;
@@ -115,6 +135,14 @@
     display: flex;
     flex-direction: column;
     gap: 0;
+    transition: width 0.2s ease, padding 0.2s ease, border-right-width 0.2s ease;
+  }
+  .controls.collapsed {
+    width: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border-right-width: 0;
+    overflow: hidden;
   }
   .controls-section {
     margin-bottom: 1.25rem;
@@ -472,6 +500,7 @@
 <!-- Top Bar -->
 <div class="top-bar">
   <div class="top-bar-left">
+    <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">&#9776;</button>
     <span class="top-bar-title">Tinker Factory</span>
     <span class="top-bar-context" id="top-bar-context"></span>
     <select class="proto-select" id="proto-select" onchange="selectProtoFromDropdown(this.value)">
@@ -494,7 +523,7 @@
 <!-- Main -->
 <div class="main">
   <!-- Sidebar -->
-  <div class="controls">
+  <div class="controls" id="controls">
 
     <!-- Pages section -->
     <div class="controls-section">
@@ -549,6 +578,27 @@ var allSlots = [];
 var compareMode = false;
 var compareItems = [];
 var currentViewport = 'desktop';
+
+// --- Sidebar collapse ---
+// Default collapsed; user preference persisted in localStorage.
+function toggleSidebar() {
+  var controls = document.getElementById('controls');
+  var collapsed = controls.classList.toggle('collapsed');
+  try {
+    localStorage.setItem('factorySidebarCollapsed', collapsed ? '1' : '0');
+  } catch (e) { /* storage unavailable */ }
+}
+
+(function initSidebar() {
+  var controls = document.getElementById('controls');
+  if (!controls) return;
+  var saved = null;
+  try { saved = localStorage.getItem('factorySidebarCollapsed'); } catch (e) {}
+  // Default collapsed unless user has explicitly expanded (saved === '0').
+  if (saved !== '0') {
+    controls.classList.add('collapsed');
+  }
+})();
 
 // --- DOM helpers ---
 function clearChildren(el) {
