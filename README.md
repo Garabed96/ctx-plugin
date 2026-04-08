@@ -201,6 +201,12 @@ The server provides:
 
 Pages and events are stored in `<project-dir>/factory/pages/<page>/.events`.
 
+The root-level `factory/` directory is **tracked in git** so prototype
+iteration history is preserved across sessions. New worktrees created via
+`worktree-create.sh` exclude it through `git sparse-checkout` so dev branches
+stay focused on source code — all worktrees still share the same portfolio
+at runtime via `git rev-parse --git-common-dir`.
+
 ## Status
 
 **v0.2.9** — Private, actively iterating. Safe worktree teardown, auto-PR hooks, enforce-ship-pr guard, companion factory, iOS simulator interaction.

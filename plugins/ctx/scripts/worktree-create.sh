@@ -66,6 +66,18 @@ else
   git worktree add -b "$BRANCH_NAME" "$WORKTREE_DIR" "origin/$BASE" 2>&1 >&2 || { echo "Error: git worktree add failed" >&2; exit 2; }
 fi
 
+# ── Sparse-checkout: exclude root-level factory/ ──────────
+# The factory/ directory at the main repo root stores generated
+# prototype pages shared across all worktrees (via git-common-dir,
+# per v0.2.9.2). It's tracked in git so iteration history is
+# preserved, but excluded from new worktrees so dev branches stay
+# focused on source code. The anchored /factory/ pattern leaves
+# nested paths like plugins/ctx/skills/ctx-brainstorm/factory/
+# (the skill source) untouched.
+git -C "$WORKTREE_DIR" sparse-checkout set --no-cone '/*' '!/factory/' 2>&1 >&2 || {
+  echo "Warning: sparse-checkout setup failed — factory/ may be present in worktree" >&2
+}
+
 # ── Symlink env files ─────────────────────────────────────
 ENV_COUNT=0
 
