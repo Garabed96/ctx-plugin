@@ -1,4 +1,4 @@
-# Visual Companion Guide
+# Visual Factory Guide
 
 The browser is a **display**. You talk in the terminal.
 
@@ -9,7 +9,7 @@ The browser is a **display**. You talk in the terminal.
 For quick exploration during brainstorm questions — option cards, wireframes, comparisons.
 
 ```bash
-skills/ctx-brainstorm/companion/start.sh --project-dir <project-root> [--port 52341]
+skills/ctx-brainstorm/factory/start.sh --project-dir <project-root> [--port 52341]
 # Returns: { port, url, screen_dir }
 ```
 
@@ -23,15 +23,15 @@ Save `screen_dir`. Tell the user to open `http://localhost:<port>` (the brainsto
 
 Content fragments are wrapped automatically by the frame template (dark theme, option/card/mockup CSS classes). Write just the content — no `<html>`, no `<style>`, no boilerplate.
 
-### 2. Factory mode (full pages → `companion/pages/`)
+### 2. Factory mode (full pages → `factory/pages/`)
 
 For detailed prototyping with live style controls. Tell the user to open `http://localhost:<port>/factory`.
 
-**Storage:** `<project-root>/companion/pages/<page-name>/<page-name>-v<n>.html`
+**Storage:** `<project-root>/factory/pages/<page-name>/<page-name>-v<n>.html`
 
 Example:
 ```
-companion/pages/
+factory/pages/
   landing/
     landing-v1.html    ← first iteration
     landing-v2.html    ← refined after feedback
@@ -40,7 +40,7 @@ companion/pages/
 ```
 
 **The loop:**
-1. Write a full HTML page to `companion/pages/<page>/<page>-v<n>.html`
+1. Write a full HTML page to `factory/pages/<page>/<page>-v<n>.html`
 2. Factory sidebar shows pages and versions — user clicks to preview
 3. User adjusts sidebar controls (colors, font, radius) to explore variations live
 4. User describes iteration in prompt bar → copies it → pastes in terminal
@@ -94,9 +94,9 @@ When rendering visual content, apply:
 
 Do NOT pull in the composite `frontend` skill — it bundles TanStack/Zod implementation concerns irrelevant during brainstorming.
 
-## When to use terminal vs companion
+## When to use terminal vs factory
 
-| Terminal (text) | Companion (visual) |
+| Terminal (text) | Factory (visual) |
 |---|---|
 | Requirements questions | Layout comparisons |
 | Conceptual A/B/C choices | Wireframes and mockups |
@@ -104,17 +104,17 @@ Do NOT pull in the composite `frontend` skill — it bundles TanStack/Zod implem
 | Technical decisions | Architecture diagrams |
 | Clarifying questions | Color/typography exploration |
 
-A question *about* UI is not automatically visual. "What kind of wizard?" -> terminal. "Which wizard layout?" -> companion.
+A question *about* UI is not automatically visual. "What kind of wizard?" -> terminal. "Which wizard layout?" -> factory.
 
 ## Style profile
 
-The companion auto-scans the project on first start (`start.sh` runs `cli/scan-styles.js`). It detects:
+The factory auto-scans the project on first start (`start.sh` runs `cli/scan-styles.js`). It detects:
 - Tailwind config (v3 `theme.extend` + v4 `@theme` blocks)
 - CSS custom properties from `:root` and `@theme` blocks
 - Component libraries and frameworks from `package.json`
 - Monorepo `apps/*/` subdirectories
 
-Output: `<project-root>/companion/style-profile.json`
+Output: `<project-root>/factory/style-profile.json`
 
 Re-scan: `start.sh --rescan` or click "Re-scan project" in the factory sidebar.
 

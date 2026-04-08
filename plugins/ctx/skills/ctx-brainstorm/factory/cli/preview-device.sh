@@ -1,11 +1,11 @@
 #!/bin/bash
 # preview-device.sh — Open any localhost URL in Xcode iOS Simulator.
-# Works with companion prototypes, dev servers, or any local URL.
+# Works with factory prototypes, dev servers, or any local URL.
 #
 # Usage:
 #   preview-device.sh --url <full-url>
 #   preview-device.sh --port <port> [--path <url-path>]
-#   preview-device.sh --port <port> --file <prototype-file>    (companion mode)
+#   preview-device.sh --port <port> --file <prototype-file>    (factory mode)
 #
 # Examples:
 #   preview-device.sh --url http://localhost:3000/plotter

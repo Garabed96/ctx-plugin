@@ -1,4 +1,4 @@
-# Companion Frontend — Prototype Design Reference
+# Factory Frontend — Prototype Design Reference
 
 **When to apply:** Every time you generate or iterate a prototype in factory mode. This is not optional — prototypes are the user's first impression of the design direction.
 
@@ -58,7 +58,7 @@ Apply the Apple copy formula:
 - **Vanilla HTML/CSS/JS only.** No build step, no frameworks, no imports.
 - **Self-contained single file.** Everything in one `<!DOCTYPE html>` document.
 - **CSS variables for theming.** Use `var(--cp-primary)`, `var(--cp-bg)`, `var(--cp-font-sans)`, etc. with fallback values. The server injects these from the style profile.
-- **`data-option` for selectable elements.** Clicking posts `option-select` to the factory parent frame. See companion-guide.md.
+- **`data-option` for selectable elements.** Clicking posts `option-select` to the factory parent frame. See factory-guide.md.
 - **Responsive.** Desktop and mobile. Use `@media (min-width: 768px)` as the breakpoint. Mobile is the base; desktop adds the enhancements (side panels, larger type, additional columns).
 - **No external dependencies.** No CDN links, no Google Fonts loads, no external images. Use inline SVGs for icons. Use CSS for all visual effects.
 

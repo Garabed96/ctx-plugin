@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * scan-styles.js — Style Scanner for Companion Factory
+ * scan-styles.js — Style Scanner for Factory
  *
  * Usage: node scan-styles.js --project-dir /path/to/project
  *
