@@ -1,10 +1,10 @@
 #!/bin/bash
-# Open companion factory in browser
+# Open factory in browser
 set -e
-: "${SCREEN_DIR:?Set SCREEN_DIR to the companion session directory}"
+: "${SCREEN_DIR:?Set SCREEN_DIR to the factory session directory}"
 
 if [ ! -f "$SCREEN_DIR/.server-info" ]; then
-  echo "No server running. Start with companion/start.sh first." >&2
+  echo "No server running. Start with factory/start.sh first." >&2
   exit 1
 fi
 

@@ -22,15 +22,15 @@ before the spec is written and approved.
 
 1. **Explore context** — check files, docs, recent commits relevant to the idea
 2. **Scope check** — if the request covers multiple independent systems, decompose first. If scope is large or ambiguity is high, suggest `/ctx-brainstorm-ss` (see Escalation below)
-3. **Visual companion gate** — before asking any questions, evaluate: will this brainstorm involve architecture diagrams, layout comparisons, option cards, or spatial content? If yes, offer the companion as its own message and wait for the user's response before continuing (read `${CLAUDE_SKILL_DIR}/references/companion-guide.md`). If the project has a `companion/style-profile.json`, suggest factory mode (`/factory` URL) for style-aware prototyping.
-3b. **Factory mode** — when the companion is running at `/factory`:
-    - **Read `${CLAUDE_SKILL_DIR}/companion/references/companion-frontend.md` before generating any prototype.**
-    - Read `companion/style-profile.json` for design tokens when generating prototypes (just-in-time — don't preload)
-    - **NEVER use Edit/Write to create prototypes directly.** Always use `POST http://localhost:<port>/api/write` with `{ "page": "<name>", "content": "<html>" }` — this auto-versions, reloads the factory, and respects the cross-repo guard. Direct file writes to `companion/pages/` in another repo will be blocked by `worktree-guard.sh`.
+3. **Visual factory gate** — before asking any questions, evaluate: will this brainstorm involve architecture diagrams, layout comparisons, option cards, or spatial content? If yes, offer the factory as its own message and wait for the user's response before continuing (read `${CLAUDE_SKILL_DIR}/references/factory-guide.md`). If the project has a `factory/style-profile.json`, suggest factory mode (`/factory` URL) for style-aware prototyping.
+3b. **Factory mode** — when the factory is running at `/factory`:
+    - **Read `${CLAUDE_SKILL_DIR}/factory/references/factory-frontend.md` before generating any prototype.**
+    - Read `factory/style-profile.json` for design tokens when generating prototypes (just-in-time — don't preload)
+    - **NEVER use Edit/Write to create prototypes directly.** Always use `POST http://localhost:<port>/api/write` with `{ "page": "<name>", "content": "<html>" }` — this auto-versions, reloads the factory, and respects the cross-repo guard. Direct file writes to `factory/pages/` in another repo will be blocked by `worktree-guard.sh`.
     - Read `<screen-dir>/.events` for `option-select` (user clicked a choice) and `style` (user changed controls) events
-    - Use `data-option` on comparison pages — see "Prototype structure" in companion-guide.md
+    - Use `data-option` on comparison pages — see "Prototype structure" in factory-guide.md
 4. **Ask questions** — one at a time, prefer multiple choice, understand purpose/constraints/success criteria
-5. **Propose 2-3 approaches** — with tradeoffs, lead with your recommendation. If companion is active, present visually.
+5. **Propose 2-3 approaches** — with tradeoffs, lead with your recommendation. If the factory is active, present visually.
 6. **Present design** — sections scaled to complexity, get approval incrementally
 7. **Write spec** — save to `docs/specs/YYYY-MM-DD-<topic>-design.md`, commit
 8. **Self-review** — apply the five checks below, fix issues inline
@@ -90,7 +90,7 @@ _Built from real failures. Update this section as you hit new edge cases._
 - **Inventing thresholds that already exist**: When designing states or edge cases for a component that consumes an existing utility, derive the cases from that utility's thresholds — don't invent new ones. Run `Grep` for the source function before proposing breakpoints.
 - **Proposing new API work when data already flows**: Before suggesting backend changes to serve data, trace the data path from where it's consumed: component → hook/query → API endpoint. The endpoint often already returns what you need — you just haven't followed the chain. If you've read a component that has the data, ask "where does this come from?" and trace upstream before proposing new API fields.
 - **Proposing implementation details without checking conventions**: Before recommending specific libraries, patterns, or API styles in the design, check CLAUDE.md for project conventions. The brainstorm output feeds directly into implementation — wrong conventions here propagate downstream.
-- **Skipping companion for visual content**: Architecture diagrams, A/B/C option cards, layout comparisons, and design decisions are visual — use the companion. Text walls with ASCII art are not a substitute. If you're about to present 3+ options with diagrams or spatial content, that's a companion question. The gate at step 3 exists because by the time you're synthesizing, you've already committed to text mode and won't backtrack.
+- **Skipping factory for visual content**: Architecture diagrams, A/B/C option cards, layout comparisons, and design decisions are visual — use the factory. Text walls with ASCII art are not a substitute. If you're about to present 3+ options with diagrams or spatial content, that's a factory question. The gate at step 3 exists because by the time you're synthesizing, you've already committed to text mode and won't backtrack.
 
 ---
 
@@ -99,9 +99,9 @@ _Built from real failures. Update this section as you hit new edge cases._
 - `SKILL.md` — this file (process, self-review, principles, gotchas)
 - `${CLAUDE_SKILL_DIR}/references/example-spec.md` — canonical spec example (read this before writing your first spec)
 - `${CLAUDE_SKILL_DIR}/references/complexity-tags.md` — LOW/MED/HIGH tagging guide (shared with brainstorm-ss)
-- `${CLAUDE_SKILL_DIR}/references/companion-guide.md` — visual companion CSS classes, loop, terminal-vs-browser guide
-- `${CLAUDE_SKILL_DIR}/companion/references/companion-frontend.md` — prototype design reference (read before generating)
-- `${CLAUDE_SKILL_DIR}/companion/` — server, frame template, launcher (read only when user accepts companion offer)
+- `${CLAUDE_SKILL_DIR}/references/factory-guide.md` — visual factory CSS classes, loop, terminal-vs-browser guide
+- `${CLAUDE_SKILL_DIR}/factory/references/factory-frontend.md` — prototype design reference (read before generating)
+- `${CLAUDE_SKILL_DIR}/factory/` — server, frame template, launcher (read only when user accepts factory offer)
 
 ---
 
@@ -137,7 +137,7 @@ Present this handoff when the user approves a factory prototype:
 
 > Prototype `<page>-v<N>` approved.
 > - **Target repo:** `<project-dir from --project-dir>`
-> - **Prototype:** `companion/pages/<page>/<page>-v<N>.html`
+> - **Prototype:** `factory/pages/<page>/<page>-v<N>.html`
 > - **Replaces:** `<component path from discussion>`
 >
 > Next: `/ctx-worktree` in the target project, then `/ctx-plan` to port the prototype to React + Tailwind.

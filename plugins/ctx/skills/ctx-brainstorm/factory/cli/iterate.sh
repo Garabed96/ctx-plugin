@@ -1,5 +1,5 @@
 #!/bin/bash
-# Iterate on a prototype with tinker context from companion browser
+# Iterate on a prototype with tinker context from factory browser
 set -e
 : "${PROJECT_DIR:?Set PROJECT_DIR to the project root}"
 SLUG="${1:?Usage: iterate.sh <slug> <instruction...>}"

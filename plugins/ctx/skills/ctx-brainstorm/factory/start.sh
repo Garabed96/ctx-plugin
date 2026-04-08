@@ -1,5 +1,5 @@
 #!/bin/bash
-# Start the ctx-brainstorm companion server
+# Start the ctx-brainstorm factory server
 # Usage: start.sh --project-dir /path/to/project [--port 52341]
 
 PROJECT_DIR=""

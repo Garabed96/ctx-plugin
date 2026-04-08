@@ -20,9 +20,9 @@ implementation action until you have presented a design and the user has approve
 
 1. **Explore context** — check files, docs, recent commits relevant to the idea
 2. **Scope check** — if the request covers multiple independent systems, decompose into sub-projects first. Each sub-project gets its own spec -> plan -> implementation cycle. Brainstorm the first sub-project through the normal flow.
-3. **Visual companion gate** — before asking any questions, evaluate: will this brainstorm involve architecture diagrams, layout comparisons, option cards, or spatial content? If yes, offer the companion as its own message and wait for the user's response before continuing (read `${CLAUDE_PLUGIN_ROOT}/skills/ctx-brainstorm/references/companion-guide.md`). If no, proceed directly to questions — no extra message.
+3. **Visual factory gate** — before asking any questions, evaluate: will this brainstorm involve architecture diagrams, layout comparisons, option cards, or spatial content? If yes, offer the factory as its own message and wait for the user's response before continuing (read `${CLAUDE_PLUGIN_ROOT}/skills/ctx-brainstorm/references/factory-guide.md`). If no, proceed directly to questions — no extra message.
 4. **Ask questions** — one at a time, prefer multiple choice, understand purpose/constraints/success criteria
-5. **Propose 2-3 approaches** — with tradeoffs, lead with your recommendation. If companion is active, present visually.
+5. **Propose 2-3 approaches** — with tradeoffs, lead with your recommendation. If the factory is active, present visually.
 6. **Present design** — sections scaled to complexity, get approval incrementally. Apply design-for-isolation (see below).
 7. **Write spec** — save to `docs/specs/YYYY-MM-DD-<topic>-design.md`, commit
 8. **Spec review loop** — dispatch reviewer subagent (see below), fix issues, re-dispatch until approved (max 3 iterations, then surface to user)
@@ -78,7 +78,7 @@ The reviewer has fresh context — no accumulated assumptions from the brainstor
 - **Inventing thresholds that already exist**: When designing states or edge cases for a component that consumes an existing utility, derive the cases from that utility's thresholds — don't invent new ones. Run `Grep` for the source function before proposing breakpoints.
 - **Proposing new API work when data already flows**: Before suggesting backend changes to serve data, trace the data path from where it's consumed: component → hook/query → API endpoint. The endpoint often already returns what you need — you just haven't followed the chain. If you've read a component that has the data, ask "where does this come from?" and trace upstream before proposing new API fields.
 - **Proposing implementation details without checking conventions**: Before recommending specific libraries, patterns, or API styles in the design, check CLAUDE.md for project conventions. The brainstorm output feeds directly into implementation — wrong conventions here propagate downstream.
-- **Skipping companion for visual content**: Architecture diagrams, A/B/C option cards, layout comparisons, and design decisions are visual — use the companion. Text walls with ASCII art are not a substitute. If you're about to present 3+ options with diagrams or spatial content, that's a companion question. The gate at step 3 exists because by the time you're synthesizing, you've already committed to text mode and won't backtrack.
+- **Skipping factory for visual content**: Architecture diagrams, A/B/C option cards, layout comparisons, and design decisions are visual — use the factory. Text walls with ASCII art are not a substitute. If you're about to present 3+ options with diagrams or spatial content, that's a factory question. The gate at step 3 exists because by the time you're synthesizing, you've already committed to text mode and won't backtrack.
 
 ---
 
@@ -86,8 +86,8 @@ The reviewer has fresh context — no accumulated assumptions from the brainstor
 
 - `SKILL.md` — this file (process, reviewer loop, design principles)
 - `${CLAUDE_SKILL_DIR}/references/spec-reviewer-prompt.md` — subagent dispatch template
-- Shared with brainstorm: `${CLAUDE_PLUGIN_ROOT}/skills/ctx-brainstorm/references/complexity-tags.md`, `${CLAUDE_PLUGIN_ROOT}/skills/ctx-brainstorm/references/companion-guide.md`
-- Shared companion server: `${CLAUDE_PLUGIN_ROOT}/skills/ctx-brainstorm/companion/`
+- Shared with brainstorm: `${CLAUDE_PLUGIN_ROOT}/skills/ctx-brainstorm/references/complexity-tags.md`, `${CLAUDE_PLUGIN_ROOT}/skills/ctx-brainstorm/references/factory-guide.md`
+- Shared factory server: `${CLAUDE_PLUGIN_ROOT}/skills/ctx-brainstorm/factory/`
 
 ---
 

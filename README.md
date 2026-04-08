@@ -178,13 +178,13 @@ Claude Code runs background forks that silently consume tokens (prompt suggestio
 
 See `ctx-engineering/references/hidden_token_costs.md` for the full breakdown of what each system does.
 
-## Companion Server
+## Factory Server
 
-The brainstorm skill includes an optional companion web UI for visual design exploration.
+The brainstorm skill includes an optional factory web UI for visual design exploration.
 
 ```bash
-# Start the companion server
-bash plugins/ctx/skills/ctx-brainstorm/companion/start.sh \
+# Start the factory server
+bash plugins/ctx/skills/ctx-brainstorm/factory/start.sh \
   --project-dir /path/to/your/project \
   --port 52341
 
@@ -199,7 +199,13 @@ The server provides:
 - **Factory** at `http://localhost:<port>/factory` — per-page visual brainstorming with click-to-select options
 - **API** at `/api/write`, `/api/page-status` — used by the brainstorm skill to persist events
 
-Pages and events are stored in `<project-dir>/companion/pages/<page>/.events`.
+Pages and events are stored in `<project-dir>/factory/pages/<page>/.events`.
+
+The root-level `factory/` directory is **tracked in git** so prototype
+iteration history is preserved across sessions. New worktrees created via
+`worktree-create.sh` exclude it through `git sparse-checkout` so dev branches
+stay focused on source code — all worktrees still share the same portfolio
+at runtime via `git rev-parse --git-common-dir`.
 
 ## Status
 

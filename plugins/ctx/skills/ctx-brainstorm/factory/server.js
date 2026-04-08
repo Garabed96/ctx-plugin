@@ -121,16 +121,16 @@ if (projectDir) {
       const required = ["discover", "iterate", "preview"];
       const missing = required.filter(fn => typeof config[fn] !== "function");
       if (missing.length > 0) {
-        console.error("[companion] Config missing: " + missing.join(", "));
+        console.error("[factory] Config missing: " + missing.join(", "));
         config = null;
       } else {
-        console.error("[companion] Loaded config from " + configPath);
+        console.error("[factory] Loaded config from " + configPath);
       }
     } catch (err) {
-      console.error("[companion] Config load failed:", err.message);
+      console.error("[factory] Config load failed:", err.message);
     }
   } else {
-    console.error("[companion] No companion.config.js — copy-only mode");
+    console.error("[factory] No companion.config.js — copy-only mode");
   }
 }
 
@@ -326,7 +326,7 @@ function buildInjectionStyle(profile) {
 :root {
 ${vars.join("\n")}
 }
-/* ---- Companion base layer ---- */
+/* ---- Factory base layer ---- */
 /* !important ensures factory sidebar controls always take effect. */
 body {
   font-family: var(--cp-font-sans, system-ui, sans-serif) !important;
@@ -355,7 +355,7 @@ input, textarea, select {
 }
 </style>
 <script>
-// Companion click-to-select: elements with data-option become clickable.
+// Factory click-to-select: elements with data-option become clickable.
 // Clicking posts selection to the factory parent frame.
 document.addEventListener('click', function(e) {
   var el = e.target.closest('[data-option]');
@@ -485,8 +485,17 @@ function scanSlots() {
   function scan(dir, prefix) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       if (entry.name.startsWith("_") || entry.name.startsWith(".")) continue;
-      if (entry.isDirectory()) {
-        scan(path.join(dir, entry.name), prefix ? prefix + "/" + entry.name : entry.name);
+      const fullPath = path.join(dir, entry.name);
+      // Use statSync (follows symlinks) instead of Dirent.isDirectory() so
+      // symlinked page directories are traversed. Broken symlinks are skipped.
+      let stat;
+      try {
+        stat = fs.statSync(fullPath);
+      } catch {
+        continue;
+      }
+      if (stat.isDirectory()) {
+        scan(fullPath, prefix ? prefix + "/" + entry.name : entry.name);
       } else if (entry.name.endsWith(".html")) {
         const slotName = prefix || "root";
         const filePath = prefix ? prefix + "/" + entry.name : entry.name;

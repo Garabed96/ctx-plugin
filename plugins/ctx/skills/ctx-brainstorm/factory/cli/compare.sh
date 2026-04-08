@@ -1,7 +1,7 @@
 #!/bin/bash
-# Push A/B/C comparison to companion browser via server API
+# Push A/B/C comparison to factory browser via server API
 set -e
-: "${SCREEN_DIR:?Set SCREEN_DIR to the companion session directory}"
+: "${SCREEN_DIR:?Set SCREEN_DIR to the factory session directory}"
 
 if [ $# -lt 2 ]; then
   echo "Usage: compare.sh <slug-a> <slug-b> [slug-c]" >&2
@@ -10,7 +10,7 @@ fi
 
 # Read server URL from .server-info
 if [ ! -f "$SCREEN_DIR/.server-info" ]; then
-  echo "No server running. Start with companion/start.sh first." >&2
+  echo "No server running. Start with factory/start.sh first." >&2
   exit 1
 fi
 
