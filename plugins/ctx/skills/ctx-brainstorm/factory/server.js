@@ -485,8 +485,17 @@ function scanSlots() {
   function scan(dir, prefix) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       if (entry.name.startsWith("_") || entry.name.startsWith(".")) continue;
-      if (entry.isDirectory()) {
-        scan(path.join(dir, entry.name), prefix ? prefix + "/" + entry.name : entry.name);
+      const fullPath = path.join(dir, entry.name);
+      // Use statSync (follows symlinks) instead of Dirent.isDirectory() so
+      // symlinked page directories are traversed. Broken symlinks are skipped.
+      let stat;
+      try {
+        stat = fs.statSync(fullPath);
+      } catch {
+        continue;
+      }
+      if (stat.isDirectory()) {
+        scan(fullPath, prefix ? prefix + "/" + entry.name : entry.name);
       } else if (entry.name.endsWith(".html")) {
         const slotName = prefix || "root";
         const filePath = prefix ? prefix + "/" + entry.name : entry.name;
