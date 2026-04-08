@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.9.4 (2026-04-08)
+
+- **Factory rename — skill source** — completes the rename started in v0.2.9.2. `plugins/ctx/skills/ctx-brainstorm/companion/` → `factory/`, plus all path references, reference docs (`companion-guide.md` → `factory-guide.md`, `companion-frontend.md` → `factory-frontend.md`), and UX/feature language in the `ctx-brainstorm` and `ctx-brainstorm-ss` skill docs. Plugin interface file `companion.config.js` stays unchanged.
+- **Factory page scanner follows symlinks (CTX-22)** — `scanSlots()` in `factory/server.js` now uses `fs.statSync()` instead of `Dirent.isDirectory()` so symlinked page directories under `factory/pages/` are traversed. Broken symlinks are skipped safely. Unblocks using the factory with symlinked portfolios.
+- **Collapsible left sidebar (CTX-26)** — `factory.html` gains a toggle button in the top-bar that collapses the controls sidebar to zero width. Default state is collapsed so the preview area is maximized on first load; user preference persists in `localStorage`.
+- **Worktree sparse-checkout excludes root `factory/` (CTX-21)** — `worktree-create.sh` now runs `git sparse-checkout set --no-cone '/*' '!/factory/'` against new worktrees. The root `factory/` dir is tracked in git (iteration history preserved) but kept out of dev worktrees. Anchored pattern leaves nested paths like `plugins/ctx/skills/ctx-brainstorm/factory/` intact. README documents the convention.
+
 ## 0.2.9.3 (2026-04-07)
 
 - **Spec reviewer verification protocol** — `ctx-brainstorm-ss` reviewer now verifies claims before flagging. Unverifiable claims go to Recommendations, not Issues. Three sentences added to the existing Calibration section in `spec-reviewer-prompt.md` — no new sections, no new vocabulary. Fixes false positives where reviewers escalated unverified theoretical risks (#17).
