@@ -195,9 +195,10 @@ bash plugins/ctx/skills/ctx-brainstorm/factory/start.sh \
 ```
 
 The server provides:
-- **Portfolio** at `http://localhost:<port>/` — landing page for design prototypes
-- **Factory** at `http://localhost:<port>/factory` — per-page visual brainstorming with click-to-select options
-- **API** at `/api/write`, `/api/page-status` — used by the brainstorm skill to persist events
+- **Portfolio** at `http://localhost:<port>/factory` — landing page listing all prototype pages
+- **Factory editor** at `http://localhost:<port>/factory/<page>` — per-page visual brainstorming with click-to-select options, style controls, and version pills
+- **Brainstorm preview** at `http://localhost:<port>/` — ephemeral view of the newest HTML from the current brainstorm session
+- **API** at `/api/write`, `/api/page-status`, `/api/slots`, `/api/style-profile` — used by the brainstorm skill to persist events and query state
 
 Pages and events are stored in `<project-dir>/factory/pages/<page>/.events`.
 
