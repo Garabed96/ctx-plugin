@@ -1,25 +1,10 @@
 # ctx-plugin
 
-A Claude Code plugin built on **context economy** — deterministic operations run as shell scripts at CPU speed, skills handle judgment only.
+Ship features, not tokens.
 
-20 skills, 11 scripts, 3 agents, and 7 hooks covering the full development lifecycle: brainstorm, plan, execute, ship, debug, test, verify, QA.
+A Claude Code plugin that separates judgment from execution — the LLM decides, shell scripts do. 87% fewer tool calls. 65% faster.
 
-## Why this exists
-
-Every token in a prompt either increases or decreases the probability of the desired output. Most AI-assisted tooling burns tokens having the LLM interpret bash steps it could skip entirely. ctx-plugin separates **what needs judgment** from **what needs execution**:
-
-- **Scripts** handle deterministic operations — git worktrees, artifact scanning, PR creation. Args in, structured output out. Zero LLM tokens for mechanical work.
-- **Skills** handle judgment — when to create a worktree, what context to preserve, which risk signals matter. Thin wrappers that call scripts and interpret results.
-
-This **skill-script symbiosis** reduces tool calls by 87% and wall-clock time by 65% compared to markdown-only skill approaches.
-
-**Lineage:** Inspired by the discipline patterns in [superpowers](https://github.com/obra/superpowers) (verification gates, rationalization tables, hard gates). Restructured for token economy and extended with original systems: session continuity, QA testing, critical thinking coaching, prompt calibration, complexity gating, and the shell-native execution model.
-
-## Important: Setup Notes
-
-**Platform:** macOS. Terminal support: tmux, iTerm2, Terminal.app. Core skills and scripts are POSIX-compatible. Windows is untested.
-
-**Path detection:** Cross-repo edit blocking auto-detects sibling projects from your git repo's parent directory — no hardcoded paths.
+21 skills, 11 scripts, 3 agents, 7 hooks. The full development lifecycle on rails.
 
 ## Install
 
@@ -28,19 +13,19 @@ This **skill-script symbiosis** reduces tool calls by 87% and wall-clock time by
 /plugin install ctx@ctx-plugin
 ```
 
-## Getting Started
+## The Workflow
 
-The core loop is: **brainstorm → plan → worktree → execute → ship**
+Five commands. Brainstorm to PR.
 
 ```
 /ctx-brainstorm          # Explore the problem, surface blind spots
 /ctx-plan                # Produce a tagged implementation plan
-/ctx-worktree            # Create an isolated git worktree for the work
+/ctx-worktree            # Isolated branch — env files, deps, ready to run
 /ctx-execute             # Dispatch subagents per plan task
 /ctx-ship                # Preflight → verify → PR (gated at each phase)
 ```
 
-**Minimal workflow** (skip brainstorm/plan for small fixes):
+Small fixes skip straight to the end:
 
 ```
 /ctx-worktree            # Isolate the work
@@ -49,40 +34,41 @@ The core loop is: **brainstorm → plan → worktree → execute → ship**
 /ctx-ship                # Create PR
 ```
 
-**Session continuity** — when you need to stop and resume later:
+Session breaks don't lose context:
 
 ```
-/ctx-park                # Save context handoff for next session
-# ... close session, reopen later ...
-/ctx-grab                # Restore context from park file
+/ctx-park                # Snapshot for the next session
+/ctx-grab                # Restore from where you left off
 ```
 
-**Debugging:**
+## Factory — Visual Prototyping
+
+Instead of describing UI ideas in text and hoping the LLM interprets them correctly, the factory renders live HTML prototypes you can see, compare, and iterate on in your browser.
+
+During a brainstorm, the skill generates design variants and pushes them to a local server. Each variant is versioned. You open the portfolio, click through options, compare side-by-side, and select the direction — then brainstorm continues from your choice.
 
 ```
-/ctx-debug               # Systematic root cause investigation (blocks premature fixes)
-/ctx-tdd                 # Red-Green-Refactor with enforcement
+/ctx-factory             # Opens the portfolio (starts server if needed)
+/ctx-brainstorm          # Brainstorm sessions push prototypes to the factory
 ```
 
-## Scripts
+The factory auto-detects your project's design tokens (Tailwind config, CSS variables, frameworks) so prototypes inherit your real styles, not generic defaults.
 
-Shell scripts that handle deterministic operations. Each follows the same contract: args in, progress to stderr, structured `key=value` output to stdout.
+**Routes:**
+- `/factory` — portfolio listing all prototype pages
+- `/factory/<page>` — per-page editor with version pills, style controls, click-to-select
+- `/` — ephemeral preview of the current brainstorm session
 
-| Script | What it does |
-|--------|-------------|
-| `worktree-create.sh` | Creates git worktree, symlinks gitignored env files (including nested monorepo), installs deps. |
-| `worktree-post-setup.sh` | Symlinks env files and installs deps in an existing worktree. Runs after `EnterWorktree` creates the worktree. |
-| `worktree-open.sh` | Opens a new terminal window (tmux, iTerm2, or Terminal.app) with Claude in the given worktree. |
-| `park-scan.sh` | Scans worktree for artifacts (plans, specs, docs), reads skill invocation log. |
-| `grab-restore.sh` | Finds handoff file, reads content, archives with date stamp, gathers git log. |
-| `ship-preflight.sh` | Gathers git context, counts production files/lines, detects risk signals (auth, data model, config). |
-| `ship-pr.sh` | Stages files, commits, pushes, creates PR — all from args. |
-| `auto-pr.sh` | Post-push hook: typechecks and creates a draft PR using commit messages. Zero LLM tokens on happy path. |
-| `kill-wt.sh` | Teardown: kills dev server port, removes worktree, deletes branch. Supports `--detach` for self-teardown. |
-| `open-webstorm.sh` | Opens a directory in WebStorm. macOS only. |
-| `sim-interact.sh` | Xcode iOS Simulator CLI: screenshot, scroll, tap, open URL, boot/list devices. For QA workflows. |
+Prototype history is tracked in git. Worktrees exclude it via sparse-checkout so dev branches stay focused — all worktrees share the same portfolio at runtime.
 
-`test-scripts.sh` provides integration tests for the above — creates a throwaway git repo and exercises each script.
+## How It Works
+
+Most AI-assisted tooling burns tokens having the LLM interpret bash steps it could skip entirely. ctx-plugin draws a hard line:
+
+- **Scripts** handle mechanical work — git worktrees, PR creation, artifact scanning, env setup. Args in, structured output out. Zero LLM tokens.
+- **Skills** handle judgment — when to create a worktree, what context to preserve, which risk signals matter. Thin wrappers that call scripts and interpret results.
+
+Simple tasks get simple treatment. Subagents and multi-phase review gates only activate when complexity tags warrant them.
 
 ## Skills
 
@@ -122,7 +108,7 @@ Skills are namespaced `ctx-*` and invoked with `/ctx:<skill-name>`.
 |-------|-------------|
 | `ctx-engineering` | Prompt calibration coach. Flags prompts that are too specific (brittle) or too vague (no success criteria) and guides toward the "just right" zone. |
 
-### Session & Workspace Management
+### Session & Workspace
 
 | Skill | What it does |
 |-------|-------------|
@@ -132,8 +118,31 @@ Skills are namespaced `ctx-*` and invoked with `/ctx:<skill-name>`.
 | `ctx-worktree` | Creates an isolated git worktree with env symlinks and dependency install so parallel work is immediately runnable. |
 | `ctx-kill-wt` | Teardown a worktree — kills dev server port, removes worktree, deletes branch. Safe from inside or outside the worktree. |
 | `ctx-open` | Opens the current working directory in WebStorm. |
+| `ctx-factory` | Opens the factory design viewer to browse prototype pages. Starts the server if needed. |
 
-## Agents
+## Under the Hood
+
+### Scripts
+
+Shell scripts that handle deterministic operations. Each follows the same contract: args in, progress to stderr, structured `key=value` output to stdout.
+
+| Script | What it does |
+|--------|-------------|
+| `worktree-create.sh` | Creates git worktree, symlinks gitignored env files (including nested monorepo), installs deps. |
+| `worktree-post-setup.sh` | Symlinks env files and installs deps in an existing worktree. Runs after `EnterWorktree` creates the worktree. |
+| `worktree-open.sh` | Opens a new terminal window (tmux, iTerm2, or Terminal.app) with Claude in the given worktree. |
+| `park-scan.sh` | Scans worktree for artifacts (plans, specs, docs), reads skill invocation log. |
+| `grab-restore.sh` | Finds handoff file, reads content, archives with date stamp, gathers git log. |
+| `ship-preflight.sh` | Gathers git context, counts production files/lines, detects risk signals (auth, data model, config). |
+| `ship-pr.sh` | Stages files, commits, pushes, creates PR — all from args. |
+| `auto-pr.sh` | Post-push hook: typechecks and creates a draft PR using commit messages. Zero LLM tokens on happy path. |
+| `kill-wt.sh` | Teardown: kills dev server port, removes worktree, deletes branch. Supports `--detach` for self-teardown. |
+| `open-webstorm.sh` | Opens a directory in WebStorm. macOS only. |
+| `sim-interact.sh` | Xcode iOS Simulator CLI: screenshot, scroll, tap, open URL, boot/list devices. For QA workflows. |
+
+`test-scripts.sh` provides integration tests for the above — creates a throwaway git repo and exercises each script.
+
+### Agents
 
 Dispatched automatically by `ctx-execute` and `ctx-ship` based on task complexity.
 
@@ -143,7 +152,7 @@ Dispatched automatically by `ctx-execute` and `ctx-ship` based on task complexit
 | `code-reviewer` | Reviews git diffs for correctness, architecture, testing, and production readiness. |
 | `reviewer` | Reviews diffs for spec compliance and code quality. Used for `[MED]` and `[HIGH]` tasks. |
 
-## Hooks
+### Hooks
 
 | Event | Hook | Purpose |
 |-------|------|---------|
@@ -164,6 +173,12 @@ Context is finite. This plugin treats it as a budget:
 - **Signal over ceremony** — each skill says what it needs to say and stops. No boilerplate.
 - **Session continuity** — `park` and `grab` carry context across sessions without re-explaining.
 
+## Setup Notes
+
+**Platform:** macOS. Terminal support: tmux, iTerm2, Terminal.app. Core skills and scripts are POSIX-compatible. Windows is untested.
+
+**Path detection:** Cross-repo edit blocking auto-detects sibling projects from your git repo's parent directory — no hardcoded paths.
+
 ## Recommended Settings
 
 Claude Code runs background forks that silently consume tokens (prompt suggestions, auto-dream consolidation, memory extraction). Disable them to keep your token budget under your control:
@@ -178,35 +193,9 @@ Claude Code runs background forks that silently consume tokens (prompt suggestio
 
 See `ctx-engineering/references/hidden_token_costs.md` for the full breakdown of what each system does.
 
-## Factory Server
+## Lineage
 
-The brainstorm skill includes an optional factory web UI for visual design exploration.
-
-```bash
-# Start the factory server
-bash plugins/ctx/skills/ctx-brainstorm/factory/start.sh \
-  --project-dir /path/to/your/project \
-  --port 52341
-
-# Options:
-#   --project-dir <path>  Required. The project to brainstorm against.
-#   --port <port>         Default: 52341
-#   --rescan              Force re-scan of project styles (normally cached)
-```
-
-The server provides:
-- **Portfolio** at `http://localhost:<port>/factory` — landing page listing all prototype pages
-- **Factory editor** at `http://localhost:<port>/factory/<page>` — per-page visual brainstorming with click-to-select options, style controls, and version pills
-- **Brainstorm preview** at `http://localhost:<port>/` — ephemeral view of the newest HTML from the current brainstorm session
-- **API** at `/api/write`, `/api/page-status`, `/api/slots`, `/api/style-profile` — used by the brainstorm skill to persist events and query state
-
-Pages and events are stored in `<project-dir>/factory/pages/<page>/.events`.
-
-The root-level `factory/` directory is **tracked in git** so prototype
-iteration history is preserved across sessions. New worktrees created via
-`worktree-create.sh` exclude it through `git sparse-checkout` so dev branches
-stay focused on source code — all worktrees still share the same portfolio
-at runtime via `git rev-parse --git-common-dir`.
+Inspired by the discipline patterns in [superpowers](https://github.com/obra/superpowers) (verification gates, rationalization tables, hard gates). Restructured for token economy and extended with original systems: session continuity, QA testing, critical thinking coaching, prompt calibration, complexity gating, the shell-native execution model, and the factory.
 
 ## Status
 
