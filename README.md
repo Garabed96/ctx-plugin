@@ -210,7 +210,7 @@ at runtime via `git rev-parse --git-common-dir`.
 
 ## Status
 
-**v0.2.9** — Private, actively iterating. Safe worktree teardown, auto-PR hooks, enforce-ship-pr guard, companion factory, iOS simulator interaction.
+**v0.2.9.6** — Private, actively iterating. Session learning capture (distill), epic documentation aggregation, safe worktree teardown, auto-PR hooks, enforce-ship-pr guard, companion factory, iOS simulator interaction.
 
 ## License
 

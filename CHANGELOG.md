@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.9.6 (2026-04-10)
+
+- **ctx-park distill step** — new Step 4 between handoff and skill audit. Reviews the session for non-obvious learnings using the filter "would a future agent get this wrong?", writes them as memory files, and promotes recurring patterns to skill gotchas (memory → 2nd occurrence update → 3rd promotes to `## Gotchas` in the relevant skill).
+- **ctx-docs skill** — new `/ctx-docs` skill that aggregates specs, plans, parks, git history, Linear metadata, and distilled memories into a structured documentation package (`docs/ctx/<epic-name>/index.md` + per-issue docs). Two entry points: epic mode (queries Linear) and issue mode (user provides IDs).
+
 ## 0.2.9.4 (2026-04-08)
 
 - **Factory rename — skill source** — completes the rename started in v0.2.9.2. `plugins/ctx/skills/ctx-brainstorm/companion/` → `factory/`, plus all path references, reference docs (`companion-guide.md` → `factory-guide.md`, `companion-frontend.md` → `factory-frontend.md`), and UX/feature language in the `ctx-brainstorm` and `ctx-brainstorm-ss` skill docs. Plugin interface file `companion.config.js` stays unchanged.
