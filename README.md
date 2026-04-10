@@ -1,10 +1,30 @@
 # ctx-plugin
 
-Ship features, not tokens.
+> **Alpha** — I'm building this in public. It works for my workflow. It may break for yours. Issues welcome.
 
-A Claude Code plugin that separates judgment from execution — the LLM decides, shell scripts do. 87% fewer tool calls. 65% faster.
+A context engineering plugin for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Controls what the model sees at every phase of development — from first idea to merged PR.
 
-21 skills, 11 scripts, 3 agents, 7 hooks. The full development lifecycle on rails.
+## What it looks like
+
+```
+You: "I need to add search to the dashboard"
+
+/ctx-discuss           →  Think it through — what kind of search? What are the tradeoffs?
+/ctx-engineering       →  Make sure Claude understands the intent before moving forward
+/ctx-brainstorm        →  Spec with blind spots caught before you write code
+/ctx-plan              →  Tagged implementation plan with complexity budgets
+/ctx-worktree          →  Isolated git worktree, deps installed, ready to go
+/ctx-execute           →  Subagents implement each task, reviewers verify
+/ctx-ship              →  Preflight checks, verification gate, PR created
+
+# End of day
+/ctx-park              →  Context saved — decisions, learnings, next steps
+
+# Next morning
+/ctx-grab              →  Pick up exactly where you left off
+```
+
+No re-explaining. No lost context. No "wait, what were we doing?"
 
 ## Install
 
@@ -13,193 +33,178 @@ A Claude Code plugin that separates judgment from execution — the LLM decides,
 /plugin install ctx@ctx-plugin
 ```
 
-## The Workflow
+**Platform:** macOS (tmux, iTerm2, Terminal.app). Core skills are POSIX-compatible. Windows untested.
 
-Five commands. Brainstorm to PR.
+## How I use it
 
-```
-/ctx-brainstorm          # Explore the problem, surface blind spots
-/ctx-plan                # Produce a tagged implementation plan
-/ctx-worktree            # Isolated branch — env files, deps, ready to run
-/ctx-execute             # Dispatch subagents per plan task
-/ctx-ship                # Preflight → verify → PR (gated at each phase)
-```
+**Before building anything:**
 
-Small fixes skip straight to the end:
+- `/ctx-discuss` — think before you build. No code changes, just conversation. Explore the problem, challenge assumptions, discover what to build
+- `/ctx-engineering` — make sure Claude clearly understands what you're saying. Flags prompts that are too brittle or too vague before they waste a cycle
 
-```
-/ctx-worktree            # Isolate the work
-# ... make changes ...
-/ctx-verify              # Evidence before claims
-/ctx-ship                # Create PR
-```
+Either can come first. Once the direction is clear, move to brainstorm.
 
-Session breaks don't lose context:
+**Full feature workflow:**
 
-```
-/ctx-park                # Snapshot for the next session
-/ctx-grab                # Restore from where you left off
-```
+1. `/ctx-brainstorm` — surfaces blind spots, writes a spec, and self-reviews (or escalates to a subagent reviewer for complex features)
+2. `/ctx-plan` — takes the spec and produces tasks tagged `[LOW]`, `[MED]`, or `[HIGH]` with agent budgets
+3. `/ctx-worktree` — spins up an isolated git worktree with env files copied and deps installed
+4. `/ctx-execute` — walks the plan task by task, dispatching implementer and reviewer agents based on complexity
+5. `/ctx-ship` — preflight risk scan, verification gate, PR creation. Each phase is gated — I approve before it continues
 
-## Factory — Visual Prototyping
+**Quick fix workflow:**
 
-Instead of describing UI ideas in text and hoping the LLM interprets them correctly, the factory renders live HTML prototypes you can see, compare, and iterate on in your browser.
+1. `/ctx-worktree` — isolate the change
+2. Make the fix
+3. `/ctx-verify` — prove it works before claiming it does
+4. `/ctx-ship` — PR it
 
-During a brainstorm, the skill generates design variants and pushes them to a local server. Each variant is versioned. You open the portfolio, click through options, compare side-by-side, and select the direction — then brainstorm continues from your choice.
+**When I get stuck:**
 
-```
-/ctx-factory             # Opens the portfolio (starts server if needed)
-/ctx-brainstorm          # Brainstorm sessions push prototypes to the factory
-```
+- `/ctx-debug` — blocks me from jumping to fixes before investigating root cause
+- `/ctx-tdd` — enforces Red-Green-Refactor. Catches me when I write the implementation first
 
-The factory auto-detects your project's design tokens (Tailwind config, CSS variables, frameworks) so prototypes inherit your real styles, not generic defaults.
+**End of session:**
 
-**Routes:**
-- `/factory` — portfolio listing all prototype pages
-- `/factory/<page>` — per-page editor with version pills, style controls, click-to-select
-- `/` — ephemeral preview of the current brainstorm session
+- `/ctx-park` — saves a handoff: what happened, what I learned, what's next. Also captures non-obvious learnings as memories that accumulate into skill-level gotchas over time
+- `/ctx-grab` — next session, picks up the handoff and re-aligns context
 
-Prototype history is tracked in git. Worktrees exclude it via sparse-checkout so dev branches stay focused — all worktrees share the same portfolio at runtime.
+## Architecture
 
-## How It Works
+The plugin separates **judgment** from **execution**:
 
-Most AI-assisted tooling burns tokens having the LLM interpret bash steps it could skip entirely. ctx-plugin draws a hard line:
+- **Skills** (21) — markdown instruction sets that handle decisions: when to create a worktree, what context to preserve, which risk signals matter
+- **Scripts** (11) — shell scripts that handle deterministic operations: git worktrees, artifact scanning, PR creation. Args in, structured output out
+- **Agents** (3) — fresh-context subagents dispatched by `ctx-execute` for implementation and review
+- **Hooks** (7) — guardrails that fire automatically: block edits outside your worktree, prevent direct pushes to main, detect altitude oscillation
 
-- **Scripts** handle mechanical work — git worktrees, PR creation, artifact scanning, env setup. Args in, structured output out. Zero LLM tokens.
-- **Skills** handle judgment — when to create a worktree, what context to preserve, which risk signals matter. Thin wrappers that call scripts and interpret results.
+Scripts do the mechanical work at shell speed. Skills decide when and why to call them. The model never wastes tokens interpreting bash it could skip.
 
-Simple tasks get simple treatment. Subagents and multi-phase review gates only activate when complexity tags warrant them.
+### Skills
 
-## Skills
+Invoked with `/ctx:<skill-name>`.
 
-Skills are namespaced `ctx-*` and invoked with `/ctx:<skill-name>`.
+**Ideation**
 
-### Ideation
+| Skill | Purpose |
+|-------|---------|
+| `ctx-brainstorm` | Lean brainstorming with self-review. Auto-escalates to `ctx-brainstorm-ss` when complexity warrants it. |
+| `ctx-brainstorm-ss` | Tier 2 — subagent spec reviewer with fresh context, scope decomposition, design-for-isolation. |
+| `ctx-discuss` | Think before you build. No code changes — discuss direction, then move to `/ctx-plan` when ready. |
+| `ctx-architect-growth` | Critical thinking coach. Pushes you to reason about tradeoffs and map second-order effects. |
 
-| Skill | What it does |
-|-------|-------------|
-| `ctx-brainstorm` | Lean brainstorming for small-to-medium tasks. Self-review, no subagents. Auto-escalates to `ctx-brainstorm-ss` when complexity warrants it. |
-| `ctx-brainstorm-ss` | Tier 2 brainstorming for complex features — subagent spec reviewer with fresh context, scope decomposition, design-for-isolation principles. |
-| `ctx-discuss` | Discussion and exploration mode. No code changes. Think out loud, discover what to build, challenge assumptions. |
-| `ctx-architect-growth` | Critical thinking coach for architectural decisions. Pushes you to reason about tradeoffs, identify hidden assumptions, and map second-order effects. |
+**Planning & Execution**
 
-### Planning & Execution
+| Skill | Purpose |
+|-------|---------|
+| `ctx-plan` | Produces a tagged implementation plan from a brainstorm spec. |
+| `ctx-execute` | Dispatches subagents per task — `[LOW]` 1 agent, `[MED]` 2, `[HIGH]` full review sandwich. |
+| `ctx-ship` | Gated pipeline: preflight → verify → PR. Each phase requires your approval. |
+| `ctx-parallel` | Ad-hoc parallel dispatch for independent tasks. |
 
-| Skill | What it does |
-|-------|-------------|
-| `ctx-plan` | Reads complexity tags from brainstorm specs and produces an implementation plan with task breakdown and agent budgets. |
-| `ctx-execute` | Dispatches subagents per task, gated by complexity tags — `[LOW]` gets 1 agent, `[MED]` gets 2, `[HIGH]` gets full review. |
-| `ctx-ship` | Full gated pipeline: preflight, architect, implement, verify, PR, ship. Each phase requires user confirmation. Uses DORA two-stage verification. |
-| `ctx-parallel` | Ad-hoc parallel subagent dispatch. Decision framework for when to parallelize vs. sequence. Complements `ctx-execute`. |
+**Quality**
 
-### Quality & Verification
+| Skill | Purpose |
+|-------|---------|
+| `ctx-qa` | QA test any web app via Playwright connected to your real Chrome session. |
+| `ctx-tdd` | Test-driven development with enforcement. Blocks implementation before a failing test exists. |
+| `ctx-verify` | Evidence-before-claims gate. Run it, read it, then claim it. |
+| `ctx-debug` | 4-phase root cause investigation. Blocks fixes before Phase 1 completes. |
+| `ctx-review-receive` | Handle code review feedback without sycophancy. Verify before implementing. |
 
-| Skill | What it does |
-|-------|-------------|
-| `ctx-qa` | QA test any web app and fix bugs. Uses Playwright connected to your real Chrome session via CDP. |
-| `ctx-tdd` | Test-driven development with Iron Law enforcement. Red-Green-Refactor cycle, rationalization prevention, testing anti-patterns reference. |
-| `ctx-verify` | Standalone evidence-before-claims gate. Run the command, read the output, THEN make the claim. Composable into any workflow. |
-| `ctx-debug` | Systematic 4-phase debugging: root cause investigation, pattern analysis, hypothesis testing, implementation. Blocks fixes before Phase 1 completion. |
-| `ctx-review-receive` | How to handle incoming code review feedback. Anti-sycophancy rules, verify-before-implementing protocol, YAGNI checks, push-back guidance. |
+**Session Management**
 
-### Calibration
+| Skill | Purpose |
+|-------|---------|
+| `ctx-park` | End-of-session handoff with learning capture and gotcha promotion. |
+| `ctx-grab` | Restore context from a parked session. |
+| `ctx-resume` | Resume after crash or context loss. Finds active plans and relaunches. |
+| `ctx-worktree` | Isolated git worktree with env files and deps, ready immediately. |
+| `ctx-kill-wt` | Teardown: kill port, remove worktree, delete branch. |
+| `ctx-open` | Open current directory in WebStorm. |
+| `ctx-docs` | Aggregate completed work into epic documentation from specs, plans, parks, and git history. |
 
-| Skill | What it does |
-|-------|-------------|
-| `ctx-engineering` | Prompt calibration coach. Flags prompts that are too specific (brittle) or too vague (no success criteria) and guides toward the "just right" zone. |
+**Calibration**
 
-### Session & Workspace
-
-| Skill | What it does |
-|-------|-------------|
-| `ctx-park` | End-of-session handoff. Scans worktree for artifacts, distills insights, writes a structured handoff file for the next session. |
-| `ctx-grab` | Start-of-session restore. Reads the handoff from `ctx-park`, follows artifact links, and re-aligns context. |
-| `ctx-resume` | Resume after crash or context loss. Lists active plans from global storage and relaunches into the correct worktree. |
-| `ctx-worktree` | Creates an isolated git worktree with env symlinks and dependency install so parallel work is immediately runnable. |
-| `ctx-kill-wt` | Teardown a worktree — kills dev server port, removes worktree, deletes branch. Safe from inside or outside the worktree. |
-| `ctx-open` | Opens the current working directory in WebStorm. |
-| `ctx-factory` | Opens the factory design viewer to browse prototype pages. Starts the server if needed. |
-
-## Under the Hood
+| Skill | Purpose |
+|-------|---------|
+| `ctx-engineering` | Use consistently when prompting. Makes sure Claude clearly understands what you're saying — flags instructions that are too brittle or too vague. |
 
 ### Scripts
 
-Shell scripts that handle deterministic operations. Each follows the same contract: args in, progress to stderr, structured `key=value` output to stdout.
+Shell scripts with a consistent contract: args in, progress to stderr, structured `key=value` output to stdout.
 
-| Script | What it does |
-|--------|-------------|
-| `worktree-create.sh` | Creates git worktree, symlinks gitignored env files (including nested monorepo), installs deps. |
-| `worktree-post-setup.sh` | Symlinks env files and installs deps in an existing worktree. Runs after `EnterWorktree` creates the worktree. |
-| `worktree-open.sh` | Opens a new terminal window (tmux, iTerm2, or Terminal.app) with Claude in the given worktree. |
-| `park-scan.sh` | Scans worktree for artifacts (plans, specs, docs), reads skill invocation log. |
-| `grab-restore.sh` | Finds handoff file, reads content, archives with date stamp, gathers git log. |
-| `ship-preflight.sh` | Gathers git context, counts production files/lines, detects risk signals (auth, data model, config). |
-| `ship-pr.sh` | Stages files, commits, pushes, creates PR — all from args. |
-| `auto-pr.sh` | Post-push hook: typechecks and creates a draft PR using commit messages. Zero LLM tokens on happy path. |
-| `kill-wt.sh` | Teardown: kills dev server port, removes worktree, deletes branch. Supports `--detach` for self-teardown. |
-| `open-webstorm.sh` | Opens a directory in WebStorm. macOS only. |
-| `sim-interact.sh` | Xcode iOS Simulator CLI: screenshot, scroll, tap, open URL, boot/list devices. For QA workflows. |
-
-`test-scripts.sh` provides integration tests for the above — creates a throwaway git repo and exercises each script.
-
-### Agents
-
-Dispatched automatically by `ctx-execute` and `ctx-ship` based on task complexity.
-
-| Agent | Role |
-|-------|------|
-| `implementer` | Fresh-context implementation agent. Implements changes, writes tests, commits. |
-| `code-reviewer` | Reviews git diffs for correctness, architecture, testing, and production readiness. |
-| `reviewer` | Reviews diffs for spec compliance and code quality. Used for `[MED]` and `[HIGH]` tasks. |
+| Script | Purpose |
+|--------|---------|
+| `worktree-create.sh` | Create git worktree, copy env files, install deps |
+| `worktree-post-setup.sh` | Post-setup for env + deps after `EnterWorktree` |
+| `worktree-open.sh` | Open terminal window in worktree (tmux/iTerm2/Terminal.app) |
+| `park-scan.sh` | Scan worktree for artifacts and skill invocation log |
+| `grab-restore.sh` | Find and restore handoff file with git log |
+| `ship-preflight.sh` | Gather git context, count files, detect risk signals |
+| `ship-pr.sh` | Stage, commit, push, create PR from args |
+| `auto-pr.sh` | Post-push hook: typecheck + draft PR, zero LLM tokens |
+| `kill-wt.sh` | Teardown worktree safely, supports `--detach` for self-teardown |
+| `open-webstorm.sh` | Open directory in WebStorm (macOS) |
+| `sim-interact.sh` | iOS Simulator CLI: screenshot, scroll, tap, boot |
 
 ### Hooks
 
 | Event | Hook | Purpose |
 |-------|------|---------|
-| `PreToolUse` | `worktree-guard` | Blocks Edit/Write/Bash mutations outside the current repo's worktree. Also blocks cross-repo edits to sibling projects. |
-| `PreToolUse` | `enforce-ship-pr` | Blocks manual `gh pr create` — redirects to `ship-pr.sh` to save tokens. |
-| `SessionStart` | `session-start` | Injects context at the start of every session. |
-| `PostToolUse` | `log-skill-invocation` | Logs which skills are invoked (fires on `Skill` tool use). |
-| `PostToolUse` | `auto-pr` | After `git push`, runs typecheck and creates a draft PR. |
-| `PostToolUse` | test coverage nudge | After test runs, checks if tests cover service-layer concerns or only unit-level. |
-| `UserPromptSubmit` | `altitude-check` | Nudges when it detects altitude oscillation — micromanaging vs. hand-waving. |
+| `PreToolUse` | worktree-guard | Blocks edits outside your current worktree |
+| `PreToolUse` | enforce-ship-pr | Blocks manual `gh pr create`, redirects to `ship-pr.sh` |
+| `SessionStart` | session-start | Injects context at session start |
+| `PostToolUse` | log-skill-invocation | Tracks which skills are invoked |
+| `PostToolUse` | auto-pr | Typecheck + draft PR after `git push` |
+| `PostToolUse` | test coverage nudge | Checks if tests cover service-layer concerns |
+| `UserPromptSubmit` | altitude-check | Detects altitude oscillation (micromanaging vs. hand-waving) |
 
-## Philosophy
+### Agents
 
-Context is finite. This plugin treats it as a budget:
+Dispatched automatically by `ctx-execute` and `ctx-ship`.
 
-- **Skill-script symbiosis** — deterministic ops in scripts, judgment in skills. The LLM never interprets bash it could skip.
-- **Complexity gating** — simple tasks get simple treatment. Subagents and multi-phase pipelines only activate when tags warrant them.
-- **Signal over ceremony** — each skill says what it needs to say and stops. No boilerplate.
-- **Session continuity** — `park` and `grab` carry context across sessions without re-explaining.
+| Agent | Role |
+|-------|------|
+| `implementer` | Fresh-context agent. Implements, tests, commits. |
+| `code-reviewer` | Reviews diffs for correctness and production readiness. |
+| `reviewer` | Spec compliance + code quality review for `[MED]`/`[HIGH]` tasks. |
 
-## Setup Notes
+## Factory
 
-**Platform:** macOS. Terminal support: tmux, iTerm2, Terminal.app. Core skills and scripts are POSIX-compatible. Windows is untested.
+Optional web UI for visual design exploration during brainstorming.
 
-**Path detection:** Cross-repo edit blocking auto-detects sibling projects from your git repo's parent directory — no hardcoded paths.
+```bash
+bash plugins/ctx/skills/ctx-brainstorm/factory/start.sh \
+  --project-dir /path/to/your/project \
+  --port 52341
+```
+
+- **Portfolio** at `/factory` — all prototype pages
+- **Editor** at `/factory/<page>` — visual brainstorming with click-to-select, style controls, version pills
+- **Preview** at `/` — ephemeral view of current brainstorm output
+- **API** at `/api/write`, `/api/page-status`, `/api/slots`, `/api/style-profile`
+
+Pages stored in `<project-dir>/factory/pages/<page>/.events`. Tracked in git for iteration history. Excluded from dev worktrees via sparse-checkout.
 
 ## Recommended Settings
 
-Claude Code runs background forks that silently consume tokens (prompt suggestions, auto-dream consolidation, memory extraction). Disable them to keep your token budget under your control:
-
 ```json
-// ~/.claude/settings.json
 {
   "promptSuggestionEnabled": false,
   "autoDreamEnabled": false
 }
 ```
 
-See `ctx-engineering/references/hidden_token_costs.md` for the full breakdown of what each system does.
+These disable background token consumers. See `ctx-engineering/references/hidden_token_costs.md` for details.
 
 ## Lineage
 
-Inspired by the discipline patterns in [superpowers](https://github.com/obra/superpowers) (verification gates, rationalization tables, hard gates). Restructured for token economy and extended with original systems: session continuity, QA testing, critical thinking coaching, prompt calibration, complexity gating, the shell-native execution model, and the factory.
+Inspired by the discipline patterns in [superpowers](https://github.com/obra/superpowers) (verification gates, rationalization tables, hard gates). Extended with session continuity, QA testing, critical thinking coaching, prompt calibration, complexity gating, and the shell-native execution model.
 
 ## Status
 
-**v0.2.9** — Private, actively iterating. Safe worktree teardown, auto-PR hooks, enforce-ship-pr guard, companion factory, iOS simulator interaction.
+**v0.2.9.6** — Alpha. Building in public.
 
 ## License
 
