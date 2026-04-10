@@ -2,7 +2,7 @@
 
 A Claude Code plugin built on **context economy** — deterministic operations run as shell scripts at CPU speed, skills handle judgment only.
 
-20 skills, 11 scripts, 3 agents, and 7 hooks covering the full development lifecycle: brainstorm, plan, execute, ship, debug, test, verify, QA.
+21 skills, 11 scripts, 3 agents, and 7 hooks covering the full development lifecycle: brainstorm, plan, execute, ship, debug, test, verify, QA.
 
 ## Why this exists
 
@@ -126,12 +126,13 @@ Skills are namespaced `ctx-*` and invoked with `/ctx:<skill-name>`.
 
 | Skill | What it does |
 |-------|-------------|
-| `ctx-park` | End-of-session handoff. Scans worktree for artifacts, distills insights, writes a structured handoff file for the next session. |
+| `ctx-park` | End-of-session handoff. Scans artifacts, distills smart context, captures non-obvious learnings as memories (with recurrence-based gotcha promotion), writes a structured handoff file. |
 | `ctx-grab` | Start-of-session restore. Reads the handoff from `ctx-park`, follows artifact links, and re-aligns context. |
 | `ctx-resume` | Resume after crash or context loss. Lists active plans from global storage and relaunches into the correct worktree. |
 | `ctx-worktree` | Creates an isolated git worktree with env symlinks and dependency install so parallel work is immediately runnable. |
 | `ctx-kill-wt` | Teardown a worktree — kills dev server port, removes worktree, deletes branch. Safe from inside or outside the worktree. |
 | `ctx-open` | Opens the current working directory in WebStorm. |
+| `ctx-docs` | Aggregates completed work into epic documentation. Pulls from specs, plans, parks, git history, Linear, and distilled memories. Two entry points: epic mode (queries Linear) and issue mode (user provides IDs). |
 
 ## Agents
 
