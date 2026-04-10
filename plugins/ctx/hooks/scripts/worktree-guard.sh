@@ -102,8 +102,12 @@ MAIN_WORKTREE=$(git -C "$PROJECT_ROOT" worktree list --porcelain 2>/dev/null | h
 
 if [ "$PROJECT_ROOT" = "$MAIN_WORKTREE" ]; then
   BRANCH=$(git -C "$PROJECT_ROOT" branch --show-current 2>/dev/null)
+  PROJECT_HASH=$(echo "$PROJECT_ROOT" | tr '/' '-')
   echo "BLOCKED — you're editing in the main checkout (branch: $BRANCH)." >&2
   echo "Create an isolated worktree first: /ctx-worktree" >&2
+  echo "" >&2
+  echo "Tip: For non-code artifacts (reports, plans, notes), write to project" >&2
+  echo "storage instead: ~/.claude/projects/$PROJECT_HASH/" >&2
   exit 2
 fi
 
