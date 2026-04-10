@@ -1,5 +1,5 @@
 #!/bin/bash
-# worktree-post-setup.sh — Symlink env files and install deps in an existing worktree.
+# worktree-post-setup.sh — Copy env files and install deps in an existing worktree.
 # Extracted from worktree-create.sh. Designed to run AFTER EnterWorktree creates the worktree.
 #
 # Usage:
@@ -39,7 +39,7 @@ done
 
 log "source=$SOURCE target=$TARGET skip_deps=$SKIP_DEPS"
 
-# ── Symlink env files ─────────────────────────────────────
+# ── Copy env files ────────────────────────────────────────
 ENV_COUNT=0
 
 # Root-level env files (only gitignored real files — templates/examples are tracked)
@@ -59,11 +59,11 @@ for f in "$SOURCE"/.env*; do
     log "found $BASENAME — gitignored=yes, already exists in target → skipping"
     continue
   fi
-  ln -s "$f" "$DEST" && ENV_COUNT=$((ENV_COUNT + 1))
-  log "found $BASENAME — gitignored=yes → symlinked"
+  cp "$f" "$DEST" && ENV_COUNT=$((ENV_COUNT + 1))
+  log "found $BASENAME — gitignored=yes → copied"
 done
 
-# Monorepo: recreate symlinks that point to root env files
+# Monorepo: recreate copies of symlinked env files
 log "checking monorepo symlinks..."
 MONO_FOUND=0
 while IFS= read -r link; do
@@ -81,8 +81,8 @@ while IFS= read -r link; do
     log "found $REL_PATH → $LINK_TARGET — already exists → skipping"
     continue
   fi
-  ln -s "$LINK_TARGET" "$DEST" && ENV_COUNT=$((ENV_COUNT + 1))
-  log "found $REL_PATH → $LINK_TARGET → recreated"
+  cp -L "$link" "$DEST" && ENV_COUNT=$((ENV_COUNT + 1))
+  log "found $REL_PATH → $LINK_TARGET → copied"
 done < <(find "$SOURCE" -name ".env*" -type l 2>/dev/null)
 [[ $MONO_FOUND -eq 0 ]] && log "no monorepo symlinks found"
 
@@ -110,12 +110,12 @@ while IFS= read -r envfile; do
     log "found $REL_PATH — gitignored=yes, already exists → skipping"
     continue
   fi
-  ln -s "$envfile" "$DEST" && ENV_COUNT=$((ENV_COUNT + 1))
-  log "found $REL_PATH — gitignored=yes → symlinked"
+  cp "$envfile" "$DEST" && ENV_COUNT=$((ENV_COUNT + 1))
+  log "found $REL_PATH — gitignored=yes → copied"
 done < <(find "$SOURCE" -name ".env*" -type f 2>/dev/null)
 [[ $NESTED_FOUND -eq 0 ]] && log "no nested env files found"
 
-log "symlinked $ENV_COUNT env file(s) total"
+log "copied $ENV_COUNT env file(s) total"
 
 # ── Install dependencies ──────────────────────────────────
 DEPS_STATUS="skipped"

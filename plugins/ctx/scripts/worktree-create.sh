@@ -1,5 +1,5 @@
 #!/bin/bash
-# worktree-create.sh — Create an isolated git worktree with env symlinks and deps.
+# worktree-create.sh — Create an isolated git worktree with env copies and deps.
 # Pure function: args in, structured output out. No interactive prompts.
 #
 # Usage:
@@ -78,7 +78,7 @@ git -C "$WORKTREE_DIR" sparse-checkout set --no-cone '/*' '!/factory/' 2>&1 >&2 
   echo "Warning: sparse-checkout setup failed — factory/ may be present in worktree" >&2
 }
 
-# ── Symlink env files ─────────────────────────────────────
+# ── Copy env files ────────────────────────────────────────
 ENV_COUNT=0
 
 # Root-level env files (only gitignored real files — templates/examples are tracked)
@@ -88,18 +88,18 @@ for f in "$REPO_ROOT"/.env*; do
   BASENAME=$(basename "$f")
   TARGET="$WORKTREE_DIR/$BASENAME"
   if [[ ! -e "$TARGET" ]]; then
-    ln -s "$f" "$TARGET" && ENV_COUNT=$((ENV_COUNT + 1))
+    cp "$f" "$TARGET" && ENV_COUNT=$((ENV_COUNT + 1))
   fi
 done
 
-# Monorepo: recreate symlinks that point to root env files
+# Monorepo: recreate copies of symlinked env files
 while IFS= read -r link; do
   [[ -z "$link" ]] && continue
   REL_PATH="${link#$REPO_ROOT/}"
   LINK_TARGET=$(readlink "$link")
   DEST="$WORKTREE_DIR/$REL_PATH"
   DEST_DIR=$(dirname "$DEST")
-  [[ -d "$DEST_DIR" ]] && [[ ! -e "$DEST" ]] && ln -s "$LINK_TARGET" "$DEST" && ENV_COUNT=$((ENV_COUNT + 1))
+  [[ -d "$DEST_DIR" ]] && [[ ! -e "$DEST" ]] && cp -L "$link" "$DEST" && ENV_COUNT=$((ENV_COUNT + 1))
 done < <(find "$REPO_ROOT" -name ".env*" -type l 2>/dev/null)
 
 # Nested gitignored env files (e.g. src/app/.env) — real files in subdirectories
@@ -108,15 +108,15 @@ while IFS= read -r envfile; do
   # Skip root-level (already handled above) and symlinks
   [[ "$envfile" == "$REPO_ROOT"/.env* ]] && continue
   [[ -L "$envfile" ]] && continue
-  # Only symlink if gitignored (tracked files are already in the worktree)
+  # Only copy if gitignored (tracked files are already in the worktree)
   git -C "$REPO_ROOT" check-ignore -q "$envfile" 2>/dev/null || continue
   REL_PATH="${envfile#$REPO_ROOT/}"
   DEST="$WORKTREE_DIR/$REL_PATH"
   DEST_DIR=$(dirname "$DEST")
-  [[ -d "$DEST_DIR" ]] && [[ ! -e "$DEST" ]] && ln -s "$envfile" "$DEST" && ENV_COUNT=$((ENV_COUNT + 1))
+  [[ -d "$DEST_DIR" ]] && [[ ! -e "$DEST" ]] && cp "$envfile" "$DEST" && ENV_COUNT=$((ENV_COUNT + 1))
 done < <(find "$REPO_ROOT" -name ".env*" -type f 2>/dev/null)
 
-echo "Symlinked $ENV_COUNT env file(s)" >&2
+echo "Copied $ENV_COUNT env file(s)" >&2
 
 # ── Install dependencies ──────────────────────────────────
 DEPS_STATUS="skipped"
