@@ -574,18 +574,6 @@ async function handleDiscover(req, res) {
     } catch (err) {
       jsonResponse(res, 500, { error: err.message });
     }
-  } else if (projectDir) {
-    const prototypesDir = path.join(projectDir, "prototypes");
-    if (!fs.existsSync(prototypesDir)) {
-      jsonResponse(res, 200, []);
-      return;
-    }
-    const files = fs.readdirSync(prototypesDir).filter(f => f.endsWith(".html"));
-    jsonResponse(res, 200, files.map(f => ({
-      id: f.replace(/\.html$/, ""),
-      label: f.replace(/\.html$/, ""),
-      path: f,
-    })));
   } else {
     jsonResponse(res, 200, []);
   }
