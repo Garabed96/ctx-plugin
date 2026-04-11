@@ -420,7 +420,7 @@ function serveFactory(res, targetPage) {
   res.end(content);
 }
 
-function servePrototype(res, filePath) {
+function servePage(res, filePath) {
   if (!pagesRoot) {
     res.writeHead(400, { "Content-Type": "text/plain" });
     res.end("No --project-dir configured");
@@ -434,7 +434,7 @@ function servePrototype(res, filePath) {
   }
   if (!fs.existsSync(resolved)) {
     res.writeHead(404, { "Content-Type": "text/plain" });
-    res.end(`Prototype not found: ${filePath}`);
+    res.end(`Page not found: ${filePath}`);
     return;
   }
   let content = fs.readFileSync(resolved, "utf8");
@@ -713,8 +713,8 @@ const server = http.createServer((req, res) => {
     handleStatus(req, res);
   } else if (parsed.pathname === "/playground") {
     servePlayground(res);
-  } else if (parsed.pathname === "/prototype" && parsed.searchParams.get("file")) {
-    servePrototype(res, parsed.searchParams.get("file"));
+  } else if (parsed.pathname === "/page" && parsed.searchParams.get("file")) {
+    servePage(res, parsed.searchParams.get("file"));
   } else if (parsed.pathname === "/api/slots") {
     jsonResponse(res, 200, scanSlots());
   } else if (parsed.pathname === "/api/write" && req.method === "POST") {

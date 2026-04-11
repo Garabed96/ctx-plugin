@@ -173,7 +173,7 @@ function renderCards(pages) {
     thumb.className = 'card-thumb';
     if (p.latestFile) {
       var iframe = document.createElement('iframe');
-      iframe.src = '/prototype?file=' + encodeURIComponent(p.latestFile);
+      iframe.src = '/page?file=' + encodeURIComponent(p.latestFile);
       iframe.setAttribute('loading', 'lazy');
       iframe.setAttribute('tabindex', '-1');
       thumb.appendChild(iframe);
