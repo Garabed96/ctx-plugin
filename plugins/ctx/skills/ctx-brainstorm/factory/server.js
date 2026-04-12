@@ -477,8 +477,8 @@ function serveBrainstorm(res) {
 
 function scanSlots() {
   if (!pagesRoot) return [];
-  const prototypesDir = path.join(pagesRoot, "factory/pages");
-  if (!fs.existsSync(prototypesDir)) return [];
+  const factoryPagesDir = path.join(pagesRoot, "factory/pages");
+  if (!fs.existsSync(factoryPagesDir)) return [];
 
   const slots = new Map();
 
@@ -512,7 +512,7 @@ function scanSlots() {
     }
   }
 
-  scan(prototypesDir, "");
+  scan(factoryPagesDir, "");
 
   // Sort iterations within each slot by version number
   const result = [];
