@@ -1,0 +1,41 @@
+{
+  "name": "ctx-codex",
+  "version": "0.2.9.5",
+  "description": "Context economy workflow toolkit for Codex: brainstorm, plan, execute, verify, ship, and manage worktree handoffs with minimal token spend.",
+  "author": {
+    "name": "Garo Nazarian",
+    "url": "https://github.com/Garabed96/ctx-plugin"
+  },
+  "homepage": "https://github.com/Garabed96/ctx-plugin",
+  "repository": "https://github.com/Garabed96/ctx-plugin",
+  "license": "UNLICENSED",
+  "keywords": [
+    "codex",
+    "coding",
+    "workflow",
+    "planning",
+    "worktree",
+    "verification"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "CTX Codex",
+    "shortDescription": "Planning, execution, verification, and worktree workflows",
+    "longDescription": "Personal context-engineering workflow ported for Codex. Adds ctx-* skills for brainstorming, implementation planning, verification, shipping, and session continuity in worktree-heavy development flows.",
+    "developerName": "Garo Nazarian",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/Garabed96/ctx-plugin",
+    "privacyPolicyURL": "https://github.com/Garabed96/ctx-plugin",
+    "termsOfServiceURL": "https://github.com/Garabed96/ctx-plugin",
+    "defaultPrompt": [
+      "Use ctx-plan to turn this feature spec into an implementation plan",
+      "Use ctx-worktree to prepare an isolated branch and handoff context",
+      "Use ctx-verify before we claim this change is done"
+    ],
+    "brandColor": "#0F766E"
+  }
+}
