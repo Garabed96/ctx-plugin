@@ -4,10 +4,10 @@
   "description": "Context economy workflow toolkit for Codex: brainstorm, plan, execute, verify, ship, and manage worktree handoffs with minimal token spend.",
   "author": {
     "name": "Garo Nazarian",
-    "url": "https://github.com/Garabed96/context-plugin"
+    "url": "https://github.com/Garabed96/ctx-plugin"
   },
-  "homepage": "https://github.com/Garabed96/context-plugin",
-  "repository": "https://github.com/Garabed96/context-plugin",
+  "homepage": "https://github.com/Garabed96/ctx-plugin",
+  "repository": "https://github.com/Garabed96/ctx-plugin",
   "license": "UNLICENSED",
   "keywords": [
     "codex",
@@ -28,9 +28,9 @@
       "Interactive",
       "Write"
     ],
-    "websiteURL": "https://github.com/Garabed96/context-plugin",
-    "privacyPolicyURL": "https://github.com/Garabed96/context-plugin",
-    "termsOfServiceURL": "https://github.com/Garabed96/context-plugin",
+    "websiteURL": "https://github.com/Garabed96/ctx-plugin",
+    "privacyPolicyURL": "https://github.com/Garabed96/ctx-plugin",
+    "termsOfServiceURL": "https://github.com/Garabed96/ctx-plugin",
     "defaultPrompt": [
       "Use ctx-plan to turn this feature spec into an implementation plan",
       "Use ctx-worktree to prepare an isolated branch and handoff context",
