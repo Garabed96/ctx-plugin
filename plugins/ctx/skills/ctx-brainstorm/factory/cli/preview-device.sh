@@ -53,7 +53,7 @@ echo "Device: $DEVICE" >&2
 if [[ -n "$FULL_URL" ]]; then
   URL="$FULL_URL"
 elif [[ -n "$PROTO_FILE" ]]; then
-  URL="http://localhost:${PORT}/prototype?file=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${PROTO_FILE}'))")"
+  URL="http://localhost:${PORT}/page?file=$(python3 -c "import urllib.parse; print(urllib.parse.quote('${PROTO_FILE}'))")"
 elif [[ -n "$URL_PATH" ]]; then
   URL="http://localhost:${PORT}${URL_PATH}"
 else

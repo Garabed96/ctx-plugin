@@ -392,7 +392,7 @@ const previewContainer = document.getElementById('preview-container');
 if (protoFile) {
   const iframe = document.createElement('iframe');
   iframe.className = 'preview-iframe';
-  iframe.src = '/prototype?file=' + encodeURIComponent(protoFile);
+  iframe.src = '/page?file=' + encodeURIComponent(protoFile);
   previewContainer.appendChild(iframe);
 } else {
   const placeholder = document.createElement('div');

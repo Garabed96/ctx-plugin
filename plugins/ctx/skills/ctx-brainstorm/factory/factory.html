@@ -672,7 +672,7 @@ function setPreview(filePath) {
   if (placeholder) placeholder.style.display = 'none';
 
   var existing = container.querySelector('.preview-iframe');
-  var url = '/prototype?file=' + encodeURIComponent(filePath);
+  var url = '/page?file=' + encodeURIComponent(filePath);
   if (existing) {
     existing.src = url;
   } else {
@@ -1304,7 +1304,7 @@ function enterCompareMode(items) {
     if (item.file) {
       var iframe = document.createElement('iframe');
       iframe.className = 'compare-iframe';
-      iframe.src = '/prototype?file=' + encodeURIComponent(item.file);
+      iframe.src = '/page?file=' + encodeURIComponent(item.file);
       col.appendChild(iframe);
     } else {
       var notFound = document.createElement('div');
@@ -1334,7 +1334,7 @@ function exitCompareMode() {
     savedChildren = null;
     var iframe = document.querySelector('.preview-iframe');
     if (iframe && activeFile) {
-      iframe.src = '/prototype?file=' + encodeURIComponent(activeFile);
+      iframe.src = '/page?file=' + encodeURIComponent(activeFile);
     }
   }
 }

@@ -420,7 +420,7 @@ function serveFactory(res, targetPage) {
   res.end(content);
 }
 
-function servePrototype(res, filePath) {
+function servePage(res, filePath) {
   if (!pagesRoot) {
     res.writeHead(400, { "Content-Type": "text/plain" });
     res.end("No --project-dir configured");
@@ -434,7 +434,7 @@ function servePrototype(res, filePath) {
   }
   if (!fs.existsSync(resolved)) {
     res.writeHead(404, { "Content-Type": "text/plain" });
-    res.end(`Prototype not found: ${filePath}`);
+    res.end(`Page not found: ${filePath}`);
     return;
   }
   let content = fs.readFileSync(resolved, "utf8");
@@ -477,8 +477,8 @@ function serveBrainstorm(res) {
 
 function scanSlots() {
   if (!pagesRoot) return [];
-  const prototypesDir = path.join(pagesRoot, "factory/pages");
-  if (!fs.existsSync(prototypesDir)) return [];
+  const factoryPagesDir = path.join(pagesRoot, "factory/pages");
+  if (!fs.existsSync(factoryPagesDir)) return [];
 
   const slots = new Map();
 
@@ -512,7 +512,7 @@ function scanSlots() {
     }
   }
 
-  scan(prototypesDir, "");
+  scan(factoryPagesDir, "");
 
   // Sort iterations within each slot by version number
   const result = [];
@@ -574,18 +574,6 @@ async function handleDiscover(req, res) {
     } catch (err) {
       jsonResponse(res, 500, { error: err.message });
     }
-  } else if (projectDir) {
-    const prototypesDir = path.join(projectDir, "prototypes");
-    if (!fs.existsSync(prototypesDir)) {
-      jsonResponse(res, 200, []);
-      return;
-    }
-    const files = fs.readdirSync(prototypesDir).filter(f => f.endsWith(".html"));
-    jsonResponse(res, 200, files.map(f => ({
-      id: f.replace(/\.html$/, ""),
-      label: f.replace(/\.html$/, ""),
-      path: f,
-    })));
   } else {
     jsonResponse(res, 200, []);
   }
@@ -725,8 +713,8 @@ const server = http.createServer((req, res) => {
     handleStatus(req, res);
   } else if (parsed.pathname === "/playground") {
     servePlayground(res);
-  } else if (parsed.pathname === "/prototype" && parsed.searchParams.get("file")) {
-    servePrototype(res, parsed.searchParams.get("file"));
+  } else if (parsed.pathname === "/page" && parsed.searchParams.get("file")) {
+    servePage(res, parsed.searchParams.get("file"));
   } else if (parsed.pathname === "/api/slots") {
     jsonResponse(res, 200, scanSlots());
   } else if (parsed.pathname === "/api/write" && req.method === "POST") {
