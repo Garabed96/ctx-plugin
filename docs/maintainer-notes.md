@@ -43,9 +43,9 @@ git push origin vX.Y.Z
 |---|---|---|
 | `/` | `serveBrainstorm` | newest HTML from the transient brainstorm session dir (ephemeral) |
 | `/factory` or `/factory/` | `servePortfolio` | `portfolio.html` — persistent prototype landing page |
-| `/factory/<page>` | `serveFactory(page)` | `factory.html` — per-page editor with sidebar, click-to-select, style controls |
+| `/factory/<group>/<page>` | `serveFactory(page)` | `factory.html` — per-page editor with grouped sidebar, click-to-select, style controls |
 | `/playground` | `servePlayground` | `playground.html` |
 | `/prototype?file=...` | `servePrototype` | raw prototype HTML, used by iframes |
 | `/api/*` | various | slots, write, compare, style-profile, scan, etc. |
 
-**Common gotcha:** `/factory` alone does NOT serve `factory.html` — it serves `portfolio.html` (the landing page). To reach the editor with the sidebar you need `/factory/<page>`.
+**Common gotcha:** `/factory` alone does NOT serve `factory.html` — it serves `portfolio.html` (the landing page). To reach the editor with the sidebar you need `/factory/<group>/<page>`.

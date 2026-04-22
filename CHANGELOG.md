@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.9.6 (2026-04-22)
+
+- **Factory grouped navigation (CTX-46)** — factory prototypes can now be stored under `factory/pages/<group>/<page>/`, `scanSlots()` exposes group metadata, `/api/write` accepts a `group` field, the editor sidebar renders collapsible group sections, the top-bar version dropdown is scoped to the active page, and left/right arrows switch pages independently of version selection. Deep links and portfolio cards now support grouped page paths.
+
 ## 0.2.9.4 (2026-04-08)
 
 - **Factory rename — skill source** — completes the rename started in v0.2.9.2. `plugins/ctx/skills/ctx-brainstorm/companion/` → `factory/`, plus all path references, reference docs (`companion-guide.md` → `factory-guide.md`, `companion-frontend.md` → `factory-frontend.md`), and UX/feature language in the `ctx-brainstorm` and `ctx-brainstorm-ss` skill docs. Plugin interface file `companion.config.js` stays unchanged.

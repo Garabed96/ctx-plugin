@@ -100,6 +100,11 @@
     color: #a5b4fc;
     border: 1px solid #312e81;
   }
+  .badge-group {
+    background: #172554;
+    color: #93c5fd;
+    border: 1px solid #1d4ed8;
+  }
   .badge-selected {
     background: #042f2e;
     color: #5eead4;
@@ -138,6 +143,12 @@
 </div>
 
 <script>
+function buildFactoryHref(page) {
+  return '/factory/' + page.split('/').map(function(part) {
+    return encodeURIComponent(part);
+  }).join('/');
+}
+
 function relativeTime(iso) {
   if (!iso) return '';
   var diff = Date.now() - new Date(iso).getTime();
@@ -166,7 +177,7 @@ function renderCards(pages) {
   pages.forEach(function(p) {
     var card = document.createElement('div');
     card.className = 'card';
-    card.onclick = function() { window.location.href = '/factory/' + encodeURIComponent(p.page); };
+    card.onclick = function() { window.location.href = buildFactoryHref(p.page); };
 
     // Thumbnail
     var thumb = document.createElement('div');
@@ -186,7 +197,7 @@ function renderCards(pages) {
 
     var name = document.createElement('div');
     name.className = 'card-name';
-    name.textContent = p.page;
+    name.textContent = p.name || p.page;
     body.appendChild(name);
 
     var meta = document.createElement('div');
@@ -196,6 +207,13 @@ function renderCards(pages) {
     vBadge.className = 'badge badge-versions';
     vBadge.textContent = p.versions + (p.versions === 1 ? ' version' : ' versions');
     meta.appendChild(vBadge);
+
+    if (p.group && p.group !== 'Ungrouped') {
+      var gBadge = document.createElement('span');
+      gBadge.className = 'badge badge-group';
+      gBadge.textContent = p.group;
+      meta.appendChild(gBadge);
+    }
 
     if (p.selectedOption) {
       var sBadge = document.createElement('span');

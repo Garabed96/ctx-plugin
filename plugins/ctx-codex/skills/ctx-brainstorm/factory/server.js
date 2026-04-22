@@ -420,6 +420,18 @@ function serveFactory(res, targetPage) {
   res.end(content);
 }
 
+function decodeFactoryPath(value) {
+  try {
+    return value
+      .split("/")
+      .filter(Boolean)
+      .map(segment => decodeURIComponent(segment))
+      .join("/");
+  } catch {
+    return value;
+  }
+}
+
 function servePrototype(res, filePath) {
   if (!pagesRoot) {
     res.writeHead(400, { "Content-Type": "text/plain" });
@@ -475,10 +487,35 @@ function serveBrainstorm(res) {
 
 // ========== Slot Scanner ==========
 
+const DEFAULT_FACTORY_GROUP = "Ungrouped";
+
+function describeSlotPath(relativeDir) {
+  const segments = relativeDir.split("/").filter(Boolean);
+  if (segments.length === 0) {
+    return { group: DEFAULT_FACTORY_GROUP, page: "root", slot: "root" };
+  }
+  if (segments.length === 1) {
+    return {
+      group: DEFAULT_FACTORY_GROUP,
+      page: segments[0],
+      slot: segments[0],
+    };
+  }
+  return {
+    group: segments[0],
+    page: segments.slice(1).join("/"),
+    slot: segments.join("/"),
+  };
+}
+
+function sanitizePathPart(value) {
+  return String(value || "").trim().replace(/[^a-zA-Z0-9_-]/g, "");
+}
+
 function scanSlots() {
   if (!pagesRoot) return [];
-  const prototypesDir = path.join(pagesRoot, "factory/pages");
-  if (!fs.existsSync(prototypesDir)) return [];
+  const factoryPagesDir = path.join(pagesRoot, "factory/pages");
+  if (!fs.existsSync(factoryPagesDir)) return [];
 
   const slots = new Map();
 
@@ -497,41 +534,57 @@ function scanSlots() {
       if (stat.isDirectory()) {
         scan(fullPath, prefix ? prefix + "/" + entry.name : entry.name);
       } else if (entry.name.endsWith(".html")) {
-        const slotName = prefix || "root";
         const filePath = prefix ? prefix + "/" + entry.name : entry.name;
         const baseName = entry.name.replace(/\.html$/, "");
+        const slotMeta = describeSlotPath(prefix || "");
+        const slotName = slotMeta.slot;
 
         // Parse version: name-v2 → "v2", name-v2-bold → "v2-bold", name → "v1"
         const vMatch = baseName.match(/-v(\d+.*)$/);
         const label = vMatch ? "v" + vMatch[1] : "v1";
         const slug = slotName + "--" + baseName;
 
-        if (!slots.has(slotName)) slots.set(slotName, []);
-        slots.get(slotName).push({ slug, label, file: filePath });
+        if (!slots.has(slotName)) {
+          slots.set(slotName, {
+            group: slotMeta.group,
+            page: slotMeta.page,
+            slot: slotName,
+            iterations: [],
+          });
+        }
+        slots.get(slotName).iterations.push({ slug, label, file: filePath });
       }
     }
   }
 
-  scan(prototypesDir, "");
+  scan(factoryPagesDir, "");
 
   // Sort iterations within each slot by version number
   const result = [];
-  for (const [slot, iterations] of slots) {
-    iterations.sort((a, b) => {
+  for (const [, slotData] of slots) {
+    slotData.iterations.sort((a, b) => {
       const aNum = parseInt((a.label.match(/\d+/) || ["0"])[0]);
       const bNum = parseInt((b.label.match(/\d+/) || ["0"])[0]);
-      return aNum - bNum;
+      if (aNum !== bNum) return aNum - bNum;
+      return a.label.localeCompare(b.label);
     });
-    result.push({ slot, iterations });
+    result.push(slotData);
   }
-  result.sort((a, b) => a.slot.localeCompare(b.slot));
+  result.sort((a, b) => {
+    const groupCompare = a.group.localeCompare(b.group);
+    if (groupCompare !== 0) return groupCompare;
+    return a.page.localeCompare(b.page);
+  });
   return result;
 }
 
 // ========== Auto-Versioning ==========
 
-function nextVersionPath(page) {
-  const pagesDir = path.join(pagesRoot, "factory/pages", page);
+function nextVersionPath(group, page) {
+  const cleanGroup = sanitizePathPart(group);
+  const cleanPage = sanitizePathPart(page);
+  const relativeDir = cleanGroup ? `${cleanGroup}/${cleanPage}` : cleanPage;
+  const pagesDir = path.join(pagesRoot, "factory/pages", relativeDir);
   fs.mkdirSync(pagesDir, { recursive: true });
   const existing = fs.readdirSync(pagesDir).filter(f => f.endsWith(".html"));
   let maxVersion = 0;
@@ -541,9 +594,10 @@ function nextVersionPath(page) {
   }
   const next = maxVersion + 1;
   return {
-    filePath: path.join(pagesDir, `${page}-v${next}.html`),
-    relativePath: `${page}/${page}-v${next}.html`,
+    filePath: path.join(pagesDir, `${cleanPage}-v${next}.html`),
+    relativePath: `${relativeDir}/${cleanPage}-v${next}.html`,
     version: `v${next}`,
+    pagePath: relativeDir,
   };
 }
 
@@ -634,14 +688,20 @@ async function handleWrite(req, res) {
     jsonResponse(res, 400, { error: "Missing page or content" });
     return;
   }
-  const page = body.page.replace(/[^a-zA-Z0-9_-]/g, "");
+  const page = sanitizePathPart(body.page);
   if (!page) {
     jsonResponse(res, 400, { error: "Invalid page name" });
     return;
   }
-  const { filePath, relativePath, version } = nextVersionPath(page);
+  const rawGroup = body.group == null ? "" : String(body.group).trim();
+  const group = sanitizePathPart(rawGroup);
+  if (rawGroup && !group) {
+    jsonResponse(res, 400, { error: "Invalid group name" });
+    return;
+  }
+  const { filePath, relativePath, version, pagePath } = nextVersionPath(group, page);
   fs.writeFileSync(filePath, body.content);
-  jsonResponse(res, 200, { file: relativePath, version });
+  jsonResponse(res, 200, { file: relativePath, version, page: pagePath, group: group || null });
 }
 
 function handlePageStatus(req, res) {
@@ -679,7 +739,15 @@ function handlePageStatus(req, res) {
       }
     }
 
-    return { page, versions, latestFile, selectedOption, lastModified };
+    return {
+      page,
+      group: slotData.group,
+      name: slotData.page,
+      versions,
+      latestFile,
+      selectedOption,
+      lastModified,
+    };
   });
   jsonResponse(res, 200, result);
 }
@@ -768,7 +836,7 @@ const server = http.createServer((req, res) => {
     if (!tail || tail === "/") {
       servePortfolio(res);
     } else if (tail.startsWith("/")) {
-      serveFactory(res, tail.slice(1));
+      serveFactory(res, decodeFactoryPath(tail.slice(1)));
     } else {
       serveFactory(res);
     }

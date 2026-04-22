@@ -55,6 +55,23 @@
     min-width: 180px;
   }
   .proto-select:focus { outline: none; border-color: #818cf8; }
+  .page-nav {
+    display: flex;
+    gap: 0.3rem;
+  }
+  .page-nav-btn {
+    background: #0f172a;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.12s;
+  }
+  .page-nav-btn:hover:not(:disabled) { border-color: #818cf8; color: #c7d2fe; }
+  .page-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   /* Viewport pills */
   .viewport-pills {
@@ -158,6 +175,45 @@
   }
 
   /* Pages section */
+  .page-group {
+    margin-bottom: 0.55rem;
+  }
+  .page-group-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.28rem 0.1rem 0.38rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  .page-group-title {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+  }
+  .page-group-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+  .page-group-count {
+    font-size: 0.6rem;
+    color: #475569;
+  }
+  .page-group-chevron {
+    font-size: 0.72rem;
+    color: #64748b;
+  }
+  .page-group-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.12rem;
+  }
   .page-row {
     display: flex;
     align-items: center;
@@ -503,6 +559,10 @@
     <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">&#9776;</button>
     <span class="top-bar-title">Tinker Factory</span>
     <span class="top-bar-context" id="top-bar-context"></span>
+    <div class="page-nav">
+      <button class="page-nav-btn" id="page-prev" onclick="goToAdjacentPage(-1)" title="Previous page" aria-label="Previous page">&larr;</button>
+      <button class="page-nav-btn" id="page-next" onclick="goToAdjacentPage(1)" title="Next page" aria-label="Next page">&rarr;</button>
+    </div>
     <select class="proto-select" id="proto-select" onchange="selectProtoFromDropdown(this.value)">
       <option value="">Loading slots...</option>
     </select>
@@ -578,6 +638,8 @@ var allSlots = [];
 var compareMode = false;
 var compareItems = [];
 var currentViewport = 'desktop';
+var expandedGroups = {};
+var previewFileBase = '/page?file=';
 
 // --- Sidebar collapse ---
 // Default collapsed; user preference persisted in localStorage.
@@ -612,6 +674,81 @@ function makeText(tag, className, text) {
   return el;
 }
 
+function buildPreviewUrl(filePath) {
+  return previewFileBase + encodeURIComponent(filePath);
+}
+
+function findSlot(slotName) {
+  for (var i = 0; i < allSlots.length; i++) {
+    if (allSlots[i].slot === slotName) return allSlots[i];
+  }
+  return null;
+}
+
+function getGroupName(slotData) {
+  return slotData && slotData.group ? slotData.group : 'Ungrouped';
+}
+
+function getPageLabel(slotData) {
+  return slotData ? (slotData.page || slotData.slot) : '';
+}
+
+function getPageContextLabel(slotData) {
+  if (!slotData) return '';
+  return getGroupName(slotData) === 'Ungrouped'
+    ? getPageLabel(slotData)
+    : getGroupName(slotData) + ' / ' + getPageLabel(slotData);
+}
+
+function updatePageNavButtons() {
+  var prev = document.getElementById('page-prev');
+  var next = document.getElementById('page-next');
+  var index = -1;
+
+  for (var i = 0; i < allSlots.length; i++) {
+    if (allSlots[i].slot === activePage) {
+      index = i;
+      break;
+    }
+  }
+
+  prev.disabled = index <= 0;
+  next.disabled = index === -1 || index >= allSlots.length - 1;
+}
+
+function goToAdjacentPage(direction) {
+  if (!activePage) return;
+  for (var i = 0; i < allSlots.length; i++) {
+    if (allSlots[i].slot === activePage) {
+      var target = allSlots[i + direction];
+      if (target) activatePage(target.slot, true);
+      return;
+    }
+  }
+}
+
+function renderProtoSelect() {
+  var protoSelect = document.getElementById('proto-select');
+  clearChildren(protoSelect);
+
+  var slotData = findSlot(activePage);
+  if (!slotData) {
+    var emptyOpt = document.createElement('option');
+    emptyOpt.value = '';
+    emptyOpt.textContent = 'Select a page';
+    protoSelect.appendChild(emptyOpt);
+    return;
+  }
+
+  slotData.iterations.forEach(function(iter) {
+    var opt = document.createElement('option');
+    opt.value = iter.file;
+    opt.textContent = iter.label;
+    if (iter.file === activeFile) opt.selected = true;
+    protoSelect.appendChild(opt);
+  });
+}
+
 // --- Viewport ---
 function setViewport(v) {
   currentViewport = v;
@@ -639,10 +776,11 @@ function setViewport(v) {
 // --- Top bar context ---
 function updateTopBarContext() {
   var ctx = document.getElementById('top-bar-context');
-  if (activePage && activeVersion) {
-    ctx.textContent = activePage + ' / ' + activeVersion;
-  } else if (activePage) {
-    ctx.textContent = activePage;
+  var slotData = findSlot(activePage);
+  if (slotData && activeVersion) {
+    ctx.textContent = getPageContextLabel(slotData) + ' / ' + activeVersion;
+  } else if (slotData) {
+    ctx.textContent = getPageContextLabel(slotData);
   } else {
     ctx.textContent = '';
   }
@@ -672,7 +810,7 @@ function setPreview(filePath) {
   if (placeholder) placeholder.style.display = 'none';
 
   var existing = container.querySelector('.preview-iframe');
-  var url = '/page?file=' + encodeURIComponent(filePath);
+  var url = buildPreviewUrl(filePath);
   if (existing) {
     existing.src = url;
   } else {
@@ -703,48 +841,120 @@ function setPreview(filePath) {
 
 function selectProtoFromDropdown(filePath) {
   if (!filePath) return;
-  for (var s = 0; s < allSlots.length; s++) {
-    var slotData = allSlots[s];
-    for (var it = 0; it < slotData.iterations.length; it++) {
-      var iter = slotData.iterations[it];
-      if (iter.file === filePath) {
-        activatePage(slotData.slot, false);
-        activeVersion = iter.label;
-        setPreview(filePath);
-        sendEvent({ type: 'select', slot: slotData.slot, iteration: iter.slug.split('--')[1] || iter.slug });
-        return;
-      }
+  var slotData = findSlot(activePage);
+  if (!slotData) return;
+  for (var it = 0; it < slotData.iterations.length; it++) {
+    var iter = slotData.iterations[it];
+    if (iter.file === filePath) {
+      activeVersion = iter.label;
+      setPreview(filePath);
+      sendEvent({ type: 'select', slot: slotData.slot, iteration: iter.slug.split('--')[1] || iter.slug });
+      return;
     }
   }
-  setPreview(filePath);
+}
+
+function toggleGroup(groupName) {
+  expandedGroups[groupName] = !expandedGroups[groupName];
+  renderPagesList();
+}
+
+function renderPagesList() {
+  var pagesList = document.getElementById('pages-list');
+  clearChildren(pagesList);
+
+  if (!allSlots || allSlots.length === 0) {
+    pagesList.appendChild(makeText('span', 'empty-hint', 'No prototype pages found'));
+    return;
+  }
+
+  var grouped = {};
+  var order = [];
+  allSlots.forEach(function(slotData) {
+    var groupName = getGroupName(slotData);
+    if (!grouped[groupName]) {
+      grouped[groupName] = [];
+      order.push(groupName);
+      if (expandedGroups[groupName] == null) expandedGroups[groupName] = true;
+    }
+    grouped[groupName].push(slotData);
+  });
+
+  order.forEach(function(groupName) {
+    var group = document.createElement('div');
+    group.className = 'page-group';
+
+    var header = document.createElement('button');
+    header.className = 'page-group-header';
+    header.type = 'button';
+    header.onclick = function() { toggleGroup(groupName); };
+
+    header.appendChild(makeText('span', 'page-group-title', groupName));
+
+    var meta = document.createElement('span');
+    meta.className = 'page-group-meta';
+    meta.appendChild(makeText('span', 'page-group-count', grouped[groupName].length + ''));
+    meta.appendChild(makeText('span', 'page-group-chevron', expandedGroups[groupName] ? '\u25be' : '\u25b8'));
+    header.appendChild(meta);
+    group.appendChild(header);
+
+    var rows = document.createElement('div');
+    rows.className = 'page-group-rows';
+    rows.style.display = expandedGroups[groupName] ? '' : 'none';
+
+    grouped[groupName].forEach(function(slotData) {
+      var row = document.createElement('div');
+      row.className = 'page-row' + (slotData.slot === activePage ? ' active' : '');
+      row.dataset.slot = slotData.slot;
+
+      row.appendChild(makeText('span', 'page-row-name', getPageLabel(slotData)));
+      row.appendChild(makeText('span', 'page-row-count', slotData.iterations.length + ''));
+      row.onclick = function() { activatePage(slotData.slot, true); };
+
+      rows.appendChild(row);
+    });
+
+    group.appendChild(rows);
+    pagesList.appendChild(group);
+  });
+}
+
+function selectInitialPage() {
+  var target = window.__factoryPage;
+  if (target && findSlot(target)) {
+    activatePage(target, true);
+    return;
+  }
+  if (allSlots.length > 0) {
+    activatePage(allSlots[0].slot, true);
+  } else {
+    updatePageNavButtons();
+  }
 }
 
 // --- Pages ---
-function activatePage(slotName, autoSelectFirst) {
-  activePage = slotName;
+function activatePage(slotName, autoSelectLatest) {
+  var slotData = findSlot(slotName);
+  if (!slotData) return;
 
-  var rows = document.querySelectorAll('.page-row');
-  for (var i = 0; i < rows.length; i++) {
-    rows[i].classList.toggle('active', rows[i].dataset.slot === slotName);
-  }
+  activePage = slotName;
+  renderPagesList();
 
   var versionsSection = document.getElementById('versions-section');
   versionsSection.style.display = '';
   renderVersionPills(slotName);
+  renderProtoSelect();
+  updatePageNavButtons();
 
-  if (autoSelectFirst) {
-    var slotData = null;
-    for (var s = 0; s < allSlots.length; s++) {
-      if (allSlots[s].slot === slotName) { slotData = allSlots[s]; break; }
-    }
-    if (slotData && slotData.iterations.length > 0) {
-      var last = slotData.iterations[slotData.iterations.length - 1];
-      activeVersion = last.label;
-      setPreview(last.file);
-      sendEvent({ type: 'select', slot: slotName, iteration: last.slug.split('--')[1] || last.slug });
-    }
+  if (autoSelectLatest && slotData.iterations.length > 0) {
+    var last = slotData.iterations[slotData.iterations.length - 1];
+    activeVersion = last.label;
+    setPreview(last.file);
+    sendEvent({ type: 'select', slot: slotName, iteration: last.slug.split('--')[1] || last.slug });
+    return;
   }
 
+  updateVersionPills();
   updateTopBarContext();
 }
 
@@ -752,10 +962,7 @@ function renderVersionPills(slotName) {
   var pillsEl = document.getElementById('version-pills');
   clearChildren(pillsEl);
 
-  var slotData = null;
-  for (var s = 0; s < allSlots.length; s++) {
-    if (allSlots[s].slot === slotName) { slotData = allSlots[s]; break; }
-  }
+  var slotData = findSlot(slotName);
   if (!slotData) return;
 
   slotData.iterations.forEach(function(iter) {
@@ -765,13 +972,11 @@ function renderVersionPills(slotName) {
     pill.dataset.file = iter.file;
     pill.dataset.label = iter.label;
     pill.title = iter.file;
-    (function(sn, slug, file, label) {
-      pill.onclick = function() {
-        activeVersion = label;
-        setPreview(file);
-        sendEvent({ type: 'select', slot: sn, iteration: slug.split('--')[1] || slug });
-      };
-    })(slotName, iter.slug, iter.file, iter.label);
+    pill.onclick = function() {
+      activeVersion = iter.label;
+      setPreview(iter.file);
+      sendEvent({ type: 'select', slot: slotName, iteration: iter.slug.split('--')[1] || iter.slug });
+    };
     pillsEl.appendChild(pill);
   });
 }
@@ -785,20 +990,21 @@ function updateVersionPills() {
 
 // --- Slot rendering ---
 function renderSlots(slots) {
-  allSlots = slots;
+  allSlots = slots || [];
 
-  var pagesList = document.getElementById('pages-list');
   var protoSelect = document.getElementById('proto-select');
   var versionsSection = document.getElementById('versions-section');
 
-  clearChildren(pagesList);
+  activeFile = null;
+  activePage = null;
+  activeVersion = null;
+
   clearChildren(protoSelect);
   versionsSection.style.display = 'none';
   clearChildren(document.getElementById('version-pills'));
+  renderPagesList();
 
-  if (!slots || slots.length === 0) {
-    pagesList.appendChild(makeText('span', 'empty-hint', 'No prototype pages found'));
-
+  if (!allSlots.length) {
     var noOpt = document.createElement('option');
     noOpt.value = '';
     noOpt.textContent = 'No prototypes';
@@ -809,42 +1015,12 @@ function renderSlots(slots) {
       ph.style.display = '';
       document.getElementById('preview-placeholder-msg').textContent = 'No prototype files found in factory/pages/';
     }
+    updateTopBarContext();
+    updatePageNavButtons();
     return;
   }
 
-  var blankOpt = document.createElement('option');
-  blankOpt.value = '';
-  blankOpt.textContent = 'Jump to...';
-  protoSelect.appendChild(blankOpt);
-
-  slots.forEach(function(slotData) {
-    var slotName = slotData.slot;
-    var iterations = slotData.iterations;
-
-    var row = document.createElement('div');
-    row.className = 'page-row';
-    row.dataset.slot = slotName;
-
-    row.appendChild(makeText('span', 'page-row-name', slotName));
-    row.appendChild(makeText('span', 'page-row-count', iterations.length + ''));
-
-    (function(sn) {
-      row.onclick = function() { activatePage(sn, true); };
-    })(slotName);
-
-    pagesList.appendChild(row);
-
-    iterations.forEach(function(iter) {
-      var opt = document.createElement('option');
-      opt.value = iter.file;
-      opt.textContent = slotName + ' / ' + iter.label;
-      protoSelect.appendChild(opt);
-    });
-  });
-
-  if (slots.length > 0) {
-    activatePage(slots[0].slot, true);
-  }
+  selectInitialPage();
 }
 
 // --- Load slots ---
@@ -852,15 +1028,6 @@ fetch('/api/slots')
   .then(function(r) { return r.json(); })
   .then(function(slots) {
     renderSlots(slots);
-    if (window.__factoryPage) {
-      var target = window.__factoryPage;
-      for (var s = 0; s < allSlots.length; s++) {
-        if (allSlots[s].slot === target) {
-          activatePage(target, true);
-          return;
-        }
-      }
-    }
   })
   .catch(function(err) {
     var ph = document.getElementById('preview-placeholder');
@@ -872,6 +1039,7 @@ fetch('/api/slots')
     errOpt.value = '';
     errOpt.textContent = 'Error loading';
     document.getElementById('proto-select').appendChild(errOpt);
+    updatePageNavButtons();
   });
 
 // --- Style Controls ---
@@ -1304,7 +1472,7 @@ function enterCompareMode(items) {
     if (item.file) {
       var iframe = document.createElement('iframe');
       iframe.className = 'compare-iframe';
-      iframe.src = '/page?file=' + encodeURIComponent(item.file);
+      iframe.src = buildPreviewUrl(item.file);
       col.appendChild(iframe);
     } else {
       var notFound = document.createElement('div');
@@ -1334,7 +1502,7 @@ function exitCompareMode() {
     savedChildren = null;
     var iframe = document.querySelector('.preview-iframe');
     if (iframe && activeFile) {
-      iframe.src = '/page?file=' + encodeURIComponent(activeFile);
+      iframe.src = buildPreviewUrl(activeFile);
     }
   }
 }
