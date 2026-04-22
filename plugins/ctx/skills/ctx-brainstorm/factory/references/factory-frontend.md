@@ -52,7 +52,7 @@ Apply the Apple copy formula:
 ## Phase 3 — Prototype Implementation
 
 ### Delivery
-**Always** `POST /api/write` with `{ "page": "<name>", "content": "<html>" }`. Never Edit/Write directly — the cross-repo guard blocks it and you lose auto-versioning.
+**Always** `POST /api/write` with `{ "group": "<app-page>", "page": "<name>", "content": "<html>" }`. Ask or infer the target app page before writing. Never Edit/Write directly — the cross-repo guard blocks it and you lose auto-versioning.
 
 ### Code Rules
 - **Vanilla HTML/CSS/JS only.** No build step, no frameworks, no imports.

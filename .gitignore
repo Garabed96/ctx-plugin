@@ -9,3 +9,9 @@ docs/ctx/
 
 # Session-local specs (design docs from brainstorm sessions)
 docs/specs/
+
+# Factory runtime state
+.ctx-brainstorm/**/.server-info
+.ctx-brainstorm/**/.server-stopped
+
+.server-*

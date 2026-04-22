@@ -27,21 +27,23 @@ Content fragments are wrapped automatically by the frame template (dark theme, o
 
 For detailed prototyping with live style controls. Tell the user to open `http://localhost:<port>/factory`.
 
-**Storage:** `<project-root>/factory/pages/<page-name>/<page-name>-v<n>.html`
+**Storage:** `<project-root>/factory/pages/<group>/<page-name>/<page-name>-v<n>.html`
 
 Example:
 ```
 factory/pages/
-  landing/
-    landing-v1.html    ← first iteration
-    landing-v2.html    ← refined after feedback
+  tracker/
+    landing/
+      landing-v1.html
+      landing-v2.html
   pricing/
-    pricing-v1.html
+    pricing/
+      pricing-v1.html
 ```
 
 **The loop:**
-1. Write a full HTML page to `factory/pages/<page>/<page>-v<n>.html`
-2. Factory sidebar shows pages and versions — user clicks to preview
+1. Write a full HTML page to `factory/pages/<group>/<page>/<page>-v<n>.html`
+2. Factory sidebar shows collapsible group headers, page rows, and per-page versions — user clicks to preview
 3. User adjusts sidebar controls (colors, font, radius) to explore variations live
 4. User describes iteration in prompt bar → copies it → pastes in terminal
 5. You write the next version file

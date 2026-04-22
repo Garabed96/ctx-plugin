@@ -181,11 +181,11 @@ bash plugins/ctx/skills/ctx-brainstorm/factory/start.sh \
 ```
 
 - **Portfolio** at `/factory` — all prototype pages
-- **Editor** at `/factory/<page>` — visual brainstorming with click-to-select, style controls, version pills
+- **Editor** at `/factory/<group>/<page>` — visual brainstorming with click-to-select, grouped navigation, style controls, version pills
 - **Preview** at `/` — ephemeral view of current brainstorm output
 - **API** at `/api/write`, `/api/page-status`, `/api/slots`, `/api/style-profile`
 
-Pages stored in `<project-dir>/factory/pages/<page>/.events`. Tracked in git for iteration history. Excluded from dev worktrees via sparse-checkout.
+Pages stored in `<project-dir>/factory/pages/<group>/<page>/.events`. Tracked in git for iteration history. Excluded from dev worktrees via sparse-checkout.
 
 ## Recommended Settings
 
