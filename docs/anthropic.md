@@ -174,4 +174,4 @@ When a hook command exits with code 2, it's treated as a **blocking error**. The
 
 For `asyncRewake` hooks, exit code 2 is what triggers the model wake-up.
 
-**Commandment:** Use `exit 0` for observations and logging. Use `exit 2` with a message on stderr when you need to block the model and inject feedback. This is how your altitude-check and worktree-guard hooks communicate — make sure every blocking hook uses exit 2 with a clear, actionable message.
+**Commandment:** Use `exit 0` for observations and logging. Use `exit 2` with a message on stderr when you need to block the model and inject feedback. This is how your altitude-check hook communicates — make sure every blocking hook uses exit 2 with a clear, actionable message.
