@@ -539,8 +539,8 @@ function scanSlots() {
         const slotMeta = describeSlotPath(prefix || "");
         const slotName = slotMeta.slot;
 
-        // Parse version: name-v2 → "v2", name-v2-bold → "v2-bold", name → "v1"
-        const vMatch = baseName.match(/-v(\d+.*)$/);
+        // Parse version: v2-name → "v2", name-v2 → "v2", name-v2-bold → "v2-bold", name → "v1"
+        const vMatch = baseName.match(/^v(\d+)/) || baseName.match(/-v(\d+.*)$/);
         const label = vMatch ? "v" + vMatch[1] : "v1";
         const slug = slotName + "--" + baseName;
 
@@ -589,7 +589,7 @@ function nextVersionPath(group, page) {
   const existing = fs.readdirSync(pagesDir).filter(f => f.endsWith(".html"));
   let maxVersion = 0;
   for (const f of existing) {
-    const m = f.match(/-v(\d+)/);
+    const m = f.match(/^v(\d+)/) || f.match(/-v(\d+)/);
     if (m) maxVersion = Math.max(maxVersion, parseInt(m[1]));
   }
   const next = maxVersion + 1;
