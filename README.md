@@ -152,7 +152,6 @@ Shell scripts with a consistent contract: args in, progress to stderr, structure
 
 | Event | Hook | Purpose |
 |-------|------|---------|
-| `PreToolUse` | worktree-guard | Blocks edits outside your current worktree |
 | `PreToolUse` | enforce-ship-pr | Blocks manual `gh pr create`, redirects to `ship-pr.sh` |
 | `SessionStart` | session-start | Injects context at session start |
 | `PostToolUse` | log-skill-invocation | Tracks which skills are invoked |

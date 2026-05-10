@@ -26,7 +26,7 @@ before the spec is written and approved.
 3b. **Factory mode** — when the factory is running at `/factory`:
     - **Read `${CLAUDE_SKILL_DIR}/factory/references/factory-frontend.md` before generating any prototype.**
     - Read `factory/style-profile.json` for design tokens when generating prototypes (just-in-time — don't preload)
-    - **NEVER use Edit/Write to create prototypes directly.** Always use `POST http://localhost:<port>/api/write` with `{ "group": "<app-page>", "page": "<prototype-name>", "content": "<html>" }` — ask or infer the target app page first so new prototypes land under the right group. This auto-versions, reloads the factory, and respects the cross-repo guard. Direct file writes to `factory/pages/` in another repo will be blocked by `worktree-guard.sh`.
+    - **NEVER use Edit/Write to create prototypes directly.** Always use `POST http://localhost:<port>/api/write` with `{ "group": "<app-page>", "page": "<prototype-name>", "content": "<html>" }` — ask or infer the target app page first so new prototypes land under the right group. This auto-versions and reloads the factory.
     - Read `<screen-dir>/.events` for `option-select` (user clicked a choice) and `style` (user changed controls) events
     - Use `data-option` on comparison pages — see "Prototype structure" in factory-guide.md
 4. **Ask questions** — one at a time, prefer multiple choice, understand purpose/constraints/success criteria

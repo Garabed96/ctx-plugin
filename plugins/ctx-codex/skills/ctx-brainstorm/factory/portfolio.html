@@ -31,6 +31,34 @@
     color: #64748b;
     margin-left: 0.5rem;
   }
+  .toolbar {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) 180px 160px;
+    gap: 0.6rem;
+    padding: 1rem 1.25rem 0;
+  }
+  .toolbar input,
+  .toolbar select {
+    width: 100%;
+    background: #0f172a;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+    border-radius: 7px;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.78rem;
+    font-family: inherit;
+  }
+  .toolbar input:focus,
+  .toolbar select:focus {
+    outline: none;
+    border-color: #818cf8;
+    box-shadow: 0 0 0 1px #818cf8;
+  }
+  @media (max-width: 760px) {
+    .toolbar {
+      grid-template-columns: 1fr;
+    }
+  }
 
   .grid {
     display: grid;
@@ -137,12 +165,29 @@
   </div>
 </div>
 
+<div class="toolbar">
+  <input id="page-search" type="search" placeholder="Search pages, groups, selected options..." oninput="updateFilters()" />
+  <select id="category-filter" onchange="updateFilters()">
+    <option value="">All categories</option>
+  </select>
+  <select id="sort-select" onchange="updateFilters()">
+    <option value="updated-desc">Newest</option>
+    <option value="updated-asc">Oldest</option>
+    <option value="name-asc">Name A-Z</option>
+    <option value="name-desc">Name Z-A</option>
+    <option value="category-asc">Category A-Z</option>
+  </select>
+</div>
+
 <div class="grid" id="grid"></div>
 <div class="empty" id="empty" style="display:none;">
   <p>No pages yet.<br>Use the factory to brainstorm your first page.</p>
 </div>
 
 <script>
+var allPages = [];
+var filters = { query: '', category: '', sort: 'updated-desc' };
+
 function buildFactoryHref(page) {
   return '/factory/' + page.split('/').map(function(part) {
     return encodeURIComponent(part);
@@ -161,18 +206,98 @@ function relativeTime(iso) {
   return days + 'd ago';
 }
 
+function compareText(a, b) {
+  return String(a || '').localeCompare(String(b || ''), undefined, { sensitivity: 'base', numeric: true });
+}
+
+function getPageTime(page) {
+  return page && page.lastModified ? new Date(page.lastModified).getTime() : 0;
+}
+
+function updateCategoryOptions(pages) {
+  var select = document.getElementById('category-filter');
+  var current = select.value;
+  var groups = [];
+  var seen = {};
+  pages.forEach(function(page) {
+    var group = page.group || 'Ungrouped';
+    if (!seen[group]) {
+      seen[group] = true;
+      groups.push(group);
+    }
+  });
+  groups.sort(compareText);
+  select.innerHTML = '';
+  var all = document.createElement('option');
+  all.value = '';
+  all.textContent = 'All categories';
+  select.appendChild(all);
+  groups.forEach(function(group) {
+    var opt = document.createElement('option');
+    opt.value = group;
+    opt.textContent = group;
+    select.appendChild(opt);
+  });
+  select.value = seen[current] ? current : '';
+  filters.category = select.value;
+}
+
+function getFilteredPages() {
+  var query = (filters.query || '').trim().toLowerCase();
+  var category = filters.category || '';
+  var pages = allPages.filter(function(page) {
+    var group = page.group || 'Ungrouped';
+    var matchesCategory = !category || group === category;
+    var haystack = [
+      group,
+      page.page,
+      page.name,
+      page.selectedOption,
+      page.latestFile
+    ].join(' ').toLowerCase();
+    return matchesCategory && (!query || haystack.indexOf(query) !== -1);
+  });
+
+  pages.sort(function(a, b) {
+    if (filters.sort === 'updated-asc') return getPageTime(a) - getPageTime(b);
+    if (filters.sort === 'name-asc') return compareText(a.name || a.page, b.name || b.page);
+    if (filters.sort === 'name-desc') return compareText(b.name || b.page, a.name || a.page);
+    if (filters.sort === 'category-asc') {
+      var groupCompare = compareText(a.group || 'Ungrouped', b.group || 'Ungrouped');
+      return groupCompare || compareText(a.name || a.page, b.name || b.page);
+    }
+    return getPageTime(b) - getPageTime(a);
+  });
+
+  return pages;
+}
+
+function updateFilters() {
+  filters.query = document.getElementById('page-search').value;
+  filters.category = document.getElementById('category-filter').value;
+  filters.sort = document.getElementById('sort-select').value;
+  renderCards(getFilteredPages());
+}
+
 function renderCards(pages) {
   var grid = document.getElementById('grid');
   var empty = document.getElementById('empty');
   var count = document.getElementById('page-count');
+  grid.innerHTML = '';
 
   if (!pages || pages.length === 0) {
     grid.style.display = 'none';
     empty.style.display = '';
+    count.textContent = allPages.length ? '0 of ' + allPages.length + ' pages' : '';
+    empty.querySelector('p').innerHTML = allPages.length
+      ? 'No pages match the current filters.'
+      : 'No pages yet.<br>Use the factory to brainstorm your first page.';
     return;
   }
 
-  count.textContent = pages.length + (pages.length === 1 ? ' page' : ' pages');
+  grid.style.display = 'grid';
+  empty.style.display = 'none';
+  count.textContent = pages.length + ' of ' + allPages.length + (allPages.length === 1 ? ' page' : ' pages');
 
   pages.forEach(function(p) {
     var card = document.createElement('div');
@@ -237,7 +362,11 @@ function renderCards(pages) {
 
 fetch('/api/page-status')
   .then(function(r) { return r.json(); })
-  .then(function(pages) { renderCards(pages); })
+  .then(function(pages) {
+    allPages = pages || [];
+    updateCategoryOptions(allPages);
+    renderCards(getFilteredPages());
+  })
   .catch(function(err) {
     document.getElementById('empty').style.display = '';
     document.getElementById('empty').querySelector('p').textContent = 'Failed to load: ' + err.message;
