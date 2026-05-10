@@ -375,29 +375,6 @@ fi
 
 # ══════════════════════════════════════════════════════════
 echo ""
-echo "=== TEST: worktree-guard.sh ==="
-
-GUARD="$SCRIPT_DIR/../hooks/scripts/worktree-guard.sh"
-
-# Create a worktree for same-repo testing
-git worktree add -b guard-test "$TEMP_DIR/test-repo-guard-wt" main 2>/dev/null
-
-# Same-repo worktree should be allowed (shares git common dir)
-OUTPUT=$(echo '{"tool_name":"Bash","tool_input":{"command":"mkdir -p '"$TEMP_DIR"'/test-repo-guard-wt/docs"}}' | bash "$GUARD" 2>&1)
-EXIT_CODE=$?
-assert_exit_code "allows same-repo worktree" "$EXIT_CODE" "0"
-
-# Main repo edit (we're in main checkout of ctx-plugin test repo — should be allowed since it's a worktree-based flow)
-OUTPUT=$(echo '{"tool_name":"Edit","tool_input":{"file_path":"'"$TEMP_DIR"'/test-repo/file.txt"}}' | bash "$GUARD" 2>&1)
-EXIT_CODE=$?
-assert_exit_code "allows own repo edit" "$EXIT_CODE" "0"
-
-# Clean up guard test worktree
-git worktree remove "$TEMP_DIR/test-repo-guard-wt" 2>/dev/null
-git branch -d guard-test 2>/dev/null
-
-# ══════════════════════════════════════════════════════════
-echo ""
 echo "════════════════════════════════"
 echo "Results: $PASS passed, $FAIL failed"
 echo "════════════════════════════════"

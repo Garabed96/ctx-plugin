@@ -539,9 +539,10 @@ function scanSlots() {
         const slotMeta = describeSlotPath(prefix || "");
         const slotName = slotMeta.slot;
 
-        // Parse version: v2-name → "v2", name-v2 → "v2", name-v2-bold → "v2-bold", name → "v1"
-        const vMatch = baseName.match(/^v(\d+)/) || baseName.match(/-v(\d+.*)$/);
-        const label = vMatch ? "v" + vMatch[1] : "v1";
+        // Parse version: v2-name → "v2", v9c-name → "v9c",
+        // name-v2 → "v2", name-v2-bold → "v2-bold", name → "v1"
+        const vMatch = baseName.match(/^v(\d+[a-z]*)(?:-|$)|-v(\d+.*)$/);
+        const label = vMatch ? "v" + (vMatch[1] || vMatch[2]) : "v1";
         const slug = slotName + "--" + baseName;
 
         if (!slots.has(slotName)) {
@@ -552,7 +553,12 @@ function scanSlots() {
             iterations: [],
           });
         }
-        slots.get(slotName).iterations.push({ slug, label, file: filePath });
+        slots.get(slotName).iterations.push({
+          slug,
+          label,
+          file: filePath,
+          updatedAt: stat.mtimeMs,
+        });
       }
     }
   }
@@ -568,6 +574,9 @@ function scanSlots() {
       if (aNum !== bNum) return aNum - bNum;
       return a.label.localeCompare(b.label);
     });
+    slotData.updatedAt = slotData.iterations.reduce((max, iter) => {
+      return Math.max(max, iter.updatedAt || 0);
+    }, 0);
     result.push(slotData);
   }
   result.sort((a, b) => {
@@ -589,7 +598,7 @@ function nextVersionPath(group, page) {
   const existing = fs.readdirSync(pagesDir).filter(f => f.endsWith(".html"));
   let maxVersion = 0;
   for (const f of existing) {
-    const m = f.match(/^v(\d+)/) || f.match(/-v(\d+)/);
+    const m = f.match(/-v(\d+)/);
     if (m) maxVersion = Math.max(maxVersion, parseInt(m[1]));
   }
   const next = maxVersion + 1;
