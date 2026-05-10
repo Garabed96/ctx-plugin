@@ -539,9 +539,10 @@ function scanSlots() {
         const slotMeta = describeSlotPath(prefix || "");
         const slotName = slotMeta.slot;
 
-        // Parse version: name-v2 → "v2", name-v2-bold → "v2-bold", name → "v1"
-        const vMatch = baseName.match(/-v(\d+.*)$/);
-        const label = vMatch ? "v" + vMatch[1] : "v1";
+        // Parse version: v2-name → "v2", v9c-name → "v9c",
+        // name-v2 → "v2", name-v2-bold → "v2-bold", name → "v1"
+        const vMatch = baseName.match(/^v(\d+[a-z]*)(?:-|$)|-v(\d+.*)$/);
+        const label = vMatch ? "v" + (vMatch[1] || vMatch[2]) : "v1";
         const slug = slotName + "--" + baseName;
 
         if (!slots.has(slotName)) {
