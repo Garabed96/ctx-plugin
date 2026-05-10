@@ -553,7 +553,12 @@ function scanSlots() {
             iterations: [],
           });
         }
-        slots.get(slotName).iterations.push({ slug, label, file: filePath });
+        slots.get(slotName).iterations.push({
+          slug,
+          label,
+          file: filePath,
+          updatedAt: stat.mtimeMs,
+        });
       }
     }
   }
@@ -569,6 +574,9 @@ function scanSlots() {
       if (aNum !== bNum) return aNum - bNum;
       return a.label.localeCompare(b.label);
     });
+    slotData.updatedAt = slotData.iterations.reduce((max, iter) => {
+      return Math.max(max, iter.updatedAt || 0);
+    }, 0);
     result.push(slotData);
   }
   result.sort((a, b) => {

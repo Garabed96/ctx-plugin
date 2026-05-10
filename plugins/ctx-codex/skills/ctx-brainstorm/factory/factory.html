@@ -214,6 +214,38 @@
     flex-direction: column;
     gap: 0.12rem;
   }
+  .page-tools {
+    display: grid;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+  }
+  .page-search,
+  .page-filter-select {
+    width: 100%;
+    background: #0a0e17;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+    border-radius: 5px;
+    padding: 0.38rem 0.45rem;
+    font-size: 0.72rem;
+    font-family: inherit;
+  }
+  .page-search:focus,
+  .page-filter-select:focus {
+    outline: none;
+    border-color: #818cf8;
+  }
+  .page-tool-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem;
+  }
+  .page-results {
+    font-size: 0.65rem;
+    color: #64748b;
+    margin: -0.15rem 0 0.45rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
   .page-row {
     display: flex;
     align-items: center;
@@ -588,6 +620,22 @@
     <!-- Pages section -->
     <div class="controls-section">
       <div class="controls-section-title">Pages</div>
+      <div class="page-tools">
+        <input class="page-search" id="page-search" type="search" placeholder="Search pages..." oninput="updatePageFilters()" />
+        <div class="page-tool-row">
+          <select class="page-filter-select" id="page-category-filter" onchange="updatePageFilters()">
+            <option value="">All categories</option>
+          </select>
+          <select class="page-filter-select" id="page-sort" onchange="updatePageFilters()">
+            <option value="updated-desc">Newest</option>
+            <option value="updated-asc">Oldest</option>
+            <option value="name-asc">Name A-Z</option>
+            <option value="name-desc">Name Z-A</option>
+            <option value="category-asc">Category A-Z</option>
+          </select>
+        </div>
+        <div class="page-results" id="page-results"></div>
+      </div>
       <div id="pages-list">
         <!-- Populated by JS -->
       </div>
@@ -640,6 +688,7 @@ var compareItems = [];
 var currentViewport = 'desktop';
 var expandedGroups = {};
 var previewFileBase = '/prototype?file=';
+var pageFilters = { query: '', category: '', sort: 'updated-desc' };
 
 // --- Sidebar collapse ---
 // Default collapsed; user preference persisted in localStorage.
@@ -700,27 +749,107 @@ function getPageContextLabel(slotData) {
     : getGroupName(slotData) + ' / ' + getPageLabel(slotData);
 }
 
+function compareText(a, b) {
+  return String(a || '').localeCompare(String(b || ''), undefined, { sensitivity: 'base', numeric: true });
+}
+
+function getFilteredSortedSlots() {
+  var query = (pageFilters.query || '').trim().toLowerCase();
+  var category = pageFilters.category || '';
+  var slots = allSlots.slice();
+
+  slots = slots.filter(function(slotData) {
+    var groupName = getGroupName(slotData);
+    var pageLabel = getPageLabel(slotData);
+    var matchesCategory = !category || groupName === category;
+    var haystack = [
+      groupName,
+      pageLabel,
+      slotData.slot,
+      (slotData.iterations || []).map(function(iter) {
+        return [iter.label, iter.file].join(' ');
+      }).join(' ')
+    ].join(' ').toLowerCase();
+    return matchesCategory && (!query || haystack.indexOf(query) !== -1);
+  });
+
+  slots.sort(function(a, b) {
+    if (pageFilters.sort === 'updated-asc') return (a.updatedAt || 0) - (b.updatedAt || 0);
+    if (pageFilters.sort === 'name-asc') return compareText(getPageLabel(a), getPageLabel(b));
+    if (pageFilters.sort === 'name-desc') return compareText(getPageLabel(b), getPageLabel(a));
+    if (pageFilters.sort === 'category-asc') {
+      var groupCompare = compareText(getGroupName(a), getGroupName(b));
+      return groupCompare || compareText(getPageLabel(a), getPageLabel(b));
+    }
+    return (b.updatedAt || 0) - (a.updatedAt || 0);
+  });
+
+  return slots;
+}
+
+function updatePageFilterOptions() {
+  var select = document.getElementById('page-category-filter');
+  if (!select) return;
+  var current = select.value;
+  var groups = [];
+  var seen = {};
+  allSlots.forEach(function(slotData) {
+    var groupName = getGroupName(slotData);
+    if (!seen[groupName]) {
+      seen[groupName] = true;
+      groups.push(groupName);
+    }
+  });
+  groups.sort(compareText);
+  clearChildren(select);
+  var allOpt = document.createElement('option');
+  allOpt.value = '';
+  allOpt.textContent = 'All categories';
+  select.appendChild(allOpt);
+  groups.forEach(function(groupName) {
+    var opt = document.createElement('option');
+    opt.value = groupName;
+    opt.textContent = groupName;
+    select.appendChild(opt);
+  });
+  select.value = seen[current] ? current : '';
+  pageFilters.category = select.value;
+}
+
+function updatePageFilters() {
+  var search = document.getElementById('page-search');
+  var category = document.getElementById('page-category-filter');
+  var sort = document.getElementById('page-sort');
+  pageFilters.query = search ? search.value : '';
+  pageFilters.category = category ? category.value : '';
+  pageFilters.sort = sort ? sort.value : 'updated-desc';
+  renderPagesList();
+  updatePageNavButtons();
+}
+
 function updatePageNavButtons() {
   var prev = document.getElementById('page-prev');
   var next = document.getElementById('page-next');
   var index = -1;
 
-  for (var i = 0; i < allSlots.length; i++) {
-    if (allSlots[i].slot === activePage) {
+  var visibleSlots = getFilteredSortedSlots();
+  for (var i = 0; i < visibleSlots.length; i++) {
+    if (visibleSlots[i].slot === activePage) {
       index = i;
       break;
     }
   }
 
   prev.disabled = index <= 0;
-  next.disabled = index === -1 || index >= allSlots.length - 1;
+  next.disabled = index === -1 || index >= visibleSlots.length - 1;
 }
 
 function goToAdjacentPage(direction) {
   if (!activePage) return;
-  for (var i = 0; i < allSlots.length; i++) {
-    if (allSlots[i].slot === activePage) {
-      var target = allSlots[i + direction];
+  var visibleSlots = getFilteredSortedSlots();
+  for (var i = 0; i < visibleSlots.length; i++) {
+    if (visibleSlots[i].slot === activePage) {
+      var target = visibleSlots[i + direction];
       if (target) activatePage(target.slot, true);
       return;
     }
@@ -868,9 +997,20 @@ function renderPagesList() {
     return;
   }
 
+  var visibleSlots = getFilteredSortedSlots();
+  var results = document.getElementById('page-results');
+  if (results) {
+    results.textContent = visibleSlots.length + ' of ' + allSlots.length + ' pages';
+  }
+
+  if (visibleSlots.length === 0) {
+    pagesList.appendChild(makeText('span', 'empty-hint', 'No pages match the current filters'));
+    return;
+  }
+
   var grouped = {};
   var order = [];
-  allSlots.forEach(function(slotData) {
+  visibleSlots.forEach(function(slotData) {
     var groupName = getGroupName(slotData);
     if (!grouped[groupName]) {
       grouped[groupName] = [];
@@ -925,8 +1065,9 @@ function selectInitialPage() {
     activatePage(target, true);
     return;
   }
-  if (allSlots.length > 0) {
-    activatePage(allSlots[0].slot, true);
+  var visibleSlots = getFilteredSortedSlots();
+  if (visibleSlots.length > 0) {
+    activatePage(visibleSlots[0].slot, true);
   } else {
     updatePageNavButtons();
   }
@@ -991,6 +1132,7 @@ function updateVersionPills() {
 // --- Slot rendering ---
 function renderSlots(slots) {
   allSlots = slots || [];
+  updatePageFilterOptions();
 
   var protoSelect = document.getElementById('proto-select');
   var versionsSection = document.getElementById('versions-section');
