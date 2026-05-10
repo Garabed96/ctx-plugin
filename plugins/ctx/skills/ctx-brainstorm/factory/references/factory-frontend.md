@@ -9,8 +9,26 @@
 Do NOT write prototype HTML until you have:
 1. Identified the competitive position (Phase 1 — even briefly)
 2. Written the copy first (headlines, labels, CTAs, empty states)
+3. Confirmed the prototype fidelity mode (default: polished prototype)
 
 Prototypes with lorem ipsum or placeholder copy are plan failures.
+
+---
+
+## Fidelity Mode Gate
+
+Before generating the first version of any factory page, decide which mode the user wants:
+
+- **Polished prototype (default):** production-adjacent UI direction. Use real layout density, finished visual hierarchy, shaped assets/glyphs, realistic state copy, responsive behavior, and enough interaction/motion to judge the experience.
+- **Wireframe:** fast structure only. Use restrained styling, simple blocks, minimal motion, and only the fidelity needed to compare layout, flow, and information architecture.
+
+If the user has not chosen, ask once:
+
+> Do you want a polished prototype or a wireframe for this factory page?
+
+Do not call a page "polished" if it still has placeholder assets, generic boxes where a known product asset/glyph belongs, incomplete responsive states, or unreviewed visual hierarchy. For domain-specific assets, use the project's existing glyphs/assets when available; if the project has no asset, create a self-contained inline SVG/CSS stand-in that matches the intended product language.
+
+When the user asks for "high fidelity", "polished", "production-like", "looks real", "visual accurate", or provides screenshots, treat that as **Polished prototype** without asking again.
 
 ---
 
@@ -65,6 +83,7 @@ Apply the Apple copy formula:
 ### Quality Bar
 Before submitting the prototype, verify:
 - [ ] Real copy — no lorem ipsum, no "placeholder text"
+- [ ] Fidelity mode is satisfied — polished feels production-adjacent; wireframe stays intentionally structural
 - [ ] Responsive — works at 375px and 1280px
 - [ ] Animations are CSS-only, respect `prefers-reduced-motion`
 - [ ] Uses `--cp-*` variables with fallbacks

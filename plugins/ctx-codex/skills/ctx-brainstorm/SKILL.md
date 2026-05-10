@@ -25,6 +25,7 @@ before the spec is written and approved.
 3. **Visual factory gate** — before asking any questions, evaluate: will this brainstorm involve architecture diagrams, layout comparisons, option cards, or spatial content? If yes, offer the factory as its own message and wait for the user's response before continuing (read `./references/factory-guide.md`). If the project has a `factory/style-profile.json`, suggest factory mode (`/factory` URL) for style-aware prototyping.
 3b. **Factory mode** — when the factory is running at `/factory`:
     - **Read `./factory/references/factory-frontend.md` before generating any prototype.**
+    - Confirm the requested fidelity from that reference before writing: `polished prototype` by default, `wireframe` only when the user explicitly chooses speed/structure over finish.
     - Read `factory/style-profile.json` for design tokens when generating prototypes (just-in-time — don't preload)
     - **NEVER use Edit/Write to create prototypes directly.** Always use `POST http://localhost:<port>/api/write` with `{ "group": "<app-page>", "page": "<prototype-name>", "content": "<html>" }` — ask or infer the target app page first so new prototypes land under the right group. This auto-versions and reloads the factory.
     - Read `<screen-dir>/.events` for `option-select` (user clicked a choice) and `style` (user changed controls) events
