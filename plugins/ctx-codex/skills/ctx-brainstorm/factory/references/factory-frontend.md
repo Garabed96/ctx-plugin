@@ -10,6 +10,7 @@ Do NOT write prototype HTML until you have:
 1. Identified the competitive position (Phase 1 — even briefly)
 2. Written the copy first (headlines, labels, CTAs, empty states)
 3. Confirmed the prototype fidelity mode (default: polished prototype)
+4. For product UI, dashboards, workflow tools, editors, or admin screens, read `./product-ui-contrast-typography.md` and run its contrast/type preflight
 
 Prototypes with lorem ipsum or placeholder copy are plan failures.
 
@@ -61,6 +62,7 @@ Apply the Apple copy formula:
 ### Visual Design Rules
 - **Typography:** Distinctive fonts via `--cp-font-sans` / `--cp-font-mono`. Tight letter-spacing on display text. Large size differential between heading and body.
 - **Color:** Use `--cp-*` CSS variables from the style profile. One accent color dominates. Dark backgrounds with high-contrast text.
+- **Product UI contrast:** For dense app screens, follow `./product-ui-contrast-typography.md`: readable muted labels, no gray text on colored surfaces, restrained state color, fixed type scales.
 - **Spacing:** Generous. 80-120px equivalent vertical padding between sections. Single focal point per section.
 - **Motion:** CSS-first. One well-orchestrated page load > scattered micro-interactions. Transitions 200-300ms.
 - **Atmosphere:** Gradient meshes, subtle noise patterns, layered transparencies for depth. Never flat.
@@ -90,6 +92,7 @@ Before submitting the prototype, verify:
 - [ ] Single focal point per section
 - [ ] CTAs are text links, not loud buttons (per Apple rules)
 - [ ] Typography has clear hierarchy (3+ distinct sizes)
+- [ ] Product UI contrast/type preflight passes when the prototype is a dashboard, workflow tool, editor, admin screen, or other dense app surface
 
 ---
 
