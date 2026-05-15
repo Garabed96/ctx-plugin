@@ -507,10 +507,8 @@ function sanitizePathPart(value) {
   return String(value || "").trim().replace(/[^a-zA-Z0-9_-]/g, "");
 }
 
-function scanSlots() {
-  if (!pagesRoot) return [];
-  const factoryPagesDir = path.join(pagesRoot, "factory/pages");
-  if (!fs.existsSync(factoryPagesDir)) return [];
+function scanSlotDirectory(rootDir) {
+  if (!fs.existsSync(rootDir)) return [];
 
   const slots = new Map();
 
@@ -558,7 +556,7 @@ function scanSlots() {
     }
   }
 
-  scan(factoryPagesDir, "");
+  scan(rootDir, "");
 
   // Sort iterations within each slot by version number
   const result = [];
@@ -580,6 +578,16 @@ function scanSlots() {
     return a.page.localeCompare(b.page);
   });
   return result;
+}
+
+function scanSlots() {
+  if (!pagesRoot) return [];
+  return scanSlotDirectory(path.join(pagesRoot, "factory/pages"));
+}
+
+function scanArchivedSlots() {
+  if (!pagesRoot) return [];
+  return scanSlotDirectory(path.join(pagesRoot, "factory/archive"));
 }
 
 // ========== Auto-Versioning ==========
@@ -803,6 +811,52 @@ async function handleArchivePage(req, res) {
   });
 }
 
+async function handleRestorePage(req, res) {
+  if (!pagesRoot) {
+    jsonResponse(res, 400, { error: "No --project-dir configured" });
+    return;
+  }
+
+  const body = await readBody(req);
+  if (!body || !body.page) {
+    jsonResponse(res, 400, { error: "Missing page" });
+    return;
+  }
+
+  const slot = String(body.page).trim();
+  const slotData = scanArchivedSlots().find(s => s.slot === slot);
+  if (!slotData) {
+    jsonResponse(res, 404, { error: "Archived page not found" });
+    return;
+  }
+
+  const pagesDir = path.resolve(pagesRoot, "factory/pages");
+  const archiveDir = path.resolve(pagesRoot, "factory/archive");
+  const source = path.resolve(archiveDir, slotData.slot);
+  const target = path.resolve(pagesDir, slotData.slot);
+  if (!source.startsWith(archiveDir + path.sep) || !fs.existsSync(source)) {
+    jsonResponse(res, 404, { error: "Archived page directory not found" });
+    return;
+  }
+  if (!target.startsWith(pagesDir + path.sep)) {
+    jsonResponse(res, 403, { error: "Forbidden restore path" });
+    return;
+  }
+  if (fs.existsSync(target)) {
+    jsonResponse(res, 409, { error: "An active page already exists at this path" });
+    return;
+  }
+
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.renameSync(source, target);
+  broadcast({ type: "reload" });
+  jsonResponse(res, 200, {
+    ok: true,
+    page: slotData.slot,
+    restoredTo: path.relative(pagesRoot, target),
+  });
+}
+
 function servePortfolio(res) {
   const portfolioPath = path.join(__dirname, "portfolio.html");
   if (!fs.existsSync(portfolioPath)) {
@@ -852,8 +906,12 @@ const server = http.createServer((req, res) => {
     handleWrite(req, res);
   } else if (parsed.pathname === "/api/page-status") {
     handlePageStatus(req, res);
+  } else if (parsed.pathname === "/api/archived-pages") {
+    jsonResponse(res, 200, scanArchivedSlots());
   } else if (parsed.pathname === "/api/archive-page" && req.method === "POST") {
     handleArchivePage(req, res);
+  } else if (parsed.pathname === "/api/restore-page" && req.method === "POST") {
+    handleRestorePage(req, res);
   } else if (parsed.pathname === "/api/compare" && req.method === "POST") {
     handleCompare(req, res);
   } else if (parsed.pathname === "/api/style-profile") {
