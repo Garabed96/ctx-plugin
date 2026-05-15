@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tinker Factory</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -341,6 +342,24 @@
     display: grid;
     grid-template-columns: 1fr;
   }
+  .page-tool-btn.with-icon,
+  .page-archive-btn,
+  .page-restore-btn,
+  .modal-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.32rem;
+  }
+  .page-tool-btn [data-lucide],
+  .page-archive-btn [data-lucide],
+  .page-restore-btn [data-lucide],
+  .modal-btn [data-lucide] {
+    width: 0.78rem;
+    height: 0.78rem;
+    stroke-width: 2.2;
+    flex-shrink: 0;
+  }
   .page-row.editing {
     align-items: stretch;
     flex-direction: column;
@@ -374,6 +393,80 @@
   .page-archive-btn:hover,
   .page-archive-btn:focus {
     border-color: #f87171;
+    outline: none;
+  }
+  .archive-manager {
+    display: none;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    padding: 0.5rem;
+    background: rgba(15, 23, 42, 0.56);
+    gap: 0.35rem;
+  }
+  .archive-manager.visible {
+    display: grid;
+  }
+  .archive-manager-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: #cbd5e1;
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .archive-manager-list {
+    display: grid;
+    gap: 0.3rem;
+  }
+  .archive-empty {
+    color: #64748b;
+    font-size: 0.66rem;
+    line-height: 1.35;
+  }
+  .archive-row {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.42rem;
+    border: 1px solid #1e293b;
+    border-radius: 5px;
+    background: #0a0e17;
+  }
+  .archive-row-main {
+    min-width: 0;
+  }
+  .archive-row-name {
+    display: block;
+    color: #cbd5e1;
+    font-size: 0.69rem;
+    font-weight: 650;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .archive-row-meta {
+    display: block;
+    color: #64748b;
+    font-size: 0.61rem;
+    margin-top: 0.12rem;
+  }
+  .page-restore-btn {
+    justify-self: start;
+    background: rgba(45, 212, 191, 0.08);
+    color: #5eead4;
+    border: 1px solid rgba(45, 212, 191, 0.28);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.64rem;
+    font-weight: 650;
+    padding: 0.22rem 0.45rem;
+  }
+  .page-restore-btn:hover,
+  .page-restore-btn:focus {
+    border-color: #2dd4bf;
     outline: none;
   }
   .page-results {
@@ -582,6 +675,66 @@
     color: #475569;
     font-style: italic;
   }
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(2, 6, 23, 0.72);
+  }
+  .modal-backdrop.visible {
+    display: flex;
+  }
+  .modal-dialog {
+    width: min(420px, 100%);
+    border: 1px solid #334155;
+    border-radius: 8px;
+    background: #0f172a;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+    padding: 1rem;
+  }
+  .modal-title {
+    color: #f8fafc;
+    font-size: 0.95rem;
+    font-weight: 750;
+    margin-bottom: 0.35rem;
+  }
+  .modal-body {
+    color: #94a3b8;
+    font-size: 0.76rem;
+    line-height: 1.45;
+  }
+  .modal-page-name {
+    color: #e2e8f0;
+    font-weight: 700;
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .modal-btn {
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.42rem 0.65rem;
+  }
+  .modal-btn-secondary {
+    background: transparent;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+  }
+  .modal-btn-danger {
+    background: rgba(248, 113, 113, 0.12);
+    color: #fecaca;
+    border: 1px solid rgba(248, 113, 113, 0.42);
+  }
 
   /* Preview area */
   .preview-area {
@@ -758,7 +911,15 @@
           <button class="page-tool-btn btn-rescan" id="page-rescan" type="button" onclick="triggerRescan()">Re-scan project</button>
         </div>
         <div class="page-edit-row">
-          <button class="page-tool-btn" id="page-edit-toggle" type="button" onclick="togglePageEditMode()" aria-pressed="false">Edit pages</button>
+          <button class="page-tool-btn with-icon" id="page-edit-toggle" type="button" onclick="togglePageEditMode()" aria-pressed="false" title="Edit pages"></button>
+        </div>
+        <div class="archive-manager" id="archive-manager">
+          <div class="archive-manager-title">
+            <span>Archived pages</span>
+          </div>
+          <div class="archive-manager-list" id="archive-list">
+            <span class="archive-empty">Loading archived pages...</span>
+          </div>
         </div>
         <div class="page-versions" id="versions-section">
           <span class="page-versions-label">Versions</span>
@@ -793,18 +954,36 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="archive-modal" role="dialog" aria-modal="true" aria-labelledby="archive-modal-title">
+  <div class="modal-dialog">
+    <div class="modal-title" id="archive-modal-title">Archive page?</div>
+    <div class="modal-body">
+      This moves <span class="modal-page-name" id="archive-modal-page"></span> out of active Factory pages and into <span class="modal-page-name">factory/archive</span>. You can restore it later from Edit pages.
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-secondary" type="button" onclick="closeArchiveModal()">Cancel</button>
+      <button class="modal-btn modal-btn-danger" id="archive-confirm-btn" type="button" onclick="confirmArchivePage()">
+        <i data-lucide="archive"></i>
+        <span>Archive page</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 // --- State ---
 var activeFile = null;
 var activePage = null;
 var activeVersion = null;
 var allSlots = [];
+var archivedSlots = [];
 var compareMode = false;
 var compareItems = [];
 var currentViewport = 'desktop';
 var expandedGroups = {};
 var pageGroupMode = 'compact';
 var pageEditMode = false;
+var pendingArchiveSlot = null;
 var previewFileBase = '/page?file=';
 var pageFilters = { query: '', category: '', sort: 'updated-desc' };
 
@@ -839,6 +1018,26 @@ function makeText(tag, className, text) {
   if (className) el.className = className;
   el.textContent = text;
   return el;
+}
+
+function iconEl(name) {
+  var el = document.createElement('i');
+  el.setAttribute('data-lucide', name);
+  el.setAttribute('aria-hidden', 'true');
+  return el;
+}
+
+function setIconButtonContent(button, iconName, label) {
+  clearChildren(button);
+  button.appendChild(iconEl(iconName));
+  button.appendChild(makeText('span', '', label));
+  refreshIcons();
+}
+
+function refreshIcons() {
+  if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    window.lucide.createIcons();
+  }
 }
 
 function buildPreviewUrl(filePath) {
@@ -978,12 +1177,15 @@ function updatePageEditButton() {
   if (!btn) return;
   btn.classList.toggle('active', pageEditMode);
   btn.setAttribute('aria-pressed', pageEditMode ? 'true' : 'false');
-  btn.textContent = pageEditMode ? 'Done editing' : 'Edit pages';
+  btn.title = pageEditMode ? 'Done editing' : 'Edit pages';
+  setIconButtonContent(btn, pageEditMode ? 'check' : 'square-pen', pageEditMode ? 'Done editing' : 'Edit pages');
 }
 
 function togglePageEditMode() {
   pageEditMode = !pageEditMode;
   updatePageEditButton();
+  renderArchiveManager();
+  if (pageEditMode) loadArchivedSlots();
   renderPagesList();
 }
 
@@ -1207,10 +1409,12 @@ function renderPagesList() {
       var archiveBtn = document.createElement('button');
       archiveBtn.className = 'page-archive-btn';
       archiveBtn.type = 'button';
-      archiveBtn.textContent = 'Archive page';
+      archiveBtn.title = 'Archive page';
+      archiveBtn.appendChild(iconEl('archive'));
+      archiveBtn.appendChild(makeText('span', '', 'Archive page'));
       archiveBtn.onclick = function(event) {
         event.stopPropagation();
-        archivePage(slotData);
+        openArchiveModal(slotData);
       };
       actions.appendChild(archiveBtn);
       row.appendChild(actions);
@@ -1221,6 +1425,7 @@ function renderPagesList() {
     group.appendChild(rows);
     pagesList.appendChild(group);
   });
+  refreshIcons();
 }
 
 function selectInitialPage() {
@@ -1322,11 +1527,86 @@ function loadSlots() {
     });
 }
 
+function loadArchivedSlots() {
+  return fetch('/api/archived-pages')
+    .then(function(r) { return r.json(); })
+    .then(function(slots) {
+      archivedSlots = slots || [];
+      renderArchiveManager();
+      return archivedSlots;
+    })
+    .catch(function() {
+      archivedSlots = [];
+      renderArchiveManager('Could not load archived pages');
+      return [];
+    });
+}
+
+function renderArchiveManager(errorText) {
+  var panel = document.getElementById('archive-manager');
+  var list = document.getElementById('archive-list');
+  if (!panel || !list) return;
+  panel.classList.toggle('visible', pageEditMode);
+  clearChildren(list);
+  if (!pageEditMode) return;
+  if (errorText) {
+    list.appendChild(makeText('span', 'archive-empty', errorText));
+    return;
+  }
+  if (!archivedSlots || archivedSlots.length === 0) {
+    list.appendChild(makeText('span', 'archive-empty', 'No archived pages yet.'));
+    return;
+  }
+  archivedSlots.forEach(function(slotData) {
+    var row = document.createElement('div');
+    row.className = 'archive-row';
+
+    var main = document.createElement('div');
+    main.className = 'archive-row-main';
+    main.appendChild(makeText('span', 'archive-row-name', getPageContextLabel(slotData)));
+    main.appendChild(makeText('span', 'archive-row-meta', slotData.iterations.length + ' version' + (slotData.iterations.length === 1 ? '' : 's')));
+    row.appendChild(main);
+
+    var restoreBtn = document.createElement('button');
+    restoreBtn.className = 'page-restore-btn';
+    restoreBtn.type = 'button';
+    restoreBtn.title = 'Restore page';
+    restoreBtn.appendChild(iconEl('rotate-ccw'));
+    restoreBtn.appendChild(makeText('span', '', 'Restore'));
+    restoreBtn.onclick = function() { restoreArchivedPage(slotData); };
+    row.appendChild(restoreBtn);
+
+    list.appendChild(row);
+  });
+  refreshIcons();
+}
+
+function openArchiveModal(slotData) {
+  if (!slotData) return;
+  pendingArchiveSlot = slotData;
+  var pageName = document.getElementById('archive-modal-page');
+  if (pageName) pageName.textContent = getPageContextLabel(slotData);
+  var modal = document.getElementById('archive-modal');
+  if (modal) modal.classList.add('visible');
+  refreshIcons();
+}
+
+function closeArchiveModal() {
+  pendingArchiveSlot = null;
+  var modal = document.getElementById('archive-modal');
+  if (modal) modal.classList.remove('visible');
+}
+
+function confirmArchivePage() {
+  var slotData = pendingArchiveSlot;
+  if (!slotData) return;
+  archivePage(slotData);
+}
+
 function archivePage(slotData) {
   if (!slotData) return;
-  var label = getPageContextLabel(slotData);
-  var confirmed = window.confirm('Archive page: ' + label + '?\\n\\nThis moves it to factory/archive so it can be restored manually.');
-  if (!confirmed) return;
+  var btn = document.getElementById('archive-confirm-btn');
+  if (btn) btn.disabled = true;
 
   fetch('/api/archive-page', {
     method: 'POST',
@@ -1336,14 +1616,39 @@ function archivePage(slotData) {
     .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
     .then(function(result) {
       if (!result.ok) throw new Error(result.data && result.data.error ? result.data.error : 'Archive failed');
+      closeArchiveModal();
       if (slotData.slot === activePage) {
         window.location.href = '/factory';
         return;
       }
       loadSlots();
+      loadArchivedSlots();
     })
     .catch(function(err) {
       window.alert('Could not archive page: ' + err.message);
+    })
+    .then(function() {
+      if (btn) btn.disabled = false;
+    });
+}
+
+function restoreArchivedPage(slotData) {
+  if (!slotData) return;
+  fetch('/api/restore-page', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: slotData.slot })
+  })
+    .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+    .then(function(result) {
+      if (!result.ok) throw new Error(result.data && result.data.error ? result.data.error : 'Restore failed');
+      return loadSlots();
+    })
+    .then(function() {
+      loadArchivedSlots();
+    })
+    .catch(function(err) {
+      window.alert('Could not restore page: ' + err.message);
     });
 }
 
@@ -1384,6 +1689,8 @@ function renderSlots(slots) {
 }
 
 // --- Load slots ---
+updatePageEditButton();
+renderArchiveManager();
 loadSlots();
 
 // --- Style Controls ---
@@ -1841,7 +2148,9 @@ function exitCompareMode() {
 }
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape' && compareMode) {
+  if (e.key === 'Escape' && document.getElementById('archive-modal').classList.contains('visible')) {
+    closeArchiveModal();
+  } else if (e.key === 'Escape' && compareMode) {
     exitCompareMode();
   }
 });
