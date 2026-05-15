@@ -337,6 +337,45 @@
     width: 100%;
     border-color: #334155;
   }
+  .page-edit-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .page-row.editing {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .page-row-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+  .page-row-actions {
+    display: none;
+    justify-content: flex-end;
+  }
+  .page-row.editing .page-row-actions {
+    display: flex;
+  }
+  .page-archive-btn {
+    background: rgba(248, 113, 113, 0.08);
+    color: #fca5a5;
+    border: 1px solid rgba(248, 113, 113, 0.28);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.64rem;
+    font-weight: 650;
+    padding: 0.22rem 0.45rem;
+  }
+  .page-archive-btn:hover,
+  .page-archive-btn:focus {
+    border-color: #f87171;
+    outline: none;
+  }
   .page-results {
     font-size: 0.65rem;
     color: #64748b;
@@ -712,6 +751,9 @@
           </div>
           <button class="page-tool-btn btn-rescan" id="page-rescan" type="button" onclick="triggerRescan()">Re-scan project</button>
         </div>
+        <div class="page-edit-row">
+          <button class="page-tool-btn" id="page-edit-toggle" type="button" onclick="togglePageEditMode()" aria-pressed="false">Edit pages</button>
+        </div>
         <div class="page-versions" id="versions-section">
           <span class="page-versions-label">Versions</span>
           <div class="version-pills" id="version-pills">
@@ -756,6 +798,7 @@ var compareItems = [];
 var currentViewport = 'desktop';
 var expandedGroups = {};
 var pageGroupMode = 'compact';
+var pageEditMode = false;
 var previewFileBase = '/page?file=';
 var pageFilters = { query: '', category: '', sort: 'updated-desc' };
 
@@ -921,6 +964,20 @@ function setPageGroupMode(mode) {
     expandedGroups[groupName] = pageGroupMode === 'expanded' || groupName === activeGroup;
   });
   updatePageGroupModeButtons();
+  renderPagesList();
+}
+
+function updatePageEditButton() {
+  var btn = document.getElementById('page-edit-toggle');
+  if (!btn) return;
+  btn.classList.toggle('active', pageEditMode);
+  btn.setAttribute('aria-pressed', pageEditMode ? 'true' : 'false');
+  btn.textContent = pageEditMode ? 'Done editing' : 'Edit pages';
+}
+
+function togglePageEditMode() {
+  pageEditMode = !pageEditMode;
+  updatePageEditButton();
   renderPagesList();
 }
 
@@ -1129,12 +1186,28 @@ function renderPagesList() {
 
     grouped[groupName].forEach(function(slotData) {
       var row = document.createElement('div');
-      row.className = 'page-row' + (slotData.slot === activePage ? ' active' : '');
+      row.className = 'page-row' + (slotData.slot === activePage ? ' active' : '') + (pageEditMode ? ' editing' : '');
       row.dataset.slot = slotData.slot;
 
-      row.appendChild(makeText('span', 'page-row-name', getPageLabel(slotData)));
-      row.appendChild(makeText('span', 'page-row-count', slotData.iterations.length + ''));
-      row.onclick = function() { activatePage(slotData.slot, true); };
+      var rowMain = document.createElement('div');
+      rowMain.className = 'page-row-main';
+      rowMain.appendChild(makeText('span', 'page-row-name', getPageLabel(slotData)));
+      rowMain.appendChild(makeText('span', 'page-row-count', slotData.iterations.length + ''));
+      rowMain.onclick = function() { activatePage(slotData.slot, true); };
+      row.appendChild(rowMain);
+
+      var actions = document.createElement('div');
+      actions.className = 'page-row-actions';
+      var archiveBtn = document.createElement('button');
+      archiveBtn.className = 'page-archive-btn';
+      archiveBtn.type = 'button';
+      archiveBtn.textContent = 'Archive page';
+      archiveBtn.onclick = function(event) {
+        event.stopPropagation();
+        archivePage(slotData);
+      };
+      actions.appendChild(archiveBtn);
+      row.appendChild(actions);
 
       rows.appendChild(row);
     });
@@ -1221,6 +1294,53 @@ function updateVersionPills() {
   }
 }
 
+function loadSlots() {
+  return fetch('/api/slots')
+    .then(function(r) { return r.json(); })
+    .then(function(slots) {
+      renderSlots(slots);
+      return slots;
+    })
+    .catch(function(err) {
+      var ph = document.getElementById('preview-placeholder');
+      if (ph) {
+        ph.style.display = '';
+        document.getElementById('preview-placeholder-msg').textContent = 'Failed to load slots: ' + err.message;
+      }
+      var errOpt = document.createElement('option');
+      errOpt.value = '';
+      errOpt.textContent = 'Error loading';
+      document.getElementById('proto-select').appendChild(errOpt);
+      updatePageNavButtons();
+      return [];
+    });
+}
+
+function archivePage(slotData) {
+  if (!slotData) return;
+  var label = getPageContextLabel(slotData);
+  var confirmed = window.confirm('Archive page: ' + label + '?\\n\\nThis moves it to factory/archive so it can be restored manually.');
+  if (!confirmed) return;
+
+  fetch('/api/archive-page', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: slotData.slot })
+  })
+    .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+    .then(function(result) {
+      if (!result.ok) throw new Error(result.data && result.data.error ? result.data.error : 'Archive failed');
+      if (slotData.slot === activePage) {
+        window.location.href = '/factory';
+        return;
+      }
+      loadSlots();
+    })
+    .catch(function(err) {
+      window.alert('Could not archive page: ' + err.message);
+    });
+}
+
 // --- Slot rendering ---
 function renderSlots(slots) {
   allSlots = slots || [];
@@ -1258,23 +1378,7 @@ function renderSlots(slots) {
 }
 
 // --- Load slots ---
-fetch('/api/slots')
-  .then(function(r) { return r.json(); })
-  .then(function(slots) {
-    renderSlots(slots);
-  })
-  .catch(function(err) {
-    var ph = document.getElementById('preview-placeholder');
-    if (ph) {
-      ph.style.display = '';
-      document.getElementById('preview-placeholder-msg').textContent = 'Failed to load slots: ' + err.message;
-    }
-    var errOpt = document.createElement('option');
-    errOpt.value = '';
-    errOpt.textContent = 'Error loading';
-    document.getElementById('proto-select').appendChild(errOpt);
-    updatePageNavButtons();
-  });
+loadSlots();
 
 // --- Style Controls ---
 var styleProfile = null;
