@@ -756,6 +756,53 @@ function handlePageStatus(req, res) {
   jsonResponse(res, 200, result);
 }
 
+async function handleArchivePage(req, res) {
+  if (!pagesRoot) {
+    jsonResponse(res, 400, { error: "No --project-dir configured" });
+    return;
+  }
+
+  const body = await readBody(req);
+  if (!body || !body.page) {
+    jsonResponse(res, 400, { error: "Missing page" });
+    return;
+  }
+
+  const slot = String(body.page).trim();
+  const slotData = scanSlots().find(s => s.slot === slot);
+  if (!slotData) {
+    jsonResponse(res, 404, { error: "Page not found" });
+    return;
+  }
+
+  const pagesDir = path.resolve(pagesRoot, "factory/pages");
+  const archiveDir = path.resolve(pagesRoot, "factory/archive");
+  const source = path.resolve(pagesDir, slotData.slot);
+  if (!source.startsWith(pagesDir + path.sep) || !fs.existsSync(source)) {
+    jsonResponse(res, 404, { error: "Page directory not found" });
+    return;
+  }
+
+  let target = path.resolve(archiveDir, slotData.slot);
+  if (!target.startsWith(archiveDir + path.sep)) {
+    jsonResponse(res, 403, { error: "Forbidden archive path" });
+    return;
+  }
+
+  if (fs.existsSync(target)) {
+    target = target + "-" + new Date().toISOString().replace(/[:.]/g, "-");
+  }
+
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.renameSync(source, target);
+  broadcast({ type: "reload" });
+  jsonResponse(res, 200, {
+    ok: true,
+    page: slotData.slot,
+    archivedTo: path.relative(pagesRoot, target),
+  });
+}
+
 function servePortfolio(res) {
   const portfolioPath = path.join(__dirname, "portfolio.html");
   if (!fs.existsSync(portfolioPath)) {
@@ -805,6 +852,8 @@ const server = http.createServer((req, res) => {
     handleWrite(req, res);
   } else if (parsed.pathname === "/api/page-status") {
     handlePageStatus(req, res);
+  } else if (parsed.pathname === "/api/archive-page" && req.method === "POST") {
+    handleArchivePage(req, res);
   } else if (parsed.pathname === "/api/compare" && req.method === "POST") {
     handleCompare(req, res);
   } else if (parsed.pathname === "/api/style-profile") {

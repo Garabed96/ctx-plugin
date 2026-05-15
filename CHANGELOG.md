@@ -2,7 +2,7 @@
 
 ## 0.2.9.7 (2026-05-15)
 
-- **Factory portfolio chrome** — portfolio cards now use responsive preview scaling, larger readable metadata, grouped default sections, category-scoped URLs (`/factory?category=...`), and an explicit `All pages` escape path. The editor top bar now includes a stable `Factory` back link, keeps page/version controls fixed on the right, and removes the obsolete bottom prompt bar. Bare `/` redirects to `/factory` when no transient brainstorm preview exists.
+- **Factory portfolio chrome** — portfolio cards now use responsive preview scaling, larger readable metadata, grouped default sections, category-scoped URLs (`/factory?category=...`), and an explicit `All pages` escape path. The editor top bar now includes a stable `Factory` back link, keeps page/version controls fixed on the right, promotes versions and rescan actions into the Pages area, adds compact/expanded page group modes, supports soft-archiving whole pages into `factory/archive/`, and removes the obsolete bottom prompt bar. Bare `/` redirects to `/factory` when no transient brainstorm preview exists.
 
 ## 0.2.9.6 (2026-04-22)
 
