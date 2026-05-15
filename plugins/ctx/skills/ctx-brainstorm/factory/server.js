@@ -470,13 +470,8 @@ function servePage(res, filePath) {
 function serveBrainstorm(res) {
   const file = newestHtml();
   if (!file) {
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.end(
-      frameTemplate.replace(
-        "{{CONTENT}}",
-        '<div class="waiting">Waiting for content...</div>'
-      )
-    );
+    res.writeHead(302, { Location: "/factory" });
+    res.end();
     return;
   }
   const content = fs.readFileSync(path.join(screenDir, file), "utf8");
@@ -790,7 +785,7 @@ const server = http.createServer((req, res) => {
     handleStatus(req, res);
   } else if (parsed.pathname === "/playground") {
     servePlayground(res);
-  } else if (parsed.pathname === "/page" && parsed.searchParams.get("file")) {
+  } else if ((parsed.pathname === "/page" || parsed.pathname === "/prototype") && parsed.searchParams.get("file")) {
     servePage(res, parsed.searchParams.get("file"));
   } else if (parsed.pathname === "/api/slots") {
     jsonResponse(res, 200, scanSlots());

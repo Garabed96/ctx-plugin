@@ -21,6 +21,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
     padding: 0.5rem 1rem;
     background: #1e293b;
     border-bottom: 1px solid #334155;
@@ -30,6 +31,8 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    min-width: 0;
+    flex: 1;
   }
   .top-bar-title {
     font-size: 0.85rem;
@@ -37,11 +40,52 @@
     color: #e2e8f0;
     white-space: nowrap;
   }
+  .portfolio-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 0 0.55rem;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    background: #0f172a;
+    color: #cbd5e1;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .portfolio-back:hover,
+  .portfolio-back:focus {
+    border-color: #818cf8;
+    color: #c7d2fe;
+    outline: none;
+  }
   .top-bar-context {
     font-size: 0.75rem;
     color: #818cf8;
     font-family: 'SF Mono', 'Fira Code', monospace;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+  .top-bar-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex: 0 1 auto;
+    min-width: 0;
+    margin-left: auto;
+  }
+  .top-bar-version-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex: 0 1 318px;
+    min-width: 210px;
   }
   .proto-select {
     background: #0f172a;
@@ -52,7 +96,8 @@
     font-size: 0.75rem;
     font-family: inherit;
     cursor: pointer;
-    min-width: 180px;
+    min-width: 0;
+    width: 100%;
   }
   .proto-select:focus { outline: none; border-color: #818cf8; }
   .page-nav {
@@ -113,6 +158,18 @@
   }
   .status-dot.connected .status-dot-circle { background: #22c55e; }
   .status-dot.connected .status-dot-label { color: #86efac; }
+  @media (max-width: 920px) {
+    .top-bar { gap: 0.65rem; }
+    .top-bar-actions { gap: 0.55rem; }
+    .top-bar-version-actions { flex-basis: 260px; }
+    .status-dot { display: none; }
+  }
+  @media (max-width: 760px) {
+    .top-bar-title { display: none; }
+    .top-bar-context { font-size: 0.7rem; }
+    .top-bar-version-actions { flex-basis: 210px; min-width: 180px; }
+    .viewport-pill { padding: 0.2rem 0.4rem; }
+  }
 
   /* Sidebar toggle (lives in top-bar) */
   .sidebar-toggle {
@@ -462,52 +519,6 @@
     line-height: 1.6;
   }
 
-  /* Prompt bar */
-  .prompt-bar {
-    border-top: 1px solid #1e293b;
-    padding: 0.65rem 1rem;
-    background: #0f172a;
-    display: flex;
-    gap: 0.5rem;
-    align-items: start;
-    flex-shrink: 0;
-  }
-  .prompt-text {
-    flex: 1;
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 6px;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.8rem;
-    color: #94a3b8;
-    min-height: 42px;
-    font-family: inherit;
-    line-height: 1.5;
-    resize: none;
-    overflow-y: auto;
-    max-height: 80px;
-  }
-  .prompt-text:focus { outline: none; border-color: #818cf8; color: #e2e8f0; }
-  .prompt-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    flex-shrink: 0;
-  }
-  .btn-copy {
-    background: #1e293b;
-    color: #94a3b8;
-    border: 1px solid #334155;
-    border-radius: 6px;
-    padding: 0.4rem 0.75rem;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: inherit;
-  }
-  .btn-copy:hover { border-color: #818cf8; color: #c7d2fe; }
-  .btn-copy.copied { border-color: #22c55e; color: #86efac; }
-
   /* Compare mode */
   .compare-header {
     display: flex;
@@ -590,16 +601,19 @@
   <div class="top-bar-left">
     <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar">&#9776;</button>
     <span class="top-bar-title">Tinker Factory</span>
+    <a class="portfolio-back" href="/factory" title="Back to factory" aria-label="Back to Factory">&larr; Factory</a>
     <span class="top-bar-context" id="top-bar-context"></span>
-    <div class="page-nav">
-      <button class="page-nav-btn" id="page-prev" onclick="goToAdjacentPage(-1)" title="Previous page" aria-label="Previous page">&larr;</button>
-      <button class="page-nav-btn" id="page-next" onclick="goToAdjacentPage(1)" title="Next page" aria-label="Next page">&rarr;</button>
-    </div>
-    <select class="proto-select" id="proto-select" onchange="selectProtoFromDropdown(this.value)">
-      <option value="">Loading slots...</option>
-    </select>
   </div>
-  <div style="display:flex;align-items:center;gap:0.75rem;">
+  <div class="top-bar-actions">
+    <div class="top-bar-version-actions">
+      <div class="page-nav">
+        <button class="page-nav-btn" id="page-prev" onclick="goToAdjacentPage(-1)" title="Previous page" aria-label="Previous page">&larr;</button>
+        <button class="page-nav-btn" id="page-next" onclick="goToAdjacentPage(1)" title="Next page" aria-label="Next page">&rarr;</button>
+      </div>
+      <select class="proto-select" id="proto-select" onchange="selectProtoFromDropdown(this.value)">
+        <option value="">Loading slots...</option>
+      </select>
+    </div>
     <div class="viewport-pills" id="viewport-pills">
       <button class="viewport-pill active" data-viewport="desktop" onclick="setViewport('desktop')">Desktop</button>
       <button class="viewport-pill" data-viewport="tablet" onclick="setViewport('tablet')">Tablet</button>
@@ -666,14 +680,6 @@
         <p id="preview-placeholder-msg">Loading prototypes...</p>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- Prompt Bar -->
-<div class="prompt-bar">
-  <textarea class="prompt-text" id="prompt-text" rows="2" placeholder="Describe what you want to iterate on..."></textarea>
-  <div class="prompt-buttons">
-    <button class="btn-copy" id="btn-copy" onclick="copyPrompt()">Copy</button>
   </div>
 </div>
 
@@ -913,20 +919,6 @@ function updateTopBarContext() {
   } else {
     ctx.textContent = '';
   }
-}
-
-// --- Copy prompt ---
-function copyPrompt() {
-  var text = document.getElementById('prompt-text').value;
-  navigator.clipboard.writeText(text).then(function() {
-    var btn = document.getElementById('btn-copy');
-    btn.textContent = 'Copied!';
-    btn.classList.add('copied');
-    setTimeout(function() {
-      btn.textContent = 'Copy';
-      btn.classList.remove('copied');
-    }, 1500);
-  });
 }
 
 // --- Prototype preview ---
@@ -1251,6 +1243,7 @@ function updateStylePrompt() {
   }
 
   var promptEl = document.getElementById('prompt-text');
+  if (!promptEl) return;
   var segments = [];
   if (selectedOption) segments.push('Selected: ' + selectedOption);
   if (parts.length > 0) segments.push('Iterate with ' + parts.join(', ') + '.');
