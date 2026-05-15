@@ -297,11 +297,57 @@
     grid-template-columns: 1fr 1fr;
     gap: 0.35rem;
   }
+  .page-action-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem;
+  }
+  .page-tool-btn {
+    background: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    border-radius: 5px;
+    padding: 0.32rem 0.5rem;
+    font-size: 0.68rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .page-tool-btn:hover,
+  .page-tool-btn.active {
+    border-color: #818cf8;
+    color: #c7d2fe;
+  }
+  .page-tool-btn:disabled {
+    opacity: 0.5;
+    cursor: wait;
+  }
+  #page-rescan {
+    grid-column: 1 / -1;
+  }
   .page-results {
     font-size: 0.65rem;
     color: #64748b;
     margin: -0.15rem 0 0.45rem;
     font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .page-versions {
+    display: none;
+    padding: 0.45rem 0;
+    border-top: 1px solid #1e293b;
+    border-bottom: 1px solid #1e293b;
+  }
+  .page-versions.visible {
+    display: block;
+  }
+  .page-versions-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: #64748b;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
   .page-row {
     display: flex;
@@ -648,17 +694,20 @@
             <option value="category-asc">Category A-Z</option>
           </select>
         </div>
+        <div class="page-action-row">
+          <button class="page-tool-btn active" id="page-compact" type="button" onclick="setPageGroupMode('compact')">Compact</button>
+          <button class="page-tool-btn" id="page-expand" type="button" onclick="setPageGroupMode('expanded')">Expand</button>
+          <button class="page-tool-btn btn-rescan" id="page-rescan" type="button" onclick="triggerRescan()">Re-scan project</button>
+        </div>
+        <div class="page-versions" id="versions-section">
+          <span class="page-versions-label">Versions</span>
+          <div class="version-pills" id="version-pills">
+            <!-- Populated by JS -->
+          </div>
+        </div>
         <div class="page-results" id="page-results"></div>
       </div>
       <div id="pages-list">
-        <!-- Populated by JS -->
-      </div>
-    </div>
-
-    <!-- Versions section (shown when a page is active) -->
-    <div class="controls-section" id="versions-section" style="display:none;">
-      <div class="controls-section-title">Versions</div>
-      <div class="version-pills" id="version-pills">
         <!-- Populated by JS -->
       </div>
     </div>
@@ -693,6 +742,7 @@ var compareMode = false;
 var compareItems = [];
 var currentViewport = 'desktop';
 var expandedGroups = {};
+var pageGroupMode = 'compact';
 var previewFileBase = '/prototype?file=';
 var pageFilters = { query: '', category: '', sort: 'updated-desc' };
 
@@ -831,6 +881,32 @@ function updatePageFilters() {
   pageFilters.sort = sort ? sort.value : 'updated-desc';
   renderPagesList();
   updatePageNavButtons();
+}
+
+function getActiveGroupName() {
+  var activeSlot = findSlot(activePage);
+  return getGroupName(activeSlot);
+}
+
+function updatePageGroupModeButtons() {
+  var compact = document.getElementById('page-compact');
+  var expand = document.getElementById('page-expand');
+  if (compact) compact.classList.toggle('active', pageGroupMode === 'compact');
+  if (expand) expand.classList.toggle('active', pageGroupMode === 'expanded');
+}
+
+function setPageGroupMode(mode) {
+  pageGroupMode = mode === 'expanded' ? 'expanded' : 'compact';
+  var activeGroup = getActiveGroupName();
+  var groups = {};
+  allSlots.forEach(function(slotData) {
+    groups[getGroupName(slotData)] = true;
+  });
+  Object.keys(groups).forEach(function(groupName) {
+    expandedGroups[groupName] = pageGroupMode === 'expanded' || groupName === activeGroup;
+  });
+  updatePageGroupModeButtons();
+  renderPagesList();
 }
 
 function updatePageNavButtons() {
@@ -1007,7 +1083,9 @@ function renderPagesList() {
     if (!grouped[groupName]) {
       grouped[groupName] = [];
       order.push(groupName);
-      if (expandedGroups[groupName] == null) expandedGroups[groupName] = true;
+      if (expandedGroups[groupName] == null) {
+        expandedGroups[groupName] = pageGroupMode === 'expanded' || groupName === getActiveGroupName();
+      }
     }
     grouped[groupName].push(slotData);
   });
@@ -1071,10 +1149,17 @@ function activatePage(slotName, autoSelectLatest) {
   if (!slotData) return;
 
   activePage = slotName;
+  if (pageGroupMode === 'compact') {
+    var activeGroup = getGroupName(slotData);
+    Object.keys(expandedGroups).forEach(function(groupName) {
+      expandedGroups[groupName] = groupName === activeGroup;
+    });
+    expandedGroups[activeGroup] = true;
+  }
   renderPagesList();
 
   var versionsSection = document.getElementById('versions-section');
-  versionsSection.style.display = '';
+  versionsSection.classList.add('visible');
   renderVersionPills(slotName);
   renderProtoSelect();
   updatePageNavButtons();
@@ -1134,7 +1219,7 @@ function renderSlots(slots) {
   activeVersion = null;
 
   clearChildren(protoSelect);
-  versionsSection.style.display = 'none';
+  versionsSection.classList.remove('visible');
   clearChildren(document.getElementById('version-pills'));
   renderPagesList();
 
@@ -1492,8 +1577,7 @@ function loadStyleProfile() {
 }
 
 function triggerRescan() {
-  var container = document.getElementById('style-controls-content');
-  var btns = container.querySelectorAll('.btn-rescan');
+  var btns = document.querySelectorAll('.btn-rescan');
   btns.forEach(function(b) { b.disabled = true; b.textContent = 'Scanning...'; });
 
   fetch('/api/scan', { method: 'POST' })
