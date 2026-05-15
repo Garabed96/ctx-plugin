@@ -571,6 +571,12 @@
     color: #475569;
     font-style: italic;
   }
+  .style-controls-note {
+    font-size: 0.66rem;
+    color: #64748b;
+    line-height: 1.4;
+    margin: 0 0 0.5rem;
+  }
   .empty-hint {
     font-size: 0.72rem;
     color: #475569;
@@ -1608,12 +1614,7 @@ function buildStyleControls(profile) {
   clearChildren(container);
 
   if (!profile) {
-    container.appendChild(makeText('span', 'style-no-profile', 'No profile found. Run Re-scan.'));
-    var rescanBtn = document.createElement('button');
-    rescanBtn.className = 'btn-rescan';
-    rescanBtn.textContent = 'Re-scan';
-    rescanBtn.onclick = triggerRescan;
-    container.appendChild(rescanBtn);
+    container.appendChild(makeText('span', 'style-no-profile', 'No profile found. Use Re-scan project above to refresh styles.'));
     return;
   }
 
@@ -1622,6 +1623,11 @@ function buildStyleControls(profile) {
   var t = profile.typography || {};
   var sp = profile.spacing || {};
   var r = sp.radius || {};
+
+  var note = document.createElement('p');
+  note.className = 'style-controls-note';
+  note.textContent = 'Preview overrides apply to prototypes that use Factory CSS variables.';
+  container.appendChild(note);
 
   // Colors
   var colorKeys = ['primary', 'accent', 'background', 'foreground', 'muted', 'secondary', 'destructive'];
@@ -1663,7 +1669,7 @@ function buildStyleControls(profile) {
 
   var resetBtn = document.createElement('button');
   resetBtn.className = 'btn-reset';
-  resetBtn.textContent = 'Reset to profile';
+  resetBtn.textContent = 'Reset preview overrides';
   resetBtn.onclick = function() {
     styleOverrides = {};
     buildStyleControls(styleProfile);
@@ -1672,17 +1678,6 @@ function buildStyleControls(profile) {
     if (iframe) iframe.src = iframe.src;
   };
   container.appendChild(resetBtn);
-
-  var rescanDesc = document.createElement('p');
-  rescanDesc.style.cssText = 'font-size:0.62rem;color:#475569;line-height:1.4;margin-bottom:0.35rem;';
-  rescanDesc.textContent = 'Re-reads your project\u2019s tailwind config, CSS vars, and package.json to update the controls above.';
-  container.appendChild(rescanDesc);
-
-  var rescanBtn = document.createElement('button');
-  rescanBtn.className = 'btn-rescan';
-  rescanBtn.textContent = 'Re-scan project';
-  rescanBtn.onclick = triggerRescan;
-  container.appendChild(rescanBtn);
 }
 
 function loadStyleProfile() {
