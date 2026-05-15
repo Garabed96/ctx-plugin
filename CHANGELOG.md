@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.9.7 (2026-05-15)
+
+- **Factory portfolio chrome** — portfolio cards now use responsive preview scaling, larger readable metadata, grouped default sections, category-scoped URLs (`/factory?category=...`), and an explicit `All pages` escape path. The editor top bar now includes a stable `Factory` back link, keeps page/version controls fixed on the right, and removes the obsolete bottom prompt bar. Bare `/` redirects to `/factory` when no transient brainstorm preview exists.
+
 ## 0.2.9.6 (2026-04-22)
 
 - **Factory grouped navigation (CTX-46)** — factory prototypes can now be stored under `factory/pages/<group>/<page>/`, `scanSlots()` exposes group metadata, `/api/write` accepts a `group` field, the editor sidebar renders collapsible group sections, the top-bar version dropdown is scoped to the active page, and left/right arrows switch pages independently of version selection. Deep links and portfolio cards now support grouped page paths.

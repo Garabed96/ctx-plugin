@@ -470,13 +470,8 @@ function servePrototype(res, filePath) {
 function serveBrainstorm(res) {
   const file = newestHtml();
   if (!file) {
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.end(
-      frameTemplate.replace(
-        "{{CONTENT}}",
-        '<div class="waiting">Waiting for content...</div>'
-      )
-    );
+    res.writeHead(302, { Location: "/factory" });
+    res.end();
     return;
   }
   const content = fs.readFileSync(path.join(screenDir, file), "utf8");
