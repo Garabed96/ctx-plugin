@@ -299,20 +299,30 @@
   }
   .page-action-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: 0.35rem;
+  }
+  .page-mode-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0.15rem;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    background: #0a0e17;
   }
   .page-tool-btn {
     background: #1e293b;
     color: #94a3b8;
-    border: 1px solid #334155;
-    border-radius: 5px;
+    border: 1px solid transparent;
+    border-radius: 4px;
     padding: 0.32rem 0.5rem;
     font-size: 0.68rem;
     cursor: pointer;
     font-family: inherit;
     transition: all 0.15s;
     white-space: nowrap;
+  }
+  .page-mode-toggle .page-tool-btn {
+    background: transparent;
   }
   .page-tool-btn:hover,
   .page-tool-btn.active {
@@ -324,7 +334,8 @@
     cursor: wait;
   }
   #page-rescan {
-    grid-column: 1 / -1;
+    width: 100%;
+    border-color: #334155;
   }
   .page-results {
     font-size: 0.65rem;
@@ -695,8 +706,10 @@
           </select>
         </div>
         <div class="page-action-row">
-          <button class="page-tool-btn active" id="page-compact" type="button" onclick="setPageGroupMode('compact')">Compact</button>
-          <button class="page-tool-btn" id="page-expand" type="button" onclick="setPageGroupMode('expanded')">Expand</button>
+          <div class="page-mode-toggle" role="group" aria-label="Page group display mode">
+            <button class="page-tool-btn active" id="page-compact" type="button" onclick="setPageGroupMode('compact')" aria-pressed="true">Compact</button>
+            <button class="page-tool-btn" id="page-expand" type="button" onclick="setPageGroupMode('expanded')" aria-pressed="false">Expand</button>
+          </div>
           <button class="page-tool-btn btn-rescan" id="page-rescan" type="button" onclick="triggerRescan()">Re-scan project</button>
         </div>
         <div class="page-versions" id="versions-section">
@@ -893,6 +906,8 @@ function updatePageGroupModeButtons() {
   var expand = document.getElementById('page-expand');
   if (compact) compact.classList.toggle('active', pageGroupMode === 'compact');
   if (expand) expand.classList.toggle('active', pageGroupMode === 'expanded');
+  if (compact) compact.setAttribute('aria-pressed', pageGroupMode === 'compact' ? 'true' : 'false');
+  if (expand) expand.setAttribute('aria-pressed', pageGroupMode === 'expanded' ? 'true' : 'false');
 }
 
 function setPageGroupMode(mode) {
