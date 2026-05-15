@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tinker Factory</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -337,6 +338,137 @@
     width: 100%;
     border-color: #334155;
   }
+  .page-edit-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .page-tool-btn.with-icon,
+  .page-archive-btn,
+  .page-restore-btn,
+  .modal-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.32rem;
+  }
+  .page-tool-btn [data-lucide],
+  .page-archive-btn [data-lucide],
+  .page-restore-btn [data-lucide],
+  .modal-btn [data-lucide] {
+    width: 0.78rem;
+    height: 0.78rem;
+    stroke-width: 2.2;
+    flex-shrink: 0;
+  }
+  .page-row.editing {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .page-row-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+  .page-row-actions {
+    display: none;
+    justify-content: flex-end;
+  }
+  .page-row.editing .page-row-actions {
+    display: flex;
+  }
+  .page-archive-btn {
+    background: rgba(248, 113, 113, 0.08);
+    color: #fca5a5;
+    border: 1px solid rgba(248, 113, 113, 0.28);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.64rem;
+    font-weight: 650;
+    padding: 0.22rem 0.45rem;
+  }
+  .page-archive-btn:hover,
+  .page-archive-btn:focus {
+    border-color: #f87171;
+    outline: none;
+  }
+  .archive-manager {
+    display: none;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    padding: 0.5rem;
+    background: rgba(15, 23, 42, 0.56);
+    gap: 0.35rem;
+  }
+  .archive-manager.visible {
+    display: grid;
+  }
+  .archive-manager-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: #cbd5e1;
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .archive-manager-list {
+    display: grid;
+    gap: 0.3rem;
+  }
+  .archive-empty {
+    color: #64748b;
+    font-size: 0.66rem;
+    line-height: 1.35;
+  }
+  .archive-row {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.42rem;
+    border: 1px solid #1e293b;
+    border-radius: 5px;
+    background: #0a0e17;
+  }
+  .archive-row-main {
+    min-width: 0;
+  }
+  .archive-row-name {
+    display: block;
+    color: #cbd5e1;
+    font-size: 0.69rem;
+    font-weight: 650;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .archive-row-meta {
+    display: block;
+    color: #64748b;
+    font-size: 0.61rem;
+    margin-top: 0.12rem;
+  }
+  .page-restore-btn {
+    justify-self: start;
+    background: rgba(45, 212, 191, 0.08);
+    color: #5eead4;
+    border: 1px solid rgba(45, 212, 191, 0.28);
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.64rem;
+    font-weight: 650;
+    padding: 0.22rem 0.45rem;
+  }
+  .page-restore-btn:hover,
+  .page-restore-btn:focus {
+    border-color: #2dd4bf;
+    outline: none;
+  }
   .page-results {
     font-size: 0.65rem;
     color: #64748b;
@@ -532,10 +664,76 @@
     color: #475569;
     font-style: italic;
   }
+  .style-controls-note {
+    font-size: 0.66rem;
+    color: #64748b;
+    line-height: 1.4;
+    margin: 0 0 0.5rem;
+  }
   .empty-hint {
     font-size: 0.72rem;
     color: #475569;
     font-style: italic;
+  }
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(2, 6, 23, 0.72);
+  }
+  .modal-backdrop.visible {
+    display: flex;
+  }
+  .modal-dialog {
+    width: min(420px, 100%);
+    border: 1px solid #334155;
+    border-radius: 8px;
+    background: #0f172a;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+    padding: 1rem;
+  }
+  .modal-title {
+    color: #f8fafc;
+    font-size: 0.95rem;
+    font-weight: 750;
+    margin-bottom: 0.35rem;
+  }
+  .modal-body {
+    color: #94a3b8;
+    font-size: 0.76rem;
+    line-height: 1.45;
+  }
+  .modal-page-name {
+    color: #e2e8f0;
+    font-weight: 700;
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .modal-btn {
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.42rem 0.65rem;
+  }
+  .modal-btn-secondary {
+    background: transparent;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+  }
+  .modal-btn-danger {
+    background: rgba(248, 113, 113, 0.12);
+    color: #fecaca;
+    border: 1px solid rgba(248, 113, 113, 0.42);
   }
 
   /* Preview area */
@@ -712,6 +910,17 @@
           </div>
           <button class="page-tool-btn btn-rescan" id="page-rescan" type="button" onclick="triggerRescan()">Re-scan project</button>
         </div>
+        <div class="page-edit-row">
+          <button class="page-tool-btn with-icon" id="page-edit-toggle" type="button" onclick="togglePageEditMode()" aria-pressed="false" title="Edit pages"></button>
+        </div>
+        <div class="archive-manager" id="archive-manager">
+          <div class="archive-manager-title">
+            <span>Archived pages</span>
+          </div>
+          <div class="archive-manager-list" id="archive-list">
+            <span class="archive-empty">Loading archived pages...</span>
+          </div>
+        </div>
         <div class="page-versions" id="versions-section">
           <span class="page-versions-label">Versions</span>
           <div class="version-pills" id="version-pills">
@@ -745,17 +954,36 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="archive-modal" role="dialog" aria-modal="true" aria-labelledby="archive-modal-title">
+  <div class="modal-dialog">
+    <div class="modal-title" id="archive-modal-title">Archive page?</div>
+    <div class="modal-body">
+      This moves <span class="modal-page-name" id="archive-modal-page"></span> out of active Factory pages and into <span class="modal-page-name">factory/archive</span>. You can restore it later from Edit pages.
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-secondary" type="button" onclick="closeArchiveModal()">Cancel</button>
+      <button class="modal-btn modal-btn-danger" id="archive-confirm-btn" type="button" onclick="confirmArchivePage()">
+        <i data-lucide="archive"></i>
+        <span>Archive page</span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 // --- State ---
 var activeFile = null;
 var activePage = null;
 var activeVersion = null;
 var allSlots = [];
+var archivedSlots = [];
 var compareMode = false;
 var compareItems = [];
 var currentViewport = 'desktop';
 var expandedGroups = {};
 var pageGroupMode = 'compact';
+var pageEditMode = false;
+var pendingArchiveSlot = null;
 var previewFileBase = '/prototype?file=';
 var pageFilters = { query: '', category: '', sort: 'updated-desc' };
 
@@ -790,6 +1018,26 @@ function makeText(tag, className, text) {
   if (className) el.className = className;
   el.textContent = text;
   return el;
+}
+
+function iconEl(name) {
+  var el = document.createElement('i');
+  el.setAttribute('data-lucide', name);
+  el.setAttribute('aria-hidden', 'true');
+  return el;
+}
+
+function setIconButtonContent(button, iconName, label) {
+  clearChildren(button);
+  button.appendChild(iconEl(iconName));
+  button.appendChild(makeText('span', '', label));
+  refreshIcons();
+}
+
+function refreshIcons() {
+  if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    window.lucide.createIcons();
+  }
 }
 
 function buildPreviewUrl(filePath) {
@@ -921,6 +1169,23 @@ function setPageGroupMode(mode) {
     expandedGroups[groupName] = pageGroupMode === 'expanded' || groupName === activeGroup;
   });
   updatePageGroupModeButtons();
+  renderPagesList();
+}
+
+function updatePageEditButton() {
+  var btn = document.getElementById('page-edit-toggle');
+  if (!btn) return;
+  btn.classList.toggle('active', pageEditMode);
+  btn.setAttribute('aria-pressed', pageEditMode ? 'true' : 'false');
+  btn.title = pageEditMode ? 'Done editing' : 'Edit pages';
+  setIconButtonContent(btn, pageEditMode ? 'check' : 'square-pen', pageEditMode ? 'Done editing' : 'Edit pages');
+}
+
+function togglePageEditMode() {
+  pageEditMode = !pageEditMode;
+  updatePageEditButton();
+  renderArchiveManager();
+  if (pageEditMode) loadArchivedSlots();
   renderPagesList();
 }
 
@@ -1129,12 +1394,30 @@ function renderPagesList() {
 
     grouped[groupName].forEach(function(slotData) {
       var row = document.createElement('div');
-      row.className = 'page-row' + (slotData.slot === activePage ? ' active' : '');
+      row.className = 'page-row' + (slotData.slot === activePage ? ' active' : '') + (pageEditMode ? ' editing' : '');
       row.dataset.slot = slotData.slot;
 
-      row.appendChild(makeText('span', 'page-row-name', getPageLabel(slotData)));
-      row.appendChild(makeText('span', 'page-row-count', slotData.iterations.length + ''));
-      row.onclick = function() { activatePage(slotData.slot, true); };
+      var rowMain = document.createElement('div');
+      rowMain.className = 'page-row-main';
+      rowMain.appendChild(makeText('span', 'page-row-name', getPageLabel(slotData)));
+      rowMain.appendChild(makeText('span', 'page-row-count', slotData.iterations.length + ''));
+      rowMain.onclick = function() { activatePage(slotData.slot, true); };
+      row.appendChild(rowMain);
+
+      var actions = document.createElement('div');
+      actions.className = 'page-row-actions';
+      var archiveBtn = document.createElement('button');
+      archiveBtn.className = 'page-archive-btn';
+      archiveBtn.type = 'button';
+      archiveBtn.title = 'Archive page';
+      archiveBtn.appendChild(iconEl('archive'));
+      archiveBtn.appendChild(makeText('span', '', 'Archive page'));
+      archiveBtn.onclick = function(event) {
+        event.stopPropagation();
+        openArchiveModal(slotData);
+      };
+      actions.appendChild(archiveBtn);
+      row.appendChild(actions);
 
       rows.appendChild(row);
     });
@@ -1142,6 +1425,7 @@ function renderPagesList() {
     group.appendChild(rows);
     pagesList.appendChild(group);
   });
+  refreshIcons();
 }
 
 function selectInitialPage() {
@@ -1221,6 +1505,153 @@ function updateVersionPills() {
   }
 }
 
+function loadSlots() {
+  return fetch('/api/slots')
+    .then(function(r) { return r.json(); })
+    .then(function(slots) {
+      renderSlots(slots);
+      return slots;
+    })
+    .catch(function(err) {
+      var ph = document.getElementById('preview-placeholder');
+      if (ph) {
+        ph.style.display = '';
+        document.getElementById('preview-placeholder-msg').textContent = 'Failed to load slots: ' + err.message;
+      }
+      var errOpt = document.createElement('option');
+      errOpt.value = '';
+      errOpt.textContent = 'Error loading';
+      document.getElementById('proto-select').appendChild(errOpt);
+      updatePageNavButtons();
+      return [];
+    });
+}
+
+function loadArchivedSlots() {
+  return fetch('/api/archived-pages')
+    .then(function(r) { return r.json(); })
+    .then(function(slots) {
+      archivedSlots = slots || [];
+      renderArchiveManager();
+      return archivedSlots;
+    })
+    .catch(function() {
+      archivedSlots = [];
+      renderArchiveManager('Could not load archived pages');
+      return [];
+    });
+}
+
+function renderArchiveManager(errorText) {
+  var panel = document.getElementById('archive-manager');
+  var list = document.getElementById('archive-list');
+  if (!panel || !list) return;
+  panel.classList.toggle('visible', pageEditMode);
+  clearChildren(list);
+  if (!pageEditMode) return;
+  if (errorText) {
+    list.appendChild(makeText('span', 'archive-empty', errorText));
+    return;
+  }
+  if (!archivedSlots || archivedSlots.length === 0) {
+    list.appendChild(makeText('span', 'archive-empty', 'No archived pages yet.'));
+    return;
+  }
+  archivedSlots.forEach(function(slotData) {
+    var row = document.createElement('div');
+    row.className = 'archive-row';
+
+    var main = document.createElement('div');
+    main.className = 'archive-row-main';
+    main.appendChild(makeText('span', 'archive-row-name', getPageContextLabel(slotData)));
+    main.appendChild(makeText('span', 'archive-row-meta', slotData.iterations.length + ' version' + (slotData.iterations.length === 1 ? '' : 's')));
+    row.appendChild(main);
+
+    var restoreBtn = document.createElement('button');
+    restoreBtn.className = 'page-restore-btn';
+    restoreBtn.type = 'button';
+    restoreBtn.title = 'Restore page';
+    restoreBtn.appendChild(iconEl('rotate-ccw'));
+    restoreBtn.appendChild(makeText('span', '', 'Restore'));
+    restoreBtn.onclick = function() { restoreArchivedPage(slotData); };
+    row.appendChild(restoreBtn);
+
+    list.appendChild(row);
+  });
+  refreshIcons();
+}
+
+function openArchiveModal(slotData) {
+  if (!slotData) return;
+  pendingArchiveSlot = slotData;
+  var pageName = document.getElementById('archive-modal-page');
+  if (pageName) pageName.textContent = getPageContextLabel(slotData);
+  var modal = document.getElementById('archive-modal');
+  if (modal) modal.classList.add('visible');
+  refreshIcons();
+}
+
+function closeArchiveModal() {
+  pendingArchiveSlot = null;
+  var modal = document.getElementById('archive-modal');
+  if (modal) modal.classList.remove('visible');
+}
+
+function confirmArchivePage() {
+  var slotData = pendingArchiveSlot;
+  if (!slotData) return;
+  archivePage(slotData);
+}
+
+function archivePage(slotData) {
+  if (!slotData) return;
+  var btn = document.getElementById('archive-confirm-btn');
+  if (btn) btn.disabled = true;
+
+  fetch('/api/archive-page', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: slotData.slot })
+  })
+    .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+    .then(function(result) {
+      if (!result.ok) throw new Error(result.data && result.data.error ? result.data.error : 'Archive failed');
+      closeArchiveModal();
+      if (slotData.slot === activePage) {
+        window.location.href = '/factory';
+        return;
+      }
+      loadSlots();
+      loadArchivedSlots();
+    })
+    .catch(function(err) {
+      window.alert('Could not archive page: ' + err.message);
+    })
+    .then(function() {
+      if (btn) btn.disabled = false;
+    });
+}
+
+function restoreArchivedPage(slotData) {
+  if (!slotData) return;
+  fetch('/api/restore-page', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: slotData.slot })
+  })
+    .then(function(r) { return r.json().then(function(data) { return { ok: r.ok, data: data }; }); })
+    .then(function(result) {
+      if (!result.ok) throw new Error(result.data && result.data.error ? result.data.error : 'Restore failed');
+      return loadSlots();
+    })
+    .then(function() {
+      loadArchivedSlots();
+    })
+    .catch(function(err) {
+      window.alert('Could not restore page: ' + err.message);
+    });
+}
+
 // --- Slot rendering ---
 function renderSlots(slots) {
   allSlots = slots || [];
@@ -1258,23 +1689,9 @@ function renderSlots(slots) {
 }
 
 // --- Load slots ---
-fetch('/api/slots')
-  .then(function(r) { return r.json(); })
-  .then(function(slots) {
-    renderSlots(slots);
-  })
-  .catch(function(err) {
-    var ph = document.getElementById('preview-placeholder');
-    if (ph) {
-      ph.style.display = '';
-      document.getElementById('preview-placeholder-msg').textContent = 'Failed to load slots: ' + err.message;
-    }
-    var errOpt = document.createElement('option');
-    errOpt.value = '';
-    errOpt.textContent = 'Error loading';
-    document.getElementById('proto-select').appendChild(errOpt);
-    updatePageNavButtons();
-  });
+updatePageEditButton();
+renderArchiveManager();
+loadSlots();
 
 // --- Style Controls ---
 var styleProfile = null;
@@ -1504,12 +1921,7 @@ function buildStyleControls(profile) {
   clearChildren(container);
 
   if (!profile) {
-    container.appendChild(makeText('span', 'style-no-profile', 'No profile found. Run Re-scan.'));
-    var rescanBtn = document.createElement('button');
-    rescanBtn.className = 'btn-rescan';
-    rescanBtn.textContent = 'Re-scan';
-    rescanBtn.onclick = triggerRescan;
-    container.appendChild(rescanBtn);
+    container.appendChild(makeText('span', 'style-no-profile', 'No profile found. Use Re-scan project above to refresh styles.'));
     return;
   }
 
@@ -1518,6 +1930,11 @@ function buildStyleControls(profile) {
   var t = profile.typography || {};
   var sp = profile.spacing || {};
   var r = sp.radius || {};
+
+  var note = document.createElement('p');
+  note.className = 'style-controls-note';
+  note.textContent = 'Preview overrides apply to prototypes that use Factory CSS variables.';
+  container.appendChild(note);
 
   // Colors
   var colorKeys = ['primary', 'accent', 'background', 'foreground', 'muted', 'secondary', 'destructive'];
@@ -1559,7 +1976,7 @@ function buildStyleControls(profile) {
 
   var resetBtn = document.createElement('button');
   resetBtn.className = 'btn-reset';
-  resetBtn.textContent = 'Reset to profile';
+  resetBtn.textContent = 'Reset preview overrides';
   resetBtn.onclick = function() {
     styleOverrides = {};
     buildStyleControls(styleProfile);
@@ -1568,17 +1985,6 @@ function buildStyleControls(profile) {
     if (iframe) iframe.src = iframe.src;
   };
   container.appendChild(resetBtn);
-
-  var rescanDesc = document.createElement('p');
-  rescanDesc.style.cssText = 'font-size:0.62rem;color:#475569;line-height:1.4;margin-bottom:0.35rem;';
-  rescanDesc.textContent = 'Re-reads your project\u2019s tailwind config, CSS vars, and package.json to update the controls above.';
-  container.appendChild(rescanDesc);
-
-  var rescanBtn = document.createElement('button');
-  rescanBtn.className = 'btn-rescan';
-  rescanBtn.textContent = 'Re-scan project';
-  rescanBtn.onclick = triggerRescan;
-  container.appendChild(rescanBtn);
 }
 
 function loadStyleProfile() {
@@ -1742,7 +2148,9 @@ function exitCompareMode() {
 }
 
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape' && compareMode) {
+  if (e.key === 'Escape' && document.getElementById('archive-modal').classList.contains('visible')) {
+    closeArchiveModal();
+  } else if (e.key === 'Escape' && compareMode) {
     exitCompareMode();
   }
 });
