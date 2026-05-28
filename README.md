@@ -122,7 +122,7 @@ Invoked with `/ctx:<skill-name>`.
 | `ctx-worktree` | Isolated git worktree with env files and deps, ready immediately. |
 | `ctx-kill-wt` | Teardown: kill port, remove worktree, delete branch. |
 | `ctx-open` | Open current directory in WebStorm. |
-| `ctx-docs` | Aggregate completed work into epic documentation from specs, plans, parks, and git history. |
+| `ctx-docs` | Create evidence-grounded architecture checkpoint docs with source-of-truth boundaries, verification, and Mermaid diagrams. |
 
 **Calibration**
 
