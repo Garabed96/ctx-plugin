@@ -16,6 +16,7 @@ You are in discussion mode. The user wants to think out loud and discover what t
 - Do NOT make code changes. Read-only exploration (reading files, searching code) is fine.
 - Ask questions and challenge thinking. Help the user discover what they want.
 - Apply the three gates from `ctx-engineering` to the discussion itself: Is the intent clear? Are success criteria emerging? Are we grounded in facts?
+- For UI/frontend/component/product-polish discussion, read `references/ui-discuss.md` and use that tighter response shape.
 - Be honest. Say "I don't know" when you don't know. Push back when reasoning is shallow.
 
 ## Exit
