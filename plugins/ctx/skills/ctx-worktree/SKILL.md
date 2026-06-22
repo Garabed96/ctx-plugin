@@ -3,6 +3,7 @@ name: ctx-worktree
 description: >
   Use when the user wants to work on something in parallel — creates an isolated git
   worktree with env symlinks and dependency install so it's immediately runnable.
+  Do not use for ordinary plan execution on an existing feature branch or PR.
   Triggers: "worktree", "new worktree", "isolated branch", "parallel branch".
 allowed-tools: Bash, Read, Glob, Write
 user-invocable: true
@@ -11,6 +12,8 @@ user-invocable: true
 # /worktree — Create an Isolated Git Worktree
 
 Creates a durable worktree via `${CLAUDE_PLUGIN_ROOT}/scripts/worktree-create.sh`, parks conversation context into it, then opens a new terminal window with claude. The new session can `/ctx-grab` to restore context instantly.
+
+Use this only when the user explicitly wants a new isolated branch, parallel branch, or disposable worktree. If the user gives an existing branch or PR, continue there instead of creating another worktree.
 
 ## 1. Gather inputs
 

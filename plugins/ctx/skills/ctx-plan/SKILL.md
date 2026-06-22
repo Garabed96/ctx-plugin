@@ -18,7 +18,7 @@ Write plans that a fresh agent with zero codebase knowledge can execute. Tag eve
 4. **Tag each task** — `[LOW]`, `[MED]`, or `[HIGH]` (inherit from spec or classify here)
 5. **Write the plan** — save to `~/.claude/plugins/marketplaces/ctx-plugin/plans/<topic-slug>.md` with frontmatter, commit
 6. **Self-review** — apply the checks below, fix inline
-7. **Offer execution** — suggest `/ctx-execute`
+7. **Offer execution** — suggest inline execution or `/ctx-execute` on the current branch
 
 ---
 
@@ -86,8 +86,8 @@ topic: <topic-slug>
 
 **Frontmatter fields:**
 - `status`: `active` (on creation) → `completed` (by `/ctx-execute` on success) or `abandoned`
-- `branch`: `null` until `/ctx-worktree` links it, then e.g. `feat/my-feature`
-- `worktree`: `null` until linked, then absolute path
+- `branch`: `null` until execution starts, then the current feature branch or explicitly requested worktree branch
+- `worktree`: `null` until execution starts, then the current checkout/worktree absolute path
 - `created`: date the plan was written
 - `topic`: the filename slug — lowercase, hyphenated, derived from feature name
 
@@ -136,10 +136,10 @@ Before presenting the plan:
 
 ## Handoff
 
-After the plan is approved, the ONLY next step is `/ctx-execute` (or inline for trivial plans). Do NOT invoke `/ctx-brainstorm` or `/ctx-ship` from here.
+After the plan is approved, the next step is inline execution or `/ctx-execute` on the current branch. Do NOT create a new worktree unless the user explicitly asks for parallel/isolation.
 
 ```
-/ctx-plan → /ctx-execute (ONLY valid next skill)
+/ctx-plan → /ctx-execute on current branch
 ```
 
 Offer execution choice:
@@ -151,11 +151,11 @@ Agent budget: [N agents total — X×1 for LOW, Y×2 for MED, Z×3 for HIGH]
 
 Two execution options:
 
-1. Subagent-Driven (recommended for plans with HIGH tasks)
-   — fresh agent per task via /ctx-execute, review between tasks
+1. Continue on current branch (recommended)
+   — execute inline or via /ctx-execute without creating another worktree
 
-2. Inline Execution (for small plans or all-LOW tasks)
-   — execute tasks in this session, batch with checkpoints
+2. New isolated worktree
+   — only if you want parallel work or a disposable branch
 
 Which approach?
 ```
@@ -168,3 +168,4 @@ Which approach?
 - **Plans that are too coarse hide complexity.** If a task touches 4+ files, it's probably `[HIGH]` and should be split.
 - **Don't write the plan in the plan.** Code snippets should be implementation, not architecture discussion. The spec covers the "why."
 - **Test commands must be exact.** Not "run the tests" — specify `pnpm test:unit tests/path/file.test.ts` or equivalent.
+- **Do not force worktrees.** Existing feature branches and open PR branches are valid execution targets.

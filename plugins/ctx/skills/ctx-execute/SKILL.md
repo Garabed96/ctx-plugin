@@ -1,8 +1,9 @@
 ---
 name: ctx-execute
 description: >
-  Use when you have a tagged implementation plan from /ctx-plan. Requires
-  an isolated worktree.
+  Use when you have a tagged implementation plan from /ctx-plan. Executes on
+  the current branch/worktree by default; create a new worktree only when the
+  user explicitly asks for isolation or parallel work.
 user-invocable: true
 ---
 
@@ -12,7 +13,7 @@ Execute plans by dispatching fresh subagents per task. The complexity tag on eac
 
 ## Process
 
-0. **Worktree gate** — verify we're in an isolated worktree (see below)
+0. **Execution location gate** — verify the current branch/worktree is the intended place to continue
 1. **Read the plan from global storage** — find and load the plan (see below)
 2. **Verify tags** — every task must have `[LOW]`, `[MED]`, or `[HIGH]`
 3. **Execute sequentially** — one task at a time, never parallel implementation
@@ -24,21 +25,33 @@ Execute plans by dispatching fresh subagents per task. The complexity tag on eac
 
 <HARD-GATE>
 
-## Step 0: Worktree Gate
+## Step 0: Execution Location Gate
 
-Before doing anything else, check if we're running inside a git worktree:
+Before doing anything else, identify the current repo location:
 
 ```bash
-[ -f .git ] && echo "worktree" || echo "main checkout"
+pwd
+git branch --show-current
+git worktree list
 ```
 
-**If `worktree`:** Proceed to Step 1.
+Use the current checkout as the default execution location. Do **not** create or switch to a new worktree just because a plan exists.
 
-**If `main checkout`:** STOP. Do not read the plan, do not dispatch agents. Tell the user:
+Proceed when any of these are true:
 
-> "You're on the main checkout. `/ctx-execute` requires an isolated worktree so implementation doesn't touch your main working directory. Run `/ctx-worktree` first — it will swap you into the worktree automatically — then re-invoke `/ctx-execute`."
+- The current branch matches the plan frontmatter `branch`.
+- The user explicitly told you to continue on the current branch or PR.
+- The plan frontmatter has `branch: null` and the current branch is a non-base feature branch; link the plan to this current branch/worktree instead of creating another one.
 
-**Why this is a hard gate:** Subagents write code and commit. If they do that on the main checkout, a failed or partial implementation leaves debris on `main` that's harder to clean up than deleting a worktree branch. The worktree is the undo button.
+Stop and ask before proceeding when:
+
+- The current branch is `main`, `master`, or another protected base branch and the user has not explicitly asked to edit it.
+- The plan frontmatter names a different branch that currently exists in another worktree.
+- There is already an open PR branch for this work and you are not on it.
+
+Tell the user exactly which branch/worktree you are on and which branch/worktree the plan or PR points to. Ask whether to switch/link instead of inventing a new worktree.
+
+Only run `/ctx-worktree` when the user explicitly asks for a new isolated branch, parallel branch, or disposable worktree. Existing PR branches should be continued in-place.
 
 </HARD-GATE>
 
@@ -49,10 +62,12 @@ Before doing anything else, check if we're running inside a git worktree:
 Plans are stored globally at `~/.claude/plugins/marketplaces/ctx-plugin/plans/`.
 
 1. Get current branch: `git branch --show-current`
-2. Scan the plans directory for `.md` files. For each, read the YAML frontmatter and check if `branch` matches the current branch.
-3. **If found:** Read the full plan content. Extract all tasks with their complexity tags. Proceed to Step 2 (Verify tags).
-4. **If not found:** List all plans where `status: active`, show topic + created date, and ask the user to pick one.
-5. Pass the **full plan content** to agents — not a summary, not a path. The agent needs every task, every file path, every code snippet.
+2. Scan the plans directory for `.md` files. For each, read the YAML frontmatter.
+3. Prefer an active plan whose `branch` matches the current branch.
+4. If no branch match exists, look for exactly one active plan with `branch: null`; ask before linking it to the current branch/worktree.
+5. If active plans point to other branches/worktrees, show them and ask which existing branch to continue. Do not create a new worktree as a fallback.
+6. **If found:** Read the full plan content. Extract all tasks with their complexity tags. Proceed to Step 2 (Verify tags).
+7. Pass the **full plan content** to agents — not a summary, not a path. The agent needs every task, every file path, every code snippet.
 
 After all tasks pass final verification (Step 6), update the plan's frontmatter `status` from `active` to `completed`.
 
@@ -182,6 +197,7 @@ When you stop, tell the user what happened and suggest the appropriate next step
 - **Context for the implementer matters more than review.** A well-briefed implementer with clear task text produces fewer issues than a poorly-briefed one with three reviewers.
 - **Sequential, not parallel.** Never dispatch two implementers at once — they'll conflict on shared files.
 - **Re-classification is cheap.** Upgrading a tag costs one extra agent. Shipping a bug from a mis-tagged `[LOW]` costs a debugging session.
+- **Do not split active PRs by accident.** If the user gives you a branch name or PR URL, that branch is the execution target unless they explicitly ask for a new worktree.
 
 ---
 

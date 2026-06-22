@@ -55,7 +55,7 @@ Classify each task based on change breadth and review risk:
 |-----|---------|-------------------|----------------|
 | `[LOW]` | 1 file, copy existing pattern, no new logic | Inline by default | Local review only |
 | `[MED]` | 2-3 files, adapted pattern, conditional logic | Inline or delegated | Local review, optionally one fresh-context review |
-| `[HIGH]` | 4+ files, new abstraction, cross-cutting | Delegated after `ctx-worktree` | Fresh-context review expected |
+| `[HIGH]` | 4+ files, new abstraction, cross-cutting | Inline or delegated on current branch; new worktree only by request | Fresh-context review expected |
 
 When in doubt, tag up.
 
@@ -87,8 +87,8 @@ topic: <topic-slug>
 
 **Frontmatter fields:**
 - `status`: `active` on creation, then `completed` or `abandoned`
-- `branch`: `null` until `ctx-worktree` links it
-- `worktree`: `null` until linked, then absolute path
+- `branch`: `null` until execution starts, then the current feature branch or explicitly requested worktree branch
+- `worktree`: `null` until execution starts, then the current checkout/worktree absolute path
 - `created`: date the plan was written
 - `topic`: the filename slug — lowercase, hyphenated, derived from feature name
 
@@ -144,18 +144,21 @@ After the plan is approved, offer the user two paths:
    Stay in the current session and implement directly.
    Best for all-LOW plans and many small MED plans.
 
-2. Delegated execution
-   Run ctx-worktree first, then ctx-execute.
+2. Delegated execution on the current branch
+   Run ctx-execute without creating another worktree.
    Best for HIGH tasks or when the user explicitly wants subagents.
+
+3. New isolated worktree
+   Use ctx-worktree only when the user explicitly wants parallel work or a disposable branch.
 ```
 
-The Codex-native delegated route is:
+The default route is:
 
 ```text
-ctx-plan -> ctx-worktree -> ctx-execute
+ctx-plan -> ctx-execute on current branch
 ```
 
-Do not send the user directly from `ctx-plan` to `ctx-execute` without first creating and linking a worktree.
+Do not force `ctx-worktree` between planning and execution. Existing feature branches and open PR branches are valid execution targets.
 
 ---
 
@@ -165,3 +168,4 @@ Do not send the user directly from `ctx-plan` to `ctx-execute` without first cre
 - **Plans that are too coarse hide risk.** If a task touches 4+ files, it is probably `[HIGH]` or needs to be split.
 - **Don't write architecture essays in the plan.** The spec covers the why.
 - **Commands must be exact.** Not "run the tests" — specify the real command.
+- **Do not split active PRs by accident.** If the user gives you a branch name or PR URL, that branch is the execution target unless they explicitly ask for a new worktree.

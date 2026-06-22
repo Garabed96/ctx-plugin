@@ -1,6 +1,6 @@
 {
   "name": "ctx-codex",
-  "version": "0.2.9.7",
+  "version": "0.2.9.8",
   "description": "Context economy workflow toolkit for Codex: brainstorm, plan, execute, verify, ship, and manage worktree handoffs with minimal token spend.",
   "author": {
     "name": "Garo Nazarian",
@@ -33,7 +33,8 @@
     "termsOfServiceURL": "https://github.com/Garabed96/ctx-plugin",
     "defaultPrompt": [
       "Use ctx-plan to turn this feature spec into an implementation plan",
-      "Use ctx-worktree to prepare an isolated branch and handoff context",
+      "Use ctx-execute to implement this plan on the current feature branch",
+      "Use ctx-worktree only when I explicitly need a parallel isolated branch",
       "Use ctx-verify before we claim this change is done"
     ],
     "brandColor": "#0F766E"

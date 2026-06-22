@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.9.8 (2026-06-22)
+
+- **Current-branch execution default** — `ctx-plan` and `ctx-execute` now continue on the current feature branch or existing PR branch by default, link unbound plans to the current checkout during execution, and reserve `ctx-worktree` for explicit parallel, isolated, or disposable-branch requests. This prevents accidental PR/worktree splits during follow-up implementation tasks.
+
 ## 0.2.9.7 (2026-05-15)
 
 - **Factory portfolio chrome** — portfolio cards now use responsive preview scaling, larger readable metadata, grouped default sections, category-scoped URLs (`/factory?category=...`), and an explicit `All pages` escape path. The editor top bar now includes a stable `Factory` back link, keeps page/version controls fixed on the right, promotes versions and the only rescan action into the Pages area, adds compact/expanded page group modes, clarifies style controls as preview overrides, supports icon-led edit mode with modal-confirmed soft archiving plus archive restore from `factory/archive/`, and removes the obsolete bottom prompt bar. Bare `/` redirects to `/factory` when no transient brainstorm preview exists.

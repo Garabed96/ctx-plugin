@@ -4,6 +4,7 @@ description: >
   Use when the user wants to work on something in parallel or when delegated
   execution needs an isolated branch. Creates a git worktree with env copies and
   optional dependency install so it is runnable.
+  Do not use for ordinary plan execution on an existing feature branch or PR.
   Triggers: "worktree", "new worktree", "isolated branch", "parallel branch".
 allowed-tools: Bash, Read, Glob, Write
 user-invocable: true
@@ -11,9 +12,11 @@ user-invocable: true
 
 # ctx-worktree — Create an Isolated Git Worktree
 
-Creates a durable worktree via `../../scripts/worktree-create.sh`, links any active plan to the new branch, parks context into it, then opens the worktree in WebStorm.
+Creates a durable worktree via `../../scripts/worktree-create.sh`, links any active plan to the new branch when appropriate, parks context into it, then opens the worktree in WebStorm.
 
-Use this before `ctx-execute`. The delegated route is:
+Use this only when the user explicitly wants a new isolated branch, parallel branch, or disposable worktree. If the user gives an existing branch or PR, continue there instead of creating another worktree.
+
+When a new worktree is explicitly requested, the route is:
 
 ```text
 ctx-plan -> ctx-worktree -> ctx-execute
