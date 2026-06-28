@@ -1,13 +1,14 @@
 ---
-name: ctx-engineering
+name: ctx-align
 description: >
-  Prompt calibration coach. Flags prompts that are too specific (brittle) or too vague
-  (assumes shared context) and guides toward the "just right" zone. Use when reviewing
-  prompts, writing skills, or when the user asks to calibrate their instructions.
+  CTX Aligned prompt calibration coach. Flags prompts that are too specific (brittle)
+  or too vague (assumes shared context) and guides toward the "just right" zone. Use
+  when reviewing prompts, writing skills, calibrating instructions, or when the user
+  refers to CTX Engineering, context engineering, or ctx-engineering.
 user-invocable: true
 ---
 
-# Context Engineering — Prompt Calibration
+# CTX Aligned — Prompt Calibration
 
 Core principle: find the smallest set of high-signal tokens that maximize the likelihood of the desired outcome. Context is finite with diminishing returns.
 
@@ -85,6 +86,6 @@ Do not block. Guide.
 
 ## Reference Material
 
-- `references/context_engineering_principles.md` — Anthropic's official techniques (hallucination reduction, output consistency, Claude 4.6 specifics)
+- `references/context_engineering_principles.md` — Anthropic's official context engineering techniques (hallucination reduction, output consistency, Claude 4.6 specifics)
 - `references/hidden_token_costs.md` — Background systems in Claude Code that consume tokens silently (prompt suggestions, speculative execution, memory extraction) and how to control them
 - `references/persuasion_principles.md` — Research-backed guide to making skills resist agent rationalization (Authority, Commitment, Social Proof — Meincke et al. 2025, compliance 33% → 72%)

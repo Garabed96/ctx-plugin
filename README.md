@@ -2,7 +2,7 @@
 
 > **Alpha** — I'm building this in public. It works for my workflow. It may break for yours. Issues welcome.
 
-A context engineering plugin for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Controls what the model sees at every phase of development — from first idea to merged PR.
+A context economy plugin for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). Controls what the model sees at every phase of development — from first idea to merged PR.
 
 ## What it looks like
 
@@ -10,7 +10,7 @@ A context engineering plugin for [Claude Code](https://docs.anthropic.com/en/doc
 You: "I need to add search to the dashboard"
 
 /ctx-discuss           →  Think it through — what kind of search? What are the tradeoffs?
-/ctx-engineering       →  Make sure Claude understands the intent before moving forward
+/ctx-align             →  Make sure Claude understands the intent before moving forward
 /ctx-brainstorm        →  Spec with blind spots caught before you write code
 /ctx-plan              →  Tagged implementation plan with complexity budgets
 /ctx-worktree          →  Isolated git worktree, deps installed, ready to go
@@ -40,7 +40,7 @@ No re-explaining. No lost context. No "wait, what were we doing?"
 **Before building anything:**
 
 - `/ctx-discuss` — think before you build. No code changes, just conversation. Explore the problem, challenge assumptions, discover what to build
-- `/ctx-engineering` — make sure Claude clearly understands what you're saying. Flags prompts that are too brittle or too vague before they waste a cycle
+- `/ctx-align` — make sure Claude clearly understands what you're saying. Flags prompts that are too brittle or too vague before they waste a cycle. If you say CTX Engineering, use this skill.
 
 Either can come first. Once the direction is clear, move to brainstorm.
 
@@ -128,7 +128,7 @@ Invoked with `/ctx:<skill-name>`.
 
 | Skill | Purpose |
 |-------|---------|
-| `ctx-engineering` | Use consistently when prompting. Makes sure Claude clearly understands what you're saying — flags instructions that are too brittle or too vague. |
+| `ctx-align` | Use consistently when prompting. Makes sure Claude clearly understands what you're saying — flags instructions that are too brittle or too vague. Legacy references to CTX Engineering or `ctx-engineering` mean this skill. |
 
 ### Scripts
 
@@ -195,7 +195,7 @@ Pages stored in `<project-dir>/factory/pages/<group>/<page>/.events`. Tracked in
 }
 ```
 
-These disable background token consumers. See `ctx-engineering/references/hidden_token_costs.md` for details.
+These disable background token consumers. See `ctx-align/references/hidden_token_costs.md` for details.
 
 ## Lineage
 
@@ -203,7 +203,7 @@ Inspired by the discipline patterns in [superpowers](https://github.com/obra/sup
 
 ## Status
 
-**v0.2.9.6** — Alpha. Building in public.
+**v0.2.9.9** — Alpha. Building in public.
 
 ## License
 

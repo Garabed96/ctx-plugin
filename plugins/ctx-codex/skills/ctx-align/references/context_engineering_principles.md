@@ -1,6 +1,6 @@
 # Context Engineering Principles
 
-Distilled from Anthropic's official docs and engineering blog. For the calibration framework (three gates, red zone detection, WHAT vs HOW), see the `ctx-engineering` skill.
+Distilled from Anthropic's official docs and engineering blog. For the calibration framework (three gates, red zone detection, WHAT vs HOW), see the `ctx-align` skill. `ctx-engineering` is the legacy name.
 
 ## Reduce Hallucinations (Anthropic official)
 

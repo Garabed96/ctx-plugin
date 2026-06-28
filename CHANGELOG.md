@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.9.9 (2026-06-28)
+
+- **CTX Aligned rename** — `ctx-engineering` is now `ctx-align` across the Claude and Codex plugin skill trees. The skill keeps CTX Engineering and `ctx-engineering` as legacy trigger language, README links now point at `ctx-align`, and `ctx-discuss` now references the aligned calibration gate by its new name.
+
 ## 0.2.9.7 (2026-05-15)
 
 - **Factory portfolio chrome** — portfolio cards now use responsive preview scaling, larger readable metadata, grouped default sections, category-scoped URLs (`/factory?category=...`), and an explicit `All pages` escape path. The editor top bar now includes a stable `Factory` back link, keeps page/version controls fixed on the right, promotes versions and the only rescan action into the Pages area, adds compact/expanded page group modes, clarifies style controls as preview overrides, supports icon-led edit mode with modal-confirmed soft archiving plus archive restore from `factory/archive/`, and removes the obsolete bottom prompt bar. Bare `/` redirects to `/factory` when no transient brainstorm preview exists.
