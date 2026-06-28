@@ -1,6 +1,6 @@
 {
   "name": "ctx-codex",
-  "version": "0.2.9.7",
+  "version": "0.2.9.9",
   "description": "Context economy workflow toolkit for Codex: brainstorm, plan, execute, verify, ship, and manage worktree handoffs with minimal token spend.",
   "author": {
     "name": "Garo Nazarian",
@@ -21,7 +21,7 @@
   "interface": {
     "displayName": "CTX Codex",
     "shortDescription": "Planning, execution, verification, and worktree workflows",
-    "longDescription": "Personal context-engineering workflow ported for Codex. Adds ctx-* skills for brainstorming, implementation planning, verification, shipping, and session continuity in worktree-heavy development flows.",
+    "longDescription": "Personal context-economy workflow ported for Codex. Adds ctx-* skills for brainstorming, implementation planning, alignment, verification, shipping, and session continuity in worktree-heavy development flows.",
     "developerName": "Garo Nazarian",
     "category": "Coding",
     "capabilities": [
