@@ -13,6 +13,7 @@ You: "I need to add search to the dashboard"
 /ctx-align             →  Make sure Claude understands the intent before moving forward
 /ctx-brainstorm        →  Spec with blind spots caught before you write code
 /ctx-plan              →  Tagged implementation plan with complexity budgets
+/ctx-ruthless          →  Cut scope creep without cutting verified safety
 /ctx-worktree          →  Isolated git worktree, deps installed, ready to go
 /ctx-execute           →  Subagents implement each task, reviewers verify
 /ctx-ship              →  Preflight checks, verification gate, PR created
@@ -48,9 +49,10 @@ Either can come first. Once the direction is clear, move to brainstorm.
 
 1. `/ctx-brainstorm` — surfaces blind spots, writes a spec, and self-reviews (or escalates to a subagent reviewer for complex features)
 2. `/ctx-plan` — takes the spec and produces tasks tagged `[LOW]`, `[MED]`, or `[HIGH]` with agent budgets
-3. `/ctx-worktree` — spins up an isolated git worktree with env files copied and deps installed
-4. `/ctx-execute` — walks the plan task by task, dispatching implementer and reviewer agents based on complexity
-5. `/ctx-ship` — preflight risk scan, verification gate, PR creation. Each phase is gated — I approve before it continues
+3. `/ctx-ruthless` — for HIGH, multi-system, or time-boxed plans, audits every task against approved requirements and verified safety before touching the plan
+4. `/ctx-worktree` — spins up an isolated git worktree with env files copied and deps installed
+5. `/ctx-execute` — walks the plan task by task, dispatching implementer and reviewer agents based on complexity
+6. `/ctx-ship` — preflight risk scan, verification gate, PR creation. Each phase is gated — I approve before it continues
 
 **Quick fix workflow:**
 
@@ -73,7 +75,7 @@ Either can come first. Once the direction is clear, move to brainstorm.
 
 The plugin separates **judgment** from **execution**:
 
-- **Skills** (21) — markdown instruction sets that handle decisions: when to create a worktree, what context to preserve, which risk signals matter
+- **Skills** (22) — markdown instruction sets that handle decisions: when to create a worktree, what context to preserve, which risk signals matter
 - **Scripts** (11) — shell scripts that handle deterministic operations: git worktrees, artifact scanning, PR creation. Args in, structured output out
 - **Agents** (3) — fresh-context subagents dispatched by `ctx-execute` for implementation and review
 - **Hooks** (7) — guardrails that fire automatically: block edits outside your worktree, prevent direct pushes to main, detect altitude oscillation
@@ -98,6 +100,7 @@ Invoked with `/ctx:<skill-name>`.
 | Skill | Purpose |
 |-------|---------|
 | `ctx-plan` | Produces a tagged implementation plan from a brainstorm spec. |
+| `ctx-ruthless` | Audits an existing plan for scope creep and accidentally removed safety, with evidence and an approval gate before edits. |
 | `ctx-execute` | Dispatches subagents per task — `[LOW]` 1 agent, `[MED]` 2, `[HIGH]` full review sandwich. |
 | `ctx-ship` | Gated pipeline: preflight → verify → PR. Each phase requires your approval. |
 | `ctx-parallel` | Ad-hoc parallel dispatch for independent tasks. |
@@ -203,7 +206,7 @@ Inspired by the discipline patterns in [superpowers](https://github.com/obra/sup
 
 ## Status
 
-**v0.2.9.9** — Alpha. Building in public.
+**v0.2.9.10** — Alpha. Building in public.
 
 ## License
 

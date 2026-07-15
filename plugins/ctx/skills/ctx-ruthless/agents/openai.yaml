@@ -1,0 +1,4 @@
+interface:
+  display_name: "CTX Ruthless"
+  short_description: "Audit plans for scope creep and missing safety"
+  default_prompt: "Use $ctx-ruthless to audit this implementation plan against its approved requirements before execution."

@@ -1,7 +1,7 @@
 {
   "name": "ctx-codex",
-  "version": "0.2.9.9",
-  "description": "Context economy workflow toolkit for Codex: brainstorm, plan, execute, verify, ship, and manage worktree handoffs with minimal token spend.",
+  "version": "0.2.9.10",
+  "description": "Context economy workflow toolkit for Codex: brainstorm, plan, audit, execute, verify, ship, and manage worktree handoffs with minimal token spend.",
   "author": {
     "name": "Garo Nazarian",
     "url": "https://github.com/Garabed96/ctx-plugin"
@@ -21,7 +21,7 @@
   "interface": {
     "displayName": "CTX Codex",
     "shortDescription": "Planning, execution, verification, and worktree workflows",
-    "longDescription": "Personal context-economy workflow ported for Codex. Adds ctx-* skills for brainstorming, implementation planning, alignment, verification, shipping, and session continuity in worktree-heavy development flows.",
+    "longDescription": "Personal context-economy workflow ported for Codex. Adds ctx-* skills for brainstorming, implementation planning, evidence-backed scope audits, alignment, verification, shipping, and session continuity in worktree-heavy development flows.",
     "developerName": "Garo Nazarian",
     "category": "Coding",
     "capabilities": [
@@ -33,6 +33,7 @@
     "termsOfServiceURL": "https://github.com/Garabed96/ctx-plugin",
     "defaultPrompt": [
       "Use ctx-plan to turn this feature spec into an implementation plan",
+      "Use ctx-ruthless to audit this plan for scope creep without cutting verified safety",
       "Use ctx-worktree to prepare an isolated branch and handoff context",
       "Use ctx-verify before we claim this change is done"
     ],

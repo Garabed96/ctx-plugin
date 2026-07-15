@@ -18,7 +18,7 @@ Write plans that a fresh agent with zero codebase knowledge can execute. Tag eve
 4. **Tag each task** — `[LOW]`, `[MED]`, or `[HIGH]` (inherit from spec or classify here)
 5. **Write the plan** — save to `~/.claude/plugins/marketplaces/ctx-plugin/plans/<topic-slug>.md` with frontmatter, commit
 6. **Self-review** — apply the checks below, fix inline
-7. **Offer execution** — suggest `/ctx-execute`
+7. **Choose the handoff** — offer `/ctx-ruthless` for a deliberate scope audit when risk warrants it; otherwise offer execution
 
 ---
 
@@ -124,6 +124,7 @@ Before presenting the plan:
 - [ ] **Commit message per task** — conventional format
 - [ ] **No circular dependencies** — tasks can execute top-to-bottom
 - [ ] **YAGNI** — no tasks that aren't in the spec
+- [ ] **Audit posture stated** — say whether `/ctx-ruthless` is worth the extra pass and why
 
 ---
 
@@ -136,11 +137,16 @@ Before presenting the plan:
 
 ## Handoff
 
-After the plan is approved, the ONLY next step is `/ctx-execute` (or inline for trivial plans). Do NOT invoke `/ctx-brainstorm` or `/ctx-ship` from here.
+After the plan is approved, choose between an independent audit and execution.
+
+Recommend `/ctx-ruthless` before execution when the plan has a `[HIGH]` task, spans three or more independent subsystems, is under a hard time constraint, or the user explicitly asks for a scope audit. It is optional for narrow, all-LOW plans.
 
 ```
-/ctx-plan → /ctx-execute (ONLY valid next skill)
+/ctx-plan → /ctx-ruthless → user approval → /ctx-worktree → /ctx-execute
+/ctx-plan → /ctx-worktree → /ctx-execute (narrow delegated plans)
 ```
+
+Do not invoke `/ctx-brainstorm` or `/ctx-ship` from here. `/ctx-ruthless` audits an existing plan; it does not replace this skill's self-review.
 
 Offer execution choice:
 
@@ -149,10 +155,12 @@ Plan saved to ~/.claude/plugins/marketplaces/ctx-plugin/plans/<topic-slug>.md
 
 Agent budget: [N agents total — X×1 for LOW, Y×2 for MED, Z×3 for HIGH]
 
+Audit posture: [/ctx-ruthless recommended because ... | additional audit not warranted because ...]
+
 Two execution options:
 
 1. Subagent-Driven (recommended for plans with HIGH tasks)
-   — fresh agent per task via /ctx-execute, review between tasks
+   — run /ctx-worktree, then use fresh agents per task via /ctx-execute
 
 2. Inline Execution (for small plans or all-LOW tasks)
    — execute tasks in this session, batch with checkpoints

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.9.10 (2026-07-15)
+
+- **CTX Ruthless plan audits** — adds mirrored `ctx-ruthless` skills for evidence-backed scope review before execution. The audit maps plan tasks to approved requirements, separates required behavior and verified safety from optional capability and speculative machinery, uses bounded fresh-context review for high-risk plans, and hard-gates plan edits on user approval. `ctx-plan` now recommends the audit selectively for HIGH, multi-system, explicitly requested, or time-boxed work.
+
 ## 0.2.9.9 (2026-06-28)
 
 - **CTX Aligned rename** — `ctx-engineering` is now `ctx-align` across the Claude and Codex plugin skill trees. The skill keeps CTX Engineering and `ctx-engineering` as legacy trigger language, README links now point at `ctx-align`, and `ctx-discuss` now references the aligned calibration gate by its new name.

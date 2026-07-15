@@ -18,7 +18,7 @@ Write plans that a fresh agent with zero codebase knowledge can execute. Tag eve
 4. **Tag each task** — `[LOW]`, `[MED]`, or `[HIGH]`
 5. **Write the plan** — save to `~/.codex/ctx-codex/plans/<topic-slug>.md` with frontmatter
 6. **Self-review** — apply the checks below, fix inline
-7. **Offer execution** — inline vs delegated
+7. **Choose the handoff** — offer `ctx-ruthless` for a deliberate scope audit when risk warrants it; otherwise offer inline vs delegated execution
 
 ---
 
@@ -125,6 +125,7 @@ Before presenting the plan:
 - [ ] **Commands are exact**
 - [ ] **No circular dependencies**
 - [ ] **No tasks outside the approved spec**
+- [ ] **Audit posture stated** — say whether `ctx-ruthless` is worth the extra pass and why
 
 ---
 
@@ -137,7 +138,23 @@ Before presenting the plan:
 
 ## Handoff
 
-After the plan is approved, offer the user two paths:
+After the plan is approved, decide whether an independent audit is warranted before offering execution.
+
+Recommend `ctx-ruthless` when the plan has a `[HIGH]` task, spans three or more independent subsystems, is under a hard time constraint, or the user explicitly asks for a scope audit. It is optional for narrow, all-LOW plans.
+
+The audited delegated route is:
+
+```text
+ctx-plan -> ctx-ruthless -> user approval -> ctx-worktree -> ctx-execute
+```
+
+The narrow-plan route is:
+
+```text
+ctx-plan -> ctx-worktree -> ctx-execute
+```
+
+`ctx-ruthless` audits an existing plan; it does not replace this skill's self-review. After choosing the audit posture, offer the user two execution paths:
 
 ```text
 1. Inline execution
@@ -147,12 +164,6 @@ After the plan is approved, offer the user two paths:
 2. Delegated execution
    Run ctx-worktree first, then ctx-execute.
    Best for HIGH tasks or when the user explicitly wants subagents.
-```
-
-The Codex-native delegated route is:
-
-```text
-ctx-plan -> ctx-worktree -> ctx-execute
 ```
 
 Do not send the user directly from `ctx-plan` to `ctx-execute` without first creating and linking a worktree.
