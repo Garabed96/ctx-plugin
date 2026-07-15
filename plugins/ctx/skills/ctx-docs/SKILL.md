@@ -1,124 +1,172 @@
 ---
 name: ctx-docs
 description: >
-  Aggregate completed work into human-readable epic documentation.
-  Use when an epic or batch of issues is complete and you want a documentation
-  package. Triggers: "document this epic", "generate docs", "ctx-docs",
-  or after a batch of issues is shipped.
+  Create architecture checkpoint documentation for completed work. Use when the
+  user asks to document what was just built, document task or phase completion,
+  explain current migration state, capture source-of-truth boundaries, generate
+  docs with Mermaid diagrams, or run "/ctx-docs". Produces evidence-grounded docs
+  from existing code, tests, migrations, and docs; not Linear-first.
 user-invocable: true
 allowed-tools: Bash, Read, Glob, Grep, Write
 ---
 
-# /ctx-docs — Epic Documentation Aggregation
+# /ctx-docs — Architecture Checkpoint Documentation
 
-Synthesize completed work into structured, human-readable docs. Pulls from Linear, specs, plans, git history, and distilled memories.
+Create a human-readable checkpoint doc for completed technical work. The goal is to preserve the current system boundary: what changed, why it matters, how it works, how to verify it, and what remains.
 
----
-
-## 1. Parse arguments
-
-Two entry points:
-
-- **Epic mode:** `/ctx-docs <epic-name>` — queries Linear for the epic/project's issues
-- **Issue mode:** `/ctx-docs <epic-name> CTX-33 CTX-28 CTX-16` — user provides issue IDs directly
-
-`<epic-name>` is always required — becomes the directory name and index title.
-
-If no issue IDs provided, use the Linear MCP (`mcp__plugin_linear_linear__list_issues`) to find issues belonging to the named epic/project. If Linear is unavailable or returns nothing, ask the user for issue IDs.
+Do not default to Linear or issue aggregation. Treat code, migrations, tests, and existing docs as the primary evidence.
 
 ---
 
-## 2. Resolve issues
+## 1. Define The Checkpoint
 
-For each issue ID:
-1. Fetch metadata from Linear via `mcp__plugin_linear_linear__get_issue` (title, description, status, labels)
-2. If Linear unavailable, proceed with issue ID only — artifact discovery still works
+Start by naming the completed slice in plain language:
 
----
+- `auth-identity-postgres-task-3`
+- `billing-postgres-cutover`
+- `playbook-runtime-v1`
+- `company-list-postgres-phase-1`
 
-## 3. Gather artifacts
+If the user did not give a title, derive one from the current branch, changed files, or the user's wording.
 
-For each issue, scan these locations:
+Use one doc unless the user asks for a full documentation package. Put the doc near existing related docs:
 
-| Artifact | Location | Match strategy |
-|----------|----------|---------------|
-| Spec | `docs/specs/*.md` | Grep for issue ID in filename or content |
-| Plan | `~/.claude/plugins/marketplaces/ctx-plugin/plans/*.md` | Grep for issue ID in content |
-| Park smart context | `docs/ctx/park.md` or git history | Branch name or issue ID reference |
-| Git history | `git log --all --oneline --grep="{issue-id}"` | Commit messages |
-| Linear metadata | From step 2 | Already fetched |
-| Distilled memories | `~/.claude/projects/<project-hash>/memory/*.md` | Grep for issue ID in content or description |
+- feature docs under the local app docs directory when one exists, e.g. `src/coreties-app/docs/`
+- project-wide docs under `docs/`
+- diagrams under a colocated `diagrams/<checkpoint-name>/` directory when standalone Mermaid files are useful
 
-Not every issue will have every artifact. Work with what exists — skip missing artifacts gracefully.
+Do not commit unless the user explicitly asks.
 
 ---
 
-## 4. Generate docs
+## 2. Gather Evidence
 
-Create `docs/ctx/<epic-name>/` with:
+Read narrowly, then expand only as needed. Prefer `rg` and targeted file reads.
 
-### `index.md`
+Minimum evidence set:
+
+- existing docs related to the same feature, migration, or architecture area
+- changed or referenced service files
+- changed or referenced API entrypoints
+- relevant migrations or schema definitions
+- relevant tests
+- current git status
+
+For migration/source-of-truth work, explicitly find:
+
+- current source of truth
+- previous source of truth
+- write paths
+- read paths
+- fallbacks or dual-write behavior
+- compatibility side effects
+- verification commands
+- remaining migration boundary
+
+If an older doc conflicts with current code, state the current code-backed boundary and mention the doc gap.
+
+---
+
+## 3. Write The Doc
+
+Use this structure by default. Omit sections only when they genuinely do not apply.
 
 ````markdown
-# <Epic Name>
+# <Checkpoint Title>
 
-**Generated:** {timestamp}
-**Issues:** {N} completed
-**Branches:** {list}
+This document summarizes <completed slice> and relates it to the existing docs.
 
-## Summary
+## Status
 
-{2-3 paragraph narrative synthesized from specs and plans}
+{What is now true. Include exact boundary language.}
 
-## Issues
+## Why This Exists
 
-| ID | Title | Complexity | Status | Branch |
-|----|-------|-----------|--------|--------|
-| ... | ... | ... | ... | ... |
+{Problem before the change and why the new boundary is useful.}
 
-## Key Decisions
+## Data Model
 
-{Aggregated from park smart context and spec "Why this approach" sections — only non-obvious decisions}
+{Tables, contracts, schemas, durable ids, source keys, or state objects.}
 
-## Learnings
+## Runtime Write Path
 
-{Aggregated from distilled memories related to these issues}
+{Who writes what, in what order, and transaction/side-effect boundaries.}
+
+## Entry Points Updated
+
+| Path | Role |
+| --- | --- |
+| ... | ... |
+
+## Reader Behavior
+
+{What reads the new source first, what falls back, and what remains legacy.}
+
+## What Changed About <Legacy System>
+
+{Be explicit about what did not disappear. Name fallbacks and side effects.}
+
+## Verification
+
+{Focused tests, manual SQL/API checks, and behavioral checks.}
+
+## Remaining Migration Boundary
+
+{What is intentionally not done yet.}
 ````
 
-### Per-issue docs (`<issue-id>.md`)
+### Boundary Language Rules
 
-````markdown
-# <issue-id> — {title}
-
-**Status:** {from Linear or git}
-**Branch:** {from git}
-**Spec:** {relative path to spec file, if found}
-**Plan:** {relative path to plan file, if found}
-
-## Design
-
-{From spec — problem, chosen approach, tradeoffs}
-
-## Implementation
-
-{From plan — what was built, key files touched}
-
-## Outcome
-
-{From git log — commits. From park — what actually happened}
-
-## Learnings
-
-{From park smart context + distilled memories}
-````
-
-If a section has no data (e.g., no park file found), omit that section rather than writing "N/A".
+- Do not write "migrated" without naming the migrated slice.
+- Do not imply the whole product is on the new architecture unless the evidence proves it.
+- Separate authentication source, app identity source, analytics source, billing source, and workflow state source when those are different.
+- Name legacy fallbacks directly.
+- Name compatibility side effects directly.
+- Prefer "Postgres-owned for these updated paths" over broad claims like "Postgres-only."
 
 ---
 
-## 5. Commit
+## 4. Add Mermaid Diagrams
 
-```bash
-git add docs/ctx/<epic-name>/
-git commit -m "docs: <epic-name> epic documentation"
+For system-boundary docs, include both embedded Mermaid blocks in the markdown and standalone `.mmd` files when useful.
+
+Default diagrams:
+
+1. **Runtime flow**: request/event -> service -> transaction -> tables/side effects
+2. **Entrypoint map**: routes/jobs/events -> shared service -> stores
+3. **Reader boundary**: new source -> fallback -> behavior
+4. **Before/after ownership**: old source vs new source when the migration is confusing
+
+Use diagrams to clarify ownership and flow. Do not add decorative diagrams.
+
+Standalone file convention:
+
+```text
+<docs-dir>/diagrams/<checkpoint-name>/runtime-flow.mmd
+<docs-dir>/diagrams/<checkpoint-name>/entrypoints.mmd
+<docs-dir>/diagrams/<checkpoint-name>/reader-boundary.mmd
 ```
+
+Keep Mermaid syntax simple:
+
+```mermaid
+flowchart TD
+  A[External source] --> B[Shared service]
+  B --> C[New durable store]
+  B --> D[Legacy side effect]
+```
+
+---
+
+## 5. Verify The Documentation
+
+Before reporting back:
+
+- confirm the doc file exists
+- confirm any standalone `.mmd` files exist
+- re-read the generated doc for overclaims
+- check that links point to real local files where practical
+- run a focused search for the main terms to ensure the doc names the actual code paths
+- report verification commands run
+
+Do not claim tests pass unless you ran the tests. For docs-only changes, file existence, content checks, link sanity, and git status are usually the right verification.
