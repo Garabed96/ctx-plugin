@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.9.11 (2026-07-16)
+
+- **Execution-oriented CTX plans** — upgrades mirrored `ctx-plan` skills from sequential checklists to orchestration-ready execution graphs. Plans now classify file ownership, detect interface dependencies, compute safe parallelism and advisory waves, define ownership release conditions, group broad checks into review batches, separate task/batch/final verification, and provide a deterministic scheduling policy for inline, delegated, and persistent-goal execution. A bundled validator rejects incomplete task metadata, graph drift, cycles, unsafe parallel declarations, and unserialized ownership overlap before a plan is saved.
+
 ## 0.2.9.10 (2026-07-15)
 
 - **CTX Ruthless plan audits** — adds mirrored `ctx-ruthless` skills for evidence-backed scope review before execution. The audit maps plan tasks to approved requirements, separates required behavior and verified safety from optional capability and speculative machinery, uses bounded fresh-context review for high-risk plans, and hard-gates plan edits on user approval. `ctx-plan` now recommends the audit selectively for HIGH, multi-system, explicitly requested, or time-boxed work.

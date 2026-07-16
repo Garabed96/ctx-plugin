@@ -1,68 +1,41 @@
 ---
 name: ctx-plan
-description: >
-  Use when you have a spec or requirements and need an implementation plan before
-  writing code.
-user-invocable: true
+description: Create execution-oriented implementation plans from approved specs or requirements. Use before implementation when work must be decomposed into an explicit dependency graph with safe parallelism, file ownership, interface dependencies, review batches, and tiered verification for inline, delegated, or persistent-goal execution.
 ---
 
-# /ctx-plan — Implementation Planning
+# /ctx-plan — Execution-Oriented Implementation Planning
 
-Write plans that a fresh agent with zero codebase knowledge can execute. Tag every task with a complexity level that drives agent budget in `/ctx-execute`.
+Create a plan that a fresh worker or persistent-goal orchestrator can execute without rediscovering scope, dependencies, scheduling, or verification strategy.
+
+Treat planning as construction of a lightweight build graph. Reason about execution before writing task prose.
 
 ## Process
 
-1. **Read the spec** — if coming from `/ctx-brainstorm`, the spec already has complexity tags
-2. **Map the file structure** — which files are created/modified and what each is responsible for
-3. **Decompose into tasks** — each task produces a self-contained, testable change
-4. **Tag each task** — `[LOW]`, `[MED]`, or `[HIGH]` (inherit from spec or classify here)
-5. **Write the plan** — save to `~/.claude/plugins/marketplaces/ctx-plugin/plans/<topic-slug>.md` with frontmatter, commit
-6. **Self-review** — apply the checks below, fix inline
-7. **Choose the handoff** — offer `/ctx-ruthless` for a deliberate scope audit when risk warrants it; otherwise offer execution
+1. **Lock the requirements** — identify approved behavior, constraints, exclusions, and unresolved decisions. Stop for a material unresolved product decision.
+2. **Inspect the codebase** — verify exact paths, current interfaces, ownership hotspots, existing test commands, and reusable patterns.
+3. **Build the execution model** — follow `${CLAUDE_SKILL_DIR}/references/execution-model.md` to derive tasks, dependency chains, interface edges, ownership claims, safe parallelism, waves, review batches, and verification levels.
+4. **Write execution-ready tasks** — make each task independently understandable, scoped, and releasable after targeted GREEN verification.
+5. **Validate the graph** — run `python3 ${CLAUDE_SKILL_DIR}/scripts/validate_plan.py <draft-plan.md>`, fix every error, then reject any remaining semantic issue the structural validator cannot detect: hidden interface dependencies, unsupported parallel claims, or misplaced verification.
+6. **Save the plan** — write `~/.claude/plugins/marketplaces/ctx-plugin/plans/<topic-slug>.md` with the required structure and commit it when the active workflow expects plan commits.
+7. **Self-review and hand off** — state audit posture, then offer the appropriate execution path.
 
----
+## Required Plan Structure
 
-## Task Structure
+Write these sections in order:
 
-Each task follows this template:
+1. Frontmatter and plan header
+2. Requirements and boundaries
+3. Execution summary
+4. Execution graph
+5. Task specifications
+6. Review batches
+7. Scheduling policy
+8. Final verification
+9. Handoff
 
-````markdown
-### Task N: [Component Name] `[LOW]`
-
-**Files:**
-- Create: `exact/path/to/file.ts`
-- Modify: `exact/path/to/existing.ts`
-- Test: `tests/path/to/test.ts`
-
-**Steps:**
-- [ ] Write failing test
-- [ ] Run test — expect FAIL
-- [ ] Write minimal implementation
-- [ ] Run test — expect PASS
-- [ ] Commit: `feat: <what>`
-
-**Context:** [1-2 sentences — what this task does and how it fits into the whole]
-````
-
----
-
-## Complexity Tags
-
-Inherit from the spec if `/ctx-brainstorm` was used. Otherwise classify here:
-
-| Tag | Signals | Agent Budget | Model |
-|-----|---------|-------------|-------|
-| `[LOW]` | 1 file, copy existing pattern, no new logic | 1 agent (implement only) | sonnet |
-| `[MED]` | 2-3 files, adapt pattern, conditional logic | 2 agents (implement + review) | sonnet |
-| `[HIGH]` | 4+ files, new abstraction, cross-cutting | 3 agents (implement + spec review + code review) | opus for reviews |
-
-When in doubt, tag up.
-
----
+Use `${CLAUDE_SKILL_DIR}/references/example-plan.md` as the canonical output example.
 
 ## Plan Header
-
-Every plan starts with frontmatter + header:
 
 ```markdown
 ---
@@ -79,100 +52,140 @@ topic: <topic-slug>
 **Architecture:** [2-3 sentences]
 **Tech Stack:** [Key technologies]
 **Total tasks:** N ([X LOW] [Y MED] [Z HIGH])
+**Critical path:** T1 -> T3 -> T5
+**Maximum safe parallelism:** N tasks
+**Review batches:** N
 **Estimated agent budget:** [sum based on tags]
-
----
 ```
 
-**Frontmatter fields:**
-- `status`: `active` (on creation) → `completed` (by `/ctx-execute` on success) or `abandoned`
-- `branch`: `null` until `/ctx-worktree` links it, then e.g. `feat/my-feature`
-- `worktree`: `null` until linked, then absolute path
-- `created`: date the plan was written
-- `topic`: the filename slug — lowercase, hyphenated, derived from feature name
+Derive `topic` and the filename from the feature name: lowercase, hyphenated, and stripped of special characters.
 
-The `topic` slug is the **filename** (e.g., `download-csv-email-opens.md`). Derive it from the feature name: lowercase, spaces/underscores to hyphens, strip special chars.
+## Execution Graph
 
-The agent budget line makes the cost visible before execution starts.
+Include one deterministic table:
 
----
+```markdown
+| Task | Depends on | Chain | Ownership | Interface dependency | Parallel-safe with | Wave | Review batch |
+|---|---|---|---|---|---|---|---|
+| T1 | — | contract | exclusive: `src/types.ts` | produces `Options` | T2 | 1 | B1 |
+```
+
+Use stable IDs (`T1`, `T2`, `B1`). `Depends on` is authoritative. Waves are advisory snapshots of initially-ready work; workers may start later tasks as soon as dependencies pass and ownership is released.
+
+## Task Specification
+
+Every task must use this shape:
+
+````markdown
+### Task T1: [Outcome] `[LOW|MED|HIGH]`
+
+**Chain:** [short stable chain name]
+**Depends on:** [task IDs or `none`]
+**Unlocks:** [task IDs or `none`]
+**Parallel-safe with:** [task IDs or `none`]
+**Review batch:** [batch ID]
+
+**Ownership:**
+- Exclusive: `exact/path` — [classification]
+- Shared: `exact/path` — [classification, or `none`]
+- Expected new files: `exact/path` or `none`
+- Acquire: [all write targets before editing]
+- Hold: [until targeted GREEN and scoped diff acceptance]
+- Release: [explicit release condition]
+
+**Interfaces:**
+- Produces: [named contract, schema, route, export, or `none`]
+- Consumes: [provider task + named interface, or `none`]
+
+**Files:**
+- Create: `exact/path`
+- Modify: `exact/path`
+- Test: `exact/path`
+
+**Steps:**
+- [ ] Write the targeted failing test when behavior changes
+- [ ] Run `[exact targeted command]` — expect RED
+- [ ] Implement the minimal scoped change
+- [ ] Run `[exact targeted command]` — expect GREEN
+- [ ] Inspect the scoped diff against the task completion criteria
+- [ ] Release ownership
+
+**Targeted verification:** `[exact command]`
+**Completion criteria:** [observable behavior, interface state, and accepted diff]
+**Commit:** `type: concise outcome`
+**Context:** [why this task exists and how it fits the graph]
+````
+
+Do not claim two tasks are parallel-safe when they write the same file, share an integration test, or one consumes an interface the other has not released.
+
+<HARD-GATE>
+
+Do not emit or save the plan until every task contains every field in the template. The execution-graph row does not substitute for task metadata. Never abbreviate later task specifications, even when the requested plan is concise; reduce prose inside fields instead.
+
+</HARD-GATE>
+
+## Complexity Tags
+
+| Tag | Signals | Default execution | Review posture |
+|---|---|---|---|
+| `[LOW]` | Narrow known pattern, usually 1 production concern | Inline or delegated | Scoped review |
+| `[MED]` | Several files, adapted pattern, interface consumer, or conditional logic | Inline or delegated | Review-batch coverage |
+| `[HIGH]` | New abstraction, cross-system contract, migration, or broad shared ownership | Delegated after `/ctx-worktree` | Fresh-context review expected |
+
+Tag for reasoning and review risk, not merely line count. When uncertain, tag up.
 
 ## Granularity Rules
 
-- Each task is **one logical change** (2-10 minutes of work)
-- Each task produces a **passing test suite** when complete
-- Tasks should be **independently committable** — no task depends on uncommitted work from another
-- Include **exact file paths** and **exact commands** with expected output
-- Include **code snippets** where the implementation isn't obvious
-- Skip code snippets for `[LOW]` tasks where the pattern is just "copy X and change Y"
-- **`[HIGH]` tasks require full code in every step** — no placeholders, no "similar to Task N", no "add appropriate error handling". These are plan failures:
-  - "TBD", "TODO", "implement later", "fill in details"
-  - "Add appropriate error handling" / "add validation" / "handle edge cases"
-  - "Write tests for the above" (without actual test code)
-  - "Similar to Task N" (repeat the code — the agent may read tasks out of order)
-  - Steps that describe what to do without showing how
+- Make each task one independently committable outcome, usually 5-20 minutes.
+- Split work at ownership or interface boundaries, not at arbitrary file counts.
+- Keep producer and consumer separate when releasing the producer's interface unlocks useful concurrency.
+- Combine trivial edits that always acquire the same files and verification command.
+- Name exact paths, commands, expected results, and acceptance criteria.
+- Include code shapes only where the implementer would otherwise invent a contract.
+- Do not paste full production implementations into the plan.
+- Use TDD where behavior changes; do not force a synthetic RED step for pure docs, generated output, or mechanical configuration.
 
----
+Plan failures include `TBD`, hidden shared files, vague validation, circular dependencies, impossible parallel claims, and full-suite reruns after every task.
 
 ## Self-Review
 
-Before presenting the plan:
-
-- [ ] **Every task has a complexity tag** — no untagged tasks
-- [ ] **File paths are exact** — no "somewhere in src/"
-- [ ] **TDD steps present** — test before implementation for each task
-- [ ] **Commit message per task** — conventional format
-- [ ] **No circular dependencies** — tasks can execute top-to-bottom
-- [ ] **YAGNI** — no tasks that aren't in the spec
-- [ ] **Audit posture stated** — say whether `/ctx-ruthless` is worth the extra pass and why
-
----
-
-## Skill Files
-
-- `SKILL.md` — this file
-- `${CLAUDE_SKILL_DIR}/references/example-plan.md` — canonical plan example with complexity tags and TDD steps
-
----
+- [ ] Approved requirements map to tasks; excluded scope maps to no task
+- [ ] Every task has a stable ID, complexity tag, chain, dependencies, ownership, interfaces, verification, and completion criteria
+- [ ] Number of complete task specifications equals the plan's `Total tasks`
+- [ ] Every modified file has exactly one active writer at a time
+- [ ] Shared files create explicit serialization edges
+- [ ] Interface producers precede consumers even without file overlap
+- [ ] `Parallel-safe with` agrees with the dependency graph and ownership claims
+- [ ] Execution waves are acyclic and the critical path is credible
+- [ ] Broad checks appear in review batches or final verification, not every task
+- [ ] Review batches name exact commands and review scope
+- [ ] Scheduling policy is present verbatim or semantically equivalent
+- [ ] Audit posture states whether `/ctx-ruthless` is warranted and why
 
 ## Handoff
 
-After the plan is approved, choose between an independent audit and execution.
+Recommend `/ctx-ruthless` when the plan has a `[HIGH]` task, spans three or more systems, carries a hard time constraint, or the user requests a scope audit. It is optional for narrow, all-LOW plans.
 
-Recommend `/ctx-ruthless` before execution when the plan has a `[HIGH]` task, spans three or more independent subsystems, is under a hard time constraint, or the user explicitly asks for a scope audit. It is optional for narrow, all-LOW plans.
-
-```
-/ctx-plan → /ctx-ruthless → user approval → /ctx-worktree → /ctx-execute
-/ctx-plan → /ctx-worktree → /ctx-execute (narrow delegated plans)
+```text
+/ctx-plan -> /ctx-ruthless -> user approval -> /ctx-worktree -> /ctx-execute
+/ctx-plan -> /ctx-worktree -> /ctx-execute
 ```
 
-Do not invoke `/ctx-brainstorm` or `/ctx-ship` from here. `/ctx-ruthless` audits an existing plan; it does not replace this skill's self-review.
+Offer inline execution for narrow work and delegated execution after `/ctx-worktree` for high-risk or explicitly delegated work. For a persistent goal, keep the goal small: instruct the orchestrator to execute the plan's authoritative graph and scheduling policy rather than duplicating scheduling logic in the goal.
 
-Offer execution choice:
+Do not send delegated work directly from `/ctx-plan` to `/ctx-execute` without a linked worktree.
 
-```
-Plan saved to ~/.claude/plugins/marketplaces/ctx-plugin/plans/<topic-slug>.md
+## Skill Files
 
-Agent budget: [N agents total — X×1 for LOW, Y×2 for MED, Z×3 for HIGH]
-
-Audit posture: [/ctx-ruthless recommended because ... | additional audit not warranted because ...]
-
-Two execution options:
-
-1. Subagent-Driven (recommended for plans with HIGH tasks)
-   — run /ctx-worktree, then use fresh agents per task via /ctx-execute
-
-2. Inline Execution (for small plans or all-LOW tasks)
-   — execute tasks in this session, batch with checkpoints
-
-Which approach?
-```
-
----
+- `SKILL.md` — entry point and required output contract
+- `${CLAUDE_SKILL_DIR}/scripts/validate_plan.py` — deterministic plan-schema and graph validator
+- `${CLAUDE_SKILL_DIR}/references/execution-model.md` — graph construction and scheduling rules
+- `${CLAUDE_SKILL_DIR}/references/example-plan.md` — canonical execution-oriented plan
 
 ## Gotchas
 
-- **Plans that are too granular waste agents.** "Export a constant" and "add the import" should be one task, not two. Group trivially related changes.
-- **Plans that are too coarse hide complexity.** If a task touches 4+ files, it's probably `[HIGH]` and should be split.
-- **Don't write the plan in the plan.** Code snippets should be implementation, not architecture discussion. The spec covers the "why."
-- **Test commands must be exact.** Not "run the tests" — specify `pnpm test:unit tests/path/file.test.ts` or equivalent.
+- A file list is not an ownership model. Classify the role of every touched file.
+- No file overlap does not prove independence. Check interface production and consumption.
+- Waves are not barriers. Release ready work dynamically after scoped acceptance.
+- Review batches amortize broad checks; they do not replace targeted task verification.
+- Do not hide scheduler logic in prose. Encode it in the graph and metadata.
