@@ -12,7 +12,7 @@ You: "I need to add search to the dashboard"
 /ctx-discuss           →  Think it through — what kind of search? What are the tradeoffs?
 /ctx-align             →  Make sure Claude understands the intent before moving forward
 /ctx-brainstorm        →  Spec with blind spots caught before you write code
-/ctx-plan              →  Tagged implementation plan with complexity budgets
+/ctx-plan              →  Execution graph with ownership, safe parallelism, and review batches
 /ctx-ruthless          →  Cut scope creep without cutting verified safety
 /ctx-worktree          →  Isolated git worktree, deps installed, ready to go
 /ctx-execute           →  Subagents implement each task, reviewers verify
@@ -48,7 +48,7 @@ Either can come first. Once the direction is clear, move to brainstorm.
 **Full feature workflow:**
 
 1. `/ctx-brainstorm` — surfaces blind spots, writes a spec, and self-reviews (or escalates to a subagent reviewer for complex features)
-2. `/ctx-plan` — takes the spec and produces tasks tagged `[LOW]`, `[MED]`, or `[HIGH]` with agent budgets
+2. `/ctx-plan` — turns the spec into an execution graph with tagged tasks, dependency chains, ownership, safe parallelism, review batches, and tiered verification
 3. `/ctx-ruthless` — for HIGH, multi-system, or time-boxed plans, audits every task against approved requirements and verified safety before touching the plan
 4. `/ctx-worktree` — spins up an isolated git worktree with env files copied and deps installed
 5. `/ctx-execute` — walks the plan task by task, dispatching implementer and reviewer agents based on complexity
@@ -99,7 +99,7 @@ Invoked with `/ctx:<skill-name>`.
 
 | Skill | Purpose |
 |-------|---------|
-| `ctx-plan` | Produces a tagged implementation plan from a brainstorm spec. |
+| `ctx-plan` | Produces an orchestration-ready implementation graph with explicit dependencies, ownership, safe parallelism, and verification boundaries. |
 | `ctx-ruthless` | Audits an existing plan for scope creep and accidentally removed safety, with evidence and an approval gate before edits. |
 | `ctx-execute` | Dispatches subagents per task — `[LOW]` 1 agent, `[MED]` 2, `[HIGH]` full review sandwich. |
 | `ctx-ship` | Gated pipeline: preflight → verify → PR. Each phase requires your approval. |
@@ -206,7 +206,7 @@ Inspired by the discipline patterns in [superpowers](https://github.com/obra/sup
 
 ## Status
 
-**v0.2.9.10** — Alpha. Building in public.
+**v0.2.9.11** — Alpha. Building in public.
 
 ## License
 
