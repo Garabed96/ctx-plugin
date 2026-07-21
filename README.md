@@ -12,6 +12,7 @@ You: "I need to add search to the dashboard"
 /ctx-discuss           →  Think it through — what kind of search? What are the tradeoffs?
 /ctx-align             →  Make sure Claude understands the intent before moving forward
 /ctx-brainstorm        →  Spec with blind spots caught before you write code
+/ctx-lean              →  Discover first, derive a compact plan, then risk-route ruthless review
 /ctx-plan              →  Execution graph with ownership, safe parallelism, and review batches
 /ctx-ruthless          →  Cut scope creep without cutting verified safety
 /ctx-worktree          →  Isolated git worktree, deps installed, ready to go
@@ -75,7 +76,7 @@ Either can come first. Once the direction is clear, move to brainstorm.
 
 The plugin separates **judgment** from **execution**:
 
-- **Skills** (22) — markdown instruction sets that handle decisions: when to create a worktree, what context to preserve, which risk signals matter
+- **Skills** (25) — markdown instruction sets that handle decisions: when to create a worktree, what context to preserve, which risk signals matter
 - **Scripts** (11) — shell scripts that handle deterministic operations: git worktrees, artifact scanning, PR creation. Args in, structured output out
 - **Agents** (3) — fresh-context subagents dispatched by `ctx-execute` for implementation and review
 - **Hooks** (7) — guardrails that fire automatically: block edits outside your worktree, prevent direct pushes to main, detect altitude oscillation
@@ -99,6 +100,7 @@ Invoked with `/ctx:<skill-name>`.
 
 | Skill | Purpose |
 |-------|---------|
+| `ctx-lean` | Main-agent planning with minimal read-only discovery, blocking questions only, and a risk-routed `ctx-ruthless` audit. |
 | `ctx-plan` | Produces an orchestration-ready implementation graph with explicit dependencies, ownership, safe parallelism, and verification boundaries. |
 | `ctx-ruthless` | Audits an existing plan for scope creep and accidentally removed safety, with evidence and an approval gate before edits. |
 | `ctx-execute` | Dispatches subagents per task — `[LOW]` 1 agent, `[MED]` 2, `[HIGH]` full review sandwich. |
