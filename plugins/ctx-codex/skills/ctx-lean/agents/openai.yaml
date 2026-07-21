@@ -1,0 +1,4 @@
+interface:
+  display_name: "CTX Lean"
+  short_description: "Discover, plan, and audit with minimal ceremony"
+  default_prompt: "Use $ctx-lean to discover the relevant context, draft a concise implementation plan, and audit it before execution."
