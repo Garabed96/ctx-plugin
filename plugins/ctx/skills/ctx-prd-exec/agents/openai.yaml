@@ -1,0 +1,4 @@
+interface:
+  display_name: "CTX PRD Exec"
+  short_description: "Execute approved PRDs gate by gate"
+  default_prompt: "Use $ctx-prd-exec to execute this approved Demo PRD gate by gate."

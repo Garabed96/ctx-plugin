@@ -1,0 +1,150 @@
+{
+  "title": "Conversational protocol capture",
+  "status": "DRAFT",
+  "syncState": "SYNC_PENDING",
+  "revision": "demo-001",
+  "created": "2026-07-30",
+  "timebox": "Two weeks",
+  "canvasFile": "Conversational protocol capture.canvas",
+  "bundleFile": "Projects/Conversational protocol capture.prd.json",
+  "prdFile": "Projects/Conversational protocol capture.md",
+  "why": "Users can describe protocol intent naturally, but safe medical-adjacent changes require an explicit review and confirmation boundary.",
+  "demoStory": "A user describes one supported change, reviews the exact proposal, confirms once, and sees the persisted protocol update.",
+  "outcome": "A user can describe a protocol change naturally, review a safe proposal, and confirm it without silent writes.",
+  "uiApplicable": true,
+  "visualDirection": {
+    "waiver": null,
+    "selectedTarget": "pending visual selection",
+    "selectionEvidence": "pending",
+    "designDecision": "pending",
+    "iterations": [],
+    "hardeningFindings": "pending",
+    "hardeningEvidence": "pending"
+  },
+  "gates": [
+    {
+      "id": "G1",
+      "title": "Capture intent",
+      "startState": "The assistant input is open and no draft mutation exists.",
+      "happyPath": "The user speaks or types one natural-language protocol request and sees the interpreted intent.",
+      "observableResult": "A reviewable interpretation appears without modifying the protocol.",
+      "proof": "The visible interpretation matches the transcript and contains no committed mutation.",
+      "verifier": "computer-use",
+      "timebox": "Two days",
+      "status": "NOT_STARTED",
+      "edgeCases": [
+        "Ambiguous compound or dose asks for clarification.",
+        "Unsupported intent preserves the user's original text."
+      ]
+    },
+    {
+      "id": "G2",
+      "title": "Review proposal",
+      "startState": "A supported intent has been interpreted.",
+      "happyPath": "The user sees the exact proposed changes, warnings, and unchanged fields before confirmation.",
+      "observableResult": "The proposal makes every pending mutation and safety warning legible.",
+      "proof": "Proposal UI and API payload agree field for field.",
+      "verifier": "automated-test + computer-use",
+      "timebox": "Three days",
+      "status": "NOT_STARTED",
+      "edgeCases": [
+        "Unsafe values are blocked with an actionable explanation."
+      ]
+    },
+    {
+      "id": "G3",
+      "title": "Confirm mutation",
+      "startState": "A valid proposal is visible and unconfirmed.",
+      "happyPath": "The user confirms once and the approved change is persisted exactly once.",
+      "observableResult": "The proposal closes with a durable success receipt.",
+      "proof": "One confirmation produces one durable write and a success receipt.",
+      "verifier": "integration-test",
+      "timebox": "Three days",
+      "status": "NOT_STARTED",
+      "edgeCases": [
+        "Retry after a timeout remains idempotent.",
+        "Cancel performs no write."
+      ]
+    },
+    {
+      "id": "G4",
+      "title": "See updated protocol",
+      "startState": "The confirmed mutation has a success receipt.",
+      "happyPath": "The refreshed protocol reflects the confirmed change across the intended surfaces.",
+      "observableResult": "The updated value survives reload and appears on the agreed surfaces.",
+      "proof": "Persisted state and rendered state agree after reload.",
+      "verifier": "ctx-qa",
+      "timebox": "Two days",
+      "status": "NOT_STARTED",
+      "edgeCases": [
+        "A failed refresh retains the success receipt and offers retry."
+      ]
+    }
+  ],
+  "guardrails": [
+    "No protocol mutation occurs before explicit confirmation.",
+    "The first slice supports one bounded intent family and does not become a general chat agent.",
+    "Web/mobile parity is decided explicitly before the final gate closes."
+  ],
+  "nonGoals": [
+    "General-purpose medical chat",
+    "More than one intent family in the first slice"
+  ],
+  "decisions": [
+    "Explicit confirmation remains the only mutation boundary."
+  ],
+  "deferredEdgeCases": [
+    "Multi-intent utterances are deferred until single-intent accuracy is proven."
+  ],
+  "references": [
+    "Selected visual target",
+    "UI hardening findings",
+    "Current API and persistence contract trace"
+  ],
+  "review": [
+    {
+      "id": "R1",
+      "question": "Is every gate user-observable and independently passable?",
+      "finding": "pending",
+      "evidence": "pending",
+      "resolution": "pending",
+      "residualRisk": "pending"
+    },
+    {
+      "id": "R2",
+      "question": "Can mocks, stubs, display-only controls, or missing persistence fake the demo?",
+      "finding": "pending",
+      "evidence": "pending",
+      "resolution": "pending",
+      "residualRisk": "pending"
+    },
+    {
+      "id": "R3",
+      "question": "Which omitted edge case would most likely break the story?",
+      "finding": "pending",
+      "evidence": "pending",
+      "resolution": "pending",
+      "residualRisk": "pending"
+    },
+    {
+      "id": "R4",
+      "question": "Do the guardrails fit the stated timebox?",
+      "finding": "pending",
+      "evidence": "pending",
+      "resolution": "pending",
+      "residualRisk": "pending"
+    },
+    {
+      "id": "R5",
+      "question": "Is an irreversible or high-risk product decision unresolved?",
+      "finding": "pending",
+      "evidence": "pending",
+      "resolution": "pending",
+      "residualRisk": "pending"
+    }
+  ],
+  "approval": {
+    "by": null,
+    "evidence": null
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "ctx-codex",
-  "version": "0.2.9.12",
+  "version": "0.2.9.13",
   "description": "Context economy workflow toolkit for Codex: brainstorm, plan, audit, execute, verify, ship, and manage worktree handoffs with minimal token spend.",
   "author": {
     "name": "Garo Nazarian",
