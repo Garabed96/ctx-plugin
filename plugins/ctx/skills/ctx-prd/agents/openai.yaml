@@ -1,0 +1,4 @@
+interface:
+  display_name: "CTX PRD"
+  short_description: "Create gated demo PRDs and Canvas maps"
+  default_prompt: "Use $ctx-prd to turn this idea into a gated Demo PRD and Obsidian Canvas."
