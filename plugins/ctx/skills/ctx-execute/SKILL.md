@@ -1,8 +1,8 @@
 ---
 name: ctx-execute
 description: >
-  Use when you have a tagged implementation plan from /ctx-plan. Requires
-  an isolated worktree.
+  Use when you have a tagged implementation plan from /ctx-plan. Requires an
+  isolated worktree or a dedicated feature branch — never the default branch.
 user-invocable: true
 ---
 
@@ -12,7 +12,7 @@ Execute plans by dispatching fresh subagents per task. The complexity tag on eac
 
 ## Process
 
-0. **Worktree gate** — verify we're in an isolated worktree (see below)
+0. **Isolation gate** — verify we're in a worktree or on a feature branch, never the default branch (see below)
 1. **Read the plan from global storage** — find and load the plan (see below)
 2. **Verify tags** — every task must have `[LOW]`, `[MED]`, or `[HIGH]`
 3. **Execute sequentially** — one task at a time, never parallel implementation
@@ -24,21 +24,34 @@ Execute plans by dispatching fresh subagents per task. The complexity tag on eac
 
 <HARD-GATE>
 
-## Step 0: Worktree Gate
+## Step 0: Isolation Gate
 
-Before doing anything else, check if we're running inside a git worktree:
+Before doing anything else, work out where we're executing — a worktree, a feature branch, or the default branch:
 
 ```bash
-[ -f .git ] && echo "worktree" || echo "main checkout"
+if [ -f .git ]; then
+  echo "worktree"
+else
+  branch=$(git branch --show-current)
+  default=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
+  [ -n "$default" ] || default=main
+  case "$branch" in
+    "$default"|main|master) echo "default branch ($branch)" ;;
+    "")                     echo "detached HEAD" ;;
+    *)                      echo "feature branch ($branch)" ;;
+  esac
+fi
 ```
 
 **If `worktree`:** Proceed to Step 1.
 
-**If `main checkout`:** STOP. Do not read the plan, do not dispatch agents. Tell the user:
+**If `feature branch`:** Proceed to Step 1 and execute in place — do not create a worktree. Tell the user in one line which branch you're executing on, e.g. "Executing in place on `feat/dose-guard` — the branch is the undo button."
 
-> "You're on the main checkout. `/ctx-execute` requires an isolated worktree so implementation doesn't touch your main working directory. Run `/ctx-worktree` first — it will swap you into the worktree automatically — then re-invoke `/ctx-execute`."
+**If `default branch` or `detached HEAD`:** STOP. Do not read the plan, do not dispatch agents. Tell the user:
 
-**Why this is a hard gate:** Subagents write code and commit. If they do that on the main checkout, a failed or partial implementation leaves debris on `main` that's harder to clean up than deleting a worktree branch. The worktree is the undo button.
+> "You're on `main` in the main checkout. `/ctx-execute` won't commit subagent work here. Two ways forward, your call: create a feature branch and re-invoke `/ctx-execute` to run in place, or run `/ctx-worktree` to get an isolated checkout — it will swap you in automatically."
+
+**Why this is the only hard stop:** Subagents write code and commit. The gate exists so a failed or partial implementation is cheap to throw away. A dedicated feature branch already buys that — revert is `git branch -D`, same as deleting a worktree. Forcing a worktree on top of it adds nothing and costs real things: the session loses continuity, and dev servers, simulators, and editor state stay pointed at the checkout you started in. The one case that isn't cheap to undo is debris committed straight onto the default branch, so that's the case worth stopping for.
 
 </HARD-GATE>
 
