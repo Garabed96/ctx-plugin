@@ -2,17 +2,18 @@
 name: ctx-execute
 description: >
   Use when you have a tagged implementation plan from ctx-plan, the plan is linked
-  to an isolated worktree, and the user explicitly chose delegated execution.
+  to an isolated worktree or a dedicated feature branch (never the default branch),
+  and the user explicitly chose delegated execution.
 user-invocable: true
 ---
 
 # ctx-execute — Complexity-Gated Delegated Execution
 
-Execute a linked plan task-by-task in an isolated worktree. Use task complexity to decide how much fresh context to buy, but stay pragmatic: simple tasks do not deserve orchestration theater.
+Execute a linked plan task-by-task in an isolated worktree or on a dedicated feature branch. Use task complexity to decide how much fresh context to buy, but stay pragmatic: simple tasks do not deserve orchestration theater.
 
 ## Process
 
-0. **Worktree gate** — verify we are in an isolated git worktree
+0. **Isolation gate** — verify we are in a git worktree or on a feature branch, never the default branch
 1. **Delegation gate** — verify the user explicitly chose delegated execution
 2. **Read the linked plan** — load the active plan for the current branch
 3. **Verify tags** — every task must have `[LOW]`, `[MED]`, or `[HIGH]`
@@ -25,19 +26,34 @@ Execute a linked plan task-by-task in an isolated worktree. Use task complexity 
 
 <HARD-GATE>
 
-## Step 0: Worktree Gate
+## Step 0: Isolation Gate
 
-Before doing anything else, check if we are running inside a git worktree:
+Before doing anything else, work out where we are executing — a worktree, a feature branch, or the default branch:
 
 ```bash
-[ -f .git ] && echo "worktree" || echo "main checkout"
+if [ -f .git ]; then
+  echo "worktree"
+else
+  branch=$(git branch --show-current)
+  default=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
+  [ -n "$default" ] || default=main
+  case "$branch" in
+    "$default"|main|master) echo "default branch ($branch)" ;;
+    "")                     echo "detached HEAD" ;;
+    *)                      echo "feature branch ($branch)" ;;
+  esac
+fi
 ```
 
 **If `worktree`:** proceed.
 
-**If `main checkout`:** stop. Tell the user:
+**If `feature branch`:** proceed and execute in place. Do not create a worktree. State the branch you are executing on in one line — the feature branch is the undo button.
 
-> "You're on the main checkout. `ctx-execute` only runs in an isolated worktree. Run `ctx-worktree` first so the plan can be linked to a disposable branch, then re-invoke `ctx-execute`."
+**If `default branch` or `detached HEAD`:** stop. Do not read the plan, do not delegate. Tell the user:
+
+> "You're on the default branch in the main checkout. `ctx-execute` will not commit work here. Your call: create a feature branch and re-invoke `ctx-execute` to run in place, or run `ctx-worktree` to get an isolated checkout linked to a disposable branch."
+
+**Why this is the only hard stop:** implementation work gets committed. The gate exists so a failed or partial run is cheap to discard. A dedicated feature branch already gives that — revert is `git branch -D`, the same cost as deleting a worktree. Forcing a worktree on top of it adds nothing and costs session continuity, because running servers and tooling stay pointed at the checkout you started in. Debris committed straight onto the default branch is the one case that is not cheap to undo.
 
 </HARD-GATE>
 
@@ -62,7 +78,7 @@ Plans live at `~/.codex/ctx-codex/plans/`.
 2. Scan the plans directory for `.md` files
 3. Read YAML frontmatter and find the active plan whose `branch` matches the current branch
 4. If found, read the full plan and extract its tasks
-5. If not found, list `status: active` plans and ask the user which one this worktree should be linked to before continuing
+5. If not found, list `status: active` plans and ask the user which one this branch should be linked to before continuing
 
 After all tasks pass final verification, update the plan frontmatter from `status: active` to `status: completed`.
 

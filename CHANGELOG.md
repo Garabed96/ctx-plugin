@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.9.15 (2026-08-16)
+
+- **CTX Execute branch gate** — the mirrored `ctx-execute` skills no longer hard-require an isolated worktree. Step 0 becomes an isolation gate with three outcomes: a git worktree proceeds as before, a main checkout on any non-default branch now proceeds and executes **in place**, and only a main checkout sitting on the default branch (or a detached HEAD) still stops — with the user choosing between cutting a feature branch and running `ctx-worktree`. The gate's purpose is unchanged (a failed run must be cheap to discard), but a dedicated feature branch already satisfies it: revert is `git branch -D`, the same cost as deleting a worktree. Forcing a worktree on top of that bought nothing and cost session continuity, since dev servers, simulators, and editor state stay pointed at the checkout the session started in. The check snippet now resolves the default branch from `origin/HEAD` instead of testing only for `.git` being a file.
+
 ## 0.2.9.14 (2026-08-16)
 
 - **CTX Grilling** — adds mirrored `ctx-grilling` skills for design-tree interviews that stress-test a plan, decision, or idea. The interview works the tree in rounds: the frontier (every decision whose prerequisites are settled) is asked in one round, each question carries a recommended first option, and concrete previews (sketches, schema shapes, copy variants) raise fidelity without building anything. Confusing sections are decoded from the actual code before their hidden decision is put to the user; facts come from the environment, decisions from the user. Output routes by target: an existing `ctx-lean` plan absorbs the settled tree and is rewritten to the lean layout; raw product intent hands off to `ctx-prd`. On Claude the rounds run through AskUserQuestion; on Codex through compact lettered option blocks.
