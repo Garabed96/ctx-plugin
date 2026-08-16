@@ -20,7 +20,7 @@ FRAME -> DISCOVER -> SYNTHESIZE
 
 <HARD-GATES>
 - Do not return a generic plan that omits task risk tags, the audit route, or the terminal state.
-- Do not return a MED/HIGH plan before completing the ctx-ruthless audit and presenting its findings.
+- Do not return a MED/HIGH plan before completing the `ctx-ruthless` audit and presenting its findings.
 - Do not revise a frozen audited plan until the user explicitly approves the findings.
 </HARD-GATES>
 
@@ -103,29 +103,69 @@ Produce:
 ```markdown
 # Lean Plan: <outcome>
 
-## Goal
-<observable result>
+Branch: `<branch>`
+Tickets: <ids; name the ticket each cut item moves to>
 
-## Evidence and decisions
-- <verified finding or explicit assumption>
+## Goal
+
+<the outcome in two sentences or fewer>
+
+Observable: given <input>, <the user-visible result>.
+
+## How <the mechanism> works — and where the change sits
+
+<one mermaid diagram per mechanism; each diagram answers exactly ONE orienting
+question, and the surrounding prose states that question ("who writes the
+numbers the user sees?")>
+
+- <one bullet per load-bearing diagram node: the file:line, the behavior, the boundary>
+
+## <The change>, in plain terms
+
+- **<Task cluster> is the <metaphor>.** <two-sentence intuition — what it is and
+  how you test it — before any type or plumbing detail>
+
+## Decisions
+
+- **Owner decision (DD Mon): <what>.** <why, and the accepted cost>
+- **<Verified finding>.** <evidence with file:line, pinned to commit `<sha>`>
+- **Audit finding, accepted (DD Mon): <hole that stays open>.** <why closing it
+  costs more than it buys, and which ticket it moves to>
 
 ## Scope
-- In: <included behavior>
-- Out: <explicit non-goal>
+
+- **In:** <included behavior>
+- **Out:** <explicit non-goal — name the ticket it moves to, or the evidence it lacks>
 
 ## Tasks
-### L1 [LOW|MED|HIGH] <outcome>
+
+### L<N> [LOW|MED|HIGH] <outcome>
 - Paths: <exact likely paths>
-- Change: <behavioral or structural change>
+- Change: <behavioral or structural change; numbered sub-steps when multi-part>
+- Depends on: <task id, only when real>
 - Verify: <exact command or observable check>
-- Done when: <completion condition>
+- Done when: <observable completion condition>
 
 ## Risks and follow-ups
+
 - <only material items>
+- **Unverified:** <open fact> — <how and when it gets settled, without blocking the plan>
 
 ## Audit route
-<audit required or skipped, with reason>
+
+<dated history: each audit or grilling pass, its status, and what it settled>
 ```
+
+Layout rules that make the plan digestible — apply all four:
+
+1. **One question per diagram.** Every mermaid diagram answers a single named
+   orienting question, ≤15 nodes. Detail lives in bullets under it, keyed to
+   file:line — never inside the nodes.
+2. **Intuition before mechanics.** Every MED/HIGH task cluster gets one
+   plain-language framing line before implementation detail.
+3. **Decisions carry date, owner, and accepted cost** — not just the choice.
+4. **Evidence pins to a commit SHA.** "Verified in the tree at `<sha>`" makes a
+   finding checkable after the tree moves.
 
 Use one to six meaningful, outcome-oriented tasks. Preserve stable task IDs, exact paths when known, risk tags, verification commands, and observable done conditions. Include dependencies only when real.
 

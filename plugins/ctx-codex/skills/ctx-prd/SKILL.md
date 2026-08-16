@@ -66,6 +66,12 @@ Route the reviewer by risk: coordinator self-review with recorded evidence by de
 
 Use [assets/demo-prd-template.md](assets/demo-prd-template.md) for the Markdown projection and [references/artifact-contract.md](references/artifact-contract.md) for gate statuses, evidence rules, and synchronization.
 
+Write the free-text bundle fields for digestibility — the same layout rules as a lean plan:
+
+- `why` or `demoStory` may open with one mermaid diagram; each diagram answers exactly ONE orienting question, stated in the surrounding prose, ≤15 nodes. Detail goes in bullets under it, never inside the nodes.
+- Every entry in `decisions` carries date, owner, and accepted cost — `**Owner decision (DD Mon): <what>.** <why, and the accepted cost>` — not just the choice.
+- Give each complex mechanism one plain-language framing line before implementation detail; pin verified findings to a commit SHA.
+
 The canonical bundle lives on the local filesystem at `~/.codex/ctx-codex/prds/<topic-slug>/`:
 
 - `<topic>.prd.json` — authoritative canonical bundle and execution state;
