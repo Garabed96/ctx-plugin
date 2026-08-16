@@ -59,7 +59,7 @@ approval_evidence: null
 
 ## Decisions and assumptions
 
-- <decision, owner, and rationale>
+- **Owner decision (DD Mon): <what>.** <why, and the accepted cost>
 
 ## Edge cases deferred
 
