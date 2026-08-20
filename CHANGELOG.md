@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.9.16 (2026-08-20)
+
+- **CTX Product Checkpoint** — adds mirrored `ctx-product-checkpoint` skills for evidence-backed product review packets in Obsidian. The workflow separates verified behavior, implementation without runtime proof, inference, hypothesis, planned work, incomplete requirements, and accepted deferrals; produces a product-manager status view of user changes, present boundaries, business value, adjacent work, QA evidence, and communication summaries; and adds a focused design-decision lane that preserves current-state captures, three image-based directions, trade-offs, owner selection, and an implementation contract. Existing checkpoints update in place with sparse evidence and an append-only material history instead of fragmenting into status copies.
+
 ## 0.2.9.15 (2026-08-16)
 
 - **CTX Execute branch gate** — the mirrored `ctx-execute` skills no longer hard-require an isolated worktree. Step 0 becomes an isolation gate with three outcomes: a git worktree proceeds as before, a main checkout on any non-default branch now proceeds and executes **in place**, and only a main checkout sitting on the default branch (or a detached HEAD) still stops — with the user choosing between cutting a feature branch and running `ctx-worktree`. The gate's purpose is unchanged (a failed run must be cheap to discard), but a dedicated feature branch already satisfies it: revert is `git branch -D`, the same cost as deleting a worktree. Forcing a worktree on top of that bought nothing and cost session continuity, since dev servers, simulators, and editor state stay pointed at the checkout the session started in. The check snippet now resolves the default branch from `origin/HEAD` instead of testing only for `.git` being a file.

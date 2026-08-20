@@ -1,0 +1,4 @@
+interface:
+  display_name: "CTX Product Checkpoint"
+  short_description: "Build evidence-backed Obsidian product reviews"
+  default_prompt: "Use $ctx-product-checkpoint to create or update an evidence-backed Obsidian product checkpoint for this work."

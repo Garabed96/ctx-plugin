@@ -76,7 +76,7 @@ Either can come first. Once the direction is clear, move to brainstorm.
 
 The plugin separates **judgment** from **execution**:
 
-- **Skills** (27) — markdown instruction sets that handle decisions: when to create a worktree, what context to preserve, which risk signals matter
+- **Skills** (29) — markdown instruction sets that handle decisions: when to create a worktree, what context to preserve, which risk signals matter
 - **Scripts** (11) — shell scripts that handle deterministic operations: git worktrees, artifact scanning, PR creation. Args in, structured output out
 - **Agents** (3) — fresh-context subagents dispatched by `ctx-execute` for implementation and review
 - **Hooks** (7) — guardrails that fire automatically: block edits outside your worktree, prevent direct pushes to main, detect altitude oscillation
@@ -102,6 +102,7 @@ Invoked with `/ctx:<skill-name>`.
 |-------|---------|
 | `ctx-lean` | Main-agent planning with minimal read-only discovery, blocking questions only, and a risk-routed `ctx-ruthless` audit. |
 | `ctx-prd` | Gated Demo PRD: canonical JSON bundle with generated Markdown + Obsidian Canvas, 3–5 evidence-gated demo gates, risk-routed review, and vault sync. |
+| `ctx-product-checkpoint` | Create or update an Obsidian product review packet with user-visible changes, verified boundaries, QA evidence, visual design options, decisions, and concise handoffs. |
 | `ctx-prd-exec` | Executes an approved Demo PRD gate by gate with just-in-time slices, independent verification, and evidence-backed state transitions. |
 | `ctx-plan` | Produces an orchestration-ready implementation graph with explicit dependencies, ownership, safe parallelism, and verification boundaries. |
 | `ctx-ruthless` | Audits an existing plan for scope creep and accidentally removed safety, with evidence and an approval gate before edits. |

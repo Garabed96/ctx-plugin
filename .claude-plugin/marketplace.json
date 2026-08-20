@@ -11,7 +11,7 @@
       "name": "ctx",
       "source": "./plugins/ctx",
       "description": "Development toolkit built on context economy — brainstorm, plan, execute, ship, QA, and visual prototyping via the factory. Every skill optimizes for minimal token spend with maximum signal.",
-      "version": "0.2.9.15"
+      "version": "0.2.9.16"
     }
   ]
 }
