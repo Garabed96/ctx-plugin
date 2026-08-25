@@ -54,6 +54,21 @@ assert_exit_code() {
   fi
 }
 
+# ── Claude keeps terminal handoff without WebStorm ──────────────
+echo ""
+echo "=== TEST: terminal-only worktree handoff ==="
+
+if [[ ! -e "$SCRIPT_DIR/open-webstorm.sh" ]] &&
+   [[ ! -d "$SCRIPT_DIR/../skills/ctx-open" ]] &&
+   grep -q "claude" "$SCRIPT_DIR/worktree-open.sh" &&
+   ! grep -qi "webstorm" "$SCRIPT_DIR/worktree-open.sh"; then
+  echo "  PASS: Claude keeps terminal handoff without WebStorm"
+  PASS=$((PASS + 1))
+else
+  echo "  FAIL: Claude WebStorm capability still exists or terminal handoff is missing"
+  FAIL=$((FAIL + 1))
+fi
+
 # ── Setup: create a throwaway git repo with a remote ──────
 echo "Setting up test repo..."
 mkdir -p "$TEMP_DIR/test-repo-bare"

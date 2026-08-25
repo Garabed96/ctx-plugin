@@ -126,10 +126,9 @@ Invoked with `/ctx:<skill-name>`.
 |-------|---------|
 | `ctx-park` | End-of-session handoff with learning capture and gotcha promotion. |
 | `ctx-grab` | Restore context from a parked session. |
-| `ctx-resume` | Resume after crash or context loss. Finds active plans and relaunches. |
+| `ctx-resume` | Resume after crash or context loss. Finds active plans and their worktrees. |
 | `ctx-worktree` | Isolated git worktree with env files and deps, ready immediately. |
 | `ctx-kill-wt` | Teardown: kill port, remove worktree, delete branch. |
-| `ctx-open` | Open current directory in WebStorm. |
 | `ctx-docs` | Create evidence-grounded architecture checkpoint docs with source-of-truth boundaries, verification, and Mermaid diagrams. |
 
 **Calibration**
@@ -153,7 +152,6 @@ Shell scripts with a consistent contract: args in, progress to stderr, structure
 | `ship-pr.sh` | Stage, commit, push, create PR from args |
 | `auto-pr.sh` | Post-push hook: typecheck + draft PR, zero LLM tokens |
 | `kill-wt.sh` | Teardown worktree safely, supports `--detach` for self-teardown |
-| `open-webstorm.sh` | Open directory in WebStorm (macOS) |
 | `sim-interact.sh` | iOS Simulator CLI: screenshot, scroll, tap, boot |
 
 ### Hooks
