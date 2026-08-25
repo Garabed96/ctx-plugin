@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.9.17 (2026-08-25)
+
+- **Editor-agnostic worktree handoffs** — Codex `ctx-worktree` and `ctx-resume` no longer open WebStorm. The WebStorm-only `ctx-open` skill and helper are removed from both runtimes, while Claude keeps its terminal/Claude worktree handoff.
+
 ## 0.2.9.16 (2026-08-20)
 
 - **CTX Product Checkpoint** — adds mirrored `ctx-product-checkpoint` skills for evidence-backed product review packets in Obsidian. The workflow separates verified behavior, implementation without runtime proof, inference, hypothesis, planned work, incomplete requirements, and accepted deferrals; produces a product-manager status view of user changes, present boundaries, business value, adjacent work, QA evidence, and communication summaries; and adds a focused design-decision lane that preserves current-state captures, three image-based directions, trade-offs, owner selection, and an implementation contract. Existing checkpoints update in place with sparse evidence and an append-only material history instead of fragmenting into status copies.

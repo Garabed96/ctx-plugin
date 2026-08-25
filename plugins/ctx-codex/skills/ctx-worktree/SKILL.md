@@ -11,7 +11,7 @@ user-invocable: true
 
 # ctx-worktree — Create an Isolated Git Worktree
 
-Creates a durable worktree via `../../scripts/worktree-create.sh`, links any active plan to the new branch, parks context into it, then opens the worktree in WebStorm.
+Creates a durable worktree via `../../scripts/worktree-create.sh`, links any active plan to the new branch, and parks context into it.
 
 Use this before `ctx-execute`. The delegated route is:
 
@@ -39,7 +39,7 @@ bash ../../scripts/worktree-create.sh \
 
 Parse the `key=value` stdout output. On failure, report and stop.
 
-Codex note: `git fetch`, dependency install, and opening WebStorm may require approval in some environments. Treat those as normal permissioned steps, not hidden plumbing.
+Codex note: `git fetch` and dependency install may require approval in some environments. Treat those as normal permissioned steps, not hidden plumbing.
 
 ## 3. Link plan
 
@@ -89,17 +89,7 @@ Write to `<worktree-path>/docs/ctx/park.md`:
 {Ordered list — what the next session should do first}
 ```
 
-## 5. Open the worktree in WebStorm
-
-After the park file is written, open the worktree:
-
-```bash
-bash ../../scripts/worktree-open.sh '<worktree-path>'
-```
-
-If WebStorm cannot be opened, tell the user to open the worktree manually and continue there.
-
-## 6. Present result
+## 5. Present result
 
 ```text
 Worktree ready:
@@ -113,7 +103,7 @@ Worktree ready:
 Next: run ctx-execute in the worktree if the user chose delegated execution.
 ```
 
-## 7. Cleanup reference
+## 6. Cleanup reference
 
 When the user asks about removing worktrees:
 

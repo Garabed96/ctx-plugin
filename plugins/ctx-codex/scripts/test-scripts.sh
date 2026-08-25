@@ -54,6 +54,23 @@ assert_exit_code() {
   fi
 }
 
+# ── Codex worktree handoffs stay editor-agnostic ──────────────
+echo ""
+echo "=== TEST: editor-agnostic worktree handoff ==="
+
+if [[ ! -e "$SCRIPT_DIR/worktree-open.sh" ]] &&
+   [[ ! -e "$SCRIPT_DIR/open-webstorm.sh" ]] &&
+   [[ ! -d "$SCRIPT_DIR/../skills/ctx-open" ]] &&
+   ! grep -qi "webstorm" \
+     "$SCRIPT_DIR/../skills/ctx-worktree/SKILL.md" \
+     "$SCRIPT_DIR/../skills/ctx-resume/SKILL.md"; then
+  echo "  PASS: Codex worktree handoffs do not launch WebStorm"
+  PASS=$((PASS + 1))
+else
+  echo "  FAIL: Codex worktree handoffs still reference WebStorm"
+  FAIL=$((FAIL + 1))
+fi
+
 # ── Setup: create a throwaway git repo with a remote ──────
 echo "Setting up test repo..."
 mkdir -p "$TEMP_DIR/test-repo-bare"
