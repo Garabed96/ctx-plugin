@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile, readdir } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 import ctxRuntime from "../extensions/ctx-runtime.ts";
@@ -25,6 +25,30 @@ test("OMP package omits Factory V1 and superseded brainstorm skills", async () =
   assert.equal(skillNames.includes("ctx-brainstorm-ss"), false);
   assert.equal(skillNames.includes("ctx-factory"), false);
   assert.equal(skillNames.includes("ctx-factory-critique"), false);
+});
+
+test("remaining OMP skill references resolve inside the package", async () => {
+  const skillsRoot = new URL("../skills/", import.meta.url);
+  const markdownFiles = (await readdir(skillsRoot, { recursive: true }))
+    .filter((entry) => entry.endsWith(".md"));
+  const missing: string[] = [];
+
+  for (const relativeFile of markdownFiles) {
+    const sourceUrl = new URL(relativeFile, skillsRoot);
+    const source = await readFile(sourceUrl, "utf8");
+    for (const match of source.matchAll(/skill:\/\/([^`\s)]+)/g)) {
+      await access(new URL(match[1], skillsRoot)).catch(() => {
+        missing.push(`${relativeFile}: skill://${match[1]}`);
+      });
+    }
+    for (const match of source.matchAll(/`((?:references|assets|scripts|agents)\/[^`\s]+)`/g)) {
+      await access(new URL(match[1], new URL(".", sourceUrl))).catch(() => {
+        missing.push(`${relativeFile}: ${match[1]}`);
+      });
+    }
+  }
+
+  assert.deepEqual(missing, []);
 });
 
 const schema = {
