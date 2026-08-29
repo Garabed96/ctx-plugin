@@ -51,6 +51,23 @@ test("packaged workflow preflight reads Node stdin and includes untracked produc
   }
 });
 
+test("packaged shipping helper reads stdin through its declared Node entrypoint", async () => {
+  const child = Bun.spawn([helperPath("ctx-omp-ship")], {
+    stdin: "pipe",
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  child.stdin.write(JSON.stringify({ schemaVersion: 1, operation: "ship_publish", shipment: null }));
+  child.stdin.end();
+  const [stderr, exitCode] = await Promise.all([
+    new Response(child.stderr).text(),
+    child.exited,
+  ]);
+
+  assert.equal(exitCode, 1);
+  assert.match(stderr, /invalid immutable shipment/);
+});
+
 test("helper stdout must be one JSON object", () => {
   assert.deepEqual(parseSingleJsonObject('{"ok":true}'), { ok: true });
   assert.throws(() => parseSingleJsonObject('log\n{"ok":true}'));
