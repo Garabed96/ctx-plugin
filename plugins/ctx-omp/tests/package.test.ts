@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 import ctxRuntime from "../extensions/ctx-runtime.ts";
@@ -14,6 +14,17 @@ test("marketplace and package publish the same ctx-omp version and extension ent
   assert.equal(pkg.name, "ctx-omp");
   assert.equal(entry.version, pkg.version);
   assert.deepEqual(pkg.omp.extensions, ["./extensions/ctx-runtime.ts"]);
+});
+
+test("OMP package omits Factory V1 and superseded brainstorm skills", async () => {
+  const skillEntries = await readdir(new URL("../skills", import.meta.url), { withFileTypes: true });
+  const skillNames = skillEntries.filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+
+  assert.equal(skillNames.length, 24);
+  assert.equal(skillNames.includes("ctx-brainstorm"), false);
+  assert.equal(skillNames.includes("ctx-brainstorm-ss"), false);
+  assert.equal(skillNames.includes("ctx-factory"), false);
+  assert.equal(skillNames.includes("ctx-factory-critique"), false);
 });
 
 const schema = {

@@ -42,7 +42,7 @@ No re-explaining. No lost context. No "wait, what were we doing?"
 /marketplace install ctx-omp@ctx-plugin
 ```
 
-Restart the OMP session after installation so its extension tools and typed lifecycle hooks load. The OMP adapter exposes 28 CTX skills, three named agents, and `ctx_paths`, `ctx_workflow`, and `ctx_remote_approval`. Its supported shipping sequence is `ship_preflight` → local `ship_prepare` → interactive, final-HEAD-bound approval → `ship_publish`. The direct-command hook blocks only top-level model-issued `bash` forms of `gh pr create`, GitHub `/pulls` `gh api`, and GitHub `/pulls` `curl`; it does not claim to intercept scripts, `bash -c`, other clients, user shells, or external applications.
+Restart the OMP session after installation so its extension tools and typed lifecycle hooks load. The OMP adapter exposes 24 curated CTX skills, three named agents, and `ctx_paths`, `ctx_workflow`, and `ctx_remote_approval`; Factory V1 and the superseded brainstorm skills remain available only in the Claude and Codex packages. Its supported shipping sequence is `ship_preflight` → local `ship_prepare` → interactive, final-HEAD-bound approval → `ship_publish`. The direct-command hook blocks only top-level model-issued `bash` forms of `gh pr create`, GitHub `/pulls` `gh api`, and GitHub `/pulls` `curl`; it does not claim to sandbox arbitrary interpreters.
 
 **Platform:** macOS (tmux, iTerm2, Terminal.app). Core skills are POSIX-compatible. Windows untested.
 

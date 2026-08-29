@@ -26,6 +26,10 @@ test("ctx_paths accepts only schemaVersion 1 and declared keys", () => {
     () => parsePathsRequest({ schemaVersion: 1, kind: "plans", extra: true }),
     BridgeValidationError,
   );
+  assert.throws(
+    () => parsePathsRequest({ schemaVersion: 1, kind: "factory_launcher" }),
+    BridgeValidationError,
+  );
 });
 
 test("ctx_workflow rejects unknown fields and correlates operation fields", () => {

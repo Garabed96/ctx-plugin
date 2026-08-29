@@ -13,4 +13,4 @@ user-invocable: true
 5. Record decisions, assumptions, open questions, success metrics, acceptance checks, named seams, and explicit gates. Do not prescribe implementation beyond product-relevant contracts.
 6. Require decision approval before marking the bundle APPROVED. If the original request pre-authorizes execution, preserve that exact text as approval evidence.
 7. Validate the canonical bundle and projections through the adapter-supported artifact surface when it is available. On missing runtime support, finish all non-execution work and report the capability gap; do not assemble or invoke a local helper.
-8. Hand approved work to `skill://ctx-prd-exec/SKILL.md`; hand uncertain product direction to `skill://ctx-brainstorm/SKILL.md`.
+8. Hand approved work to `skill://ctx-prd-exec/SKILL.md`; hand uncertain product direction to `skill://ctx-grilling/SKILL.md`.

@@ -44,11 +44,11 @@ export function canonicalizeRepoRelativePaths(value: unknown): string[] {
   return normalized;
 }
 
-export type PathsRequest = { schemaVersion: 1; kind: "plans" | "progress" | "prds" | "handoff" | "factory_launcher"; cwd?: string };
+export type PathsRequest = { schemaVersion: 1; kind: "plans" | "progress" | "prds" | "handoff"; cwd?: string };
 export function parsePathsRequest(value: unknown): PathsRequest {
   if (!record(value)) throw new BridgeValidationError("ctx_paths request must be an object");
   const kind = value.kind;
-  if (kind !== "plans" && kind !== "progress" && kind !== "prds" && kind !== "handoff" && kind !== "factory_launcher") throw new BridgeValidationError("unknown ctx_paths kind");
+  if (kind !== "plans" && kind !== "progress" && kind !== "prds" && kind !== "handoff") throw new BridgeValidationError("unknown ctx_paths kind");
   required(value, kind === "handoff" ? ["schemaVersion", "kind", "cwd"] : value.cwd === undefined ? ["schemaVersion", "kind"] : ["schemaVersion", "kind", "cwd"]);
   exact(value.schemaVersion, 1);
   if (kind === "handoff" && value.cwd === undefined) throw new BridgeValidationError("handoff requires cwd");

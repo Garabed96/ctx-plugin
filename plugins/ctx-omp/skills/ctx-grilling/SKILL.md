@@ -12,6 +12,6 @@ Every frontier question goes through `ask`, never a prose questionnaire. The fir
 2. Progress through problem, user, current workaround, value, scope/non-goals, success evidence, workflow, data authority, integrations, failure handling, security/privacy, operations, adoption, and delivery gates.
 3. Challenge vague claims, solution-first requests, unowned data, unmeasurable success, missing failure behavior, and scope that lacks a stopping point. Do not ask questions whose answer will not change the product contract.
 4. Stop when the named seams are explicit: every external boundary has owner, contract, authority, failure behavior, and acceptance evidence.
-5. Summarize the resulting area contract and recommend `skill://ctx-prd/SKILL.md` for a gated product artifact or `skill://ctx-brainstorm/SKILL.md` for bounded design.
+5. Summarize the resulting area contract and recommend `skill://ctx-prd/SKILL.md` for a gated product artifact or `skill://ctx-lean/SKILL.md` for bounded delivery planning.
 
 Do not implement, create an execution plan, or manufacture certainty from unanswered questions.

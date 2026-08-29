@@ -29,7 +29,7 @@ export default function ctxRuntime(pi: ExtensionAPI) {
   const services = new Map<string, ShipmentService>();
   const stagedNudges = new Map<string, string>();
   const agentRoot = profileRoot();
-  const pathsSchema = z.object({ schemaVersion: z.literal(1), kind: z.enum(["plans", "progress", "prds", "handoff", "factory_launcher"]), cwd: z.string().optional() }).strict();
+  const pathsSchema = z.object({ schemaVersion: z.literal(1), kind: z.enum(["plans", "progress", "prds", "handoff"]), cwd: z.string().optional() }).strict();
   const workflowSchema = z.object({
     schemaVersion: z.literal(1),
     operation: z.enum(["grab_context", "scan_park", "create_worktree", "post_setup_worktree", "open_worktree", "kill_worktree", "ship_preflight", "ship_prepare", "ship_publish"]),
@@ -94,7 +94,6 @@ export default function ctxRuntime(pi: ExtensionAPI) {
       try {
         const request = parsePathsRequest(params);
         if (request.kind === "plans" || request.kind === "progress" || request.kind === "prds") return success({ ok: true, schemaVersion: 1, kind: request.kind, path: path.join(agentRoot, "ctx", request.kind), scope: "profile", profileId: agentRoot });
-        if (request.kind === "factory_launcher") return success({ ok: true, schemaVersion: 1, kind: request.kind, path: helperPath("ctx-omp-workflow"), scope: "plugin" });
         const repositoryRoot = await canonicalRepository(request.cwd!);
         return success({ ok: true, schemaVersion: 1, kind: request.kind, path: path.join(repositoryRoot, "docs", "ctx", "park.md"), scope: "repository", repositoryRoot });
       } catch (error) { return failure(error instanceof BridgeValidationError ? invalidArgument(error) : bridgeFailure("CTX_PROFILE_RESOLUTION_FAILED", "Could not resolve CTX runtime path", true)); }

@@ -14,7 +14,7 @@ Call `ctx_workflow` with `{ schemaVersion: 1, operation: "ship_preflight", cwd: 
 
 ## 1–4. Architect, implement, verify, readiness
 
-Use `skill://ctx-brainstorm/SKILL.md` when exploration is needed, then `skill://ctx-plan/SKILL.md`; **Gate A:** approved plan. Execute through `skill://ctx-execute/SKILL.md` or inline only for a genuinely small approved plan; **Gate B:** required static proof. Run cheap proof before acceptance proof; re-run preflight if the diff changed; **Gate C:** proof passes and scope remains acceptable. Review exact changed files for missing tests, leaked internals, secrets, and untracked TODO/FIXME/HACK debt. Low risk is advisory, medium requires acknowledgement, high blocks. **Gate D:** findings cleared.
+Use `skill://ctx-grilling/SKILL.md` or `skill://ctx-prd/SKILL.md` when product decisions remain unresolved, then `skill://ctx-plan/SKILL.md`; **Gate A:** approved plan. Execute through `skill://ctx-execute/SKILL.md` or inline only for a genuinely small approved plan; **Gate B:** required static proof. Run cheap proof before acceptance proof; re-run preflight if the diff changed; **Gate C:** proof passes and scope remains acceptable. Review exact changed files for missing tests, leaked internals, secrets, and untracked TODO/FIXME/HACK debt. Low risk is advisory, medium requires acknowledgement, high blocks. **Gate D:** findings cleared.
 
 ## 5. Prepare and publish
 
