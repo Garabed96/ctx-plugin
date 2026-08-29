@@ -1,0 +1,15 @@
+{
+  "name": "ctx-omp",
+  "version": "0.2.9.18",
+  "private": true,
+  "type": "module",
+  "description": "CTX runtime adapter for Oh My Pi",
+  "peerDependencies": {
+    "@oh-my-pi/pi-coding-agent": "*"
+  },
+  "omp": {
+    "extensions": [
+      "./extensions/ctx-runtime.ts"
+    ]
+  }
+}

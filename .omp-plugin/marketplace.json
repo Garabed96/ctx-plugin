@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ctx-plugin",
+  "owner": {
+    "name": "Garo Nazarian"
+  },
+  "metadata": {
+    "description": "Context economy toolkit with a first-class Oh My Pi runtime adapter.",
+    "version": "0.2.9.18"
+  },
+  "plugins": [
+    {
+      "name": "ctx-omp",
+      "source": "./plugins/ctx-omp",
+      "description": "CTX workflows, native bridge tools, lifecycle hooks, and explicit approved shipping for Oh My Pi.",
+      "version": "0.2.9.18",
+      "category": "development"
+    }
+  ]
+}

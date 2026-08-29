@@ -293,26 +293,26 @@ echo "NESTED_SECRET=123" > src/app/.env
 git worktree add -b post-setup-test "$TEMP_DIR/post-setup-target" origin/main 2>/dev/null
 POST_SETUP_TARGET="$TEMP_DIR/post-setup-target"
 
-# Happy path: symlink env files, skip deps
+# Happy path: copies ignored env files, skips deps
 OUTPUT=$(bash "$SCRIPT_DIR/worktree-post-setup.sh" --source "$POST_SETUP_REPO" --target "$POST_SETUP_TARGET" --skip-deps 2>/dev/null)
 assert_contains "env_count=2" "$OUTPUT" "env_count=2"
 assert_contains "deps=skipped" "$OUTPUT" "deps=skipped"
 
-# Verify symlinks exist
-if [[ -L "$POST_SETUP_TARGET/.env.local" ]]; then
-  echo "  PASS: .env.local symlinked"
+# Verify copied env files exist as regular files
+if [[ -f "$POST_SETUP_TARGET/.env.local" && ! -L "$POST_SETUP_TARGET/.env.local" ]]; then
   PASS=$((PASS + 1))
+  echo "  PASS: copied root env file"
 else
-  echo "  FAIL: .env.local not symlinked"
   FAIL=$((FAIL + 1))
+  echo "  FAIL: copied root env file"
 fi
 
-if [[ -L "$POST_SETUP_TARGET/src/app/.env" ]]; then
-  echo "  PASS: src/app/.env symlinked"
+if [[ -f "$POST_SETUP_TARGET/src/app/.env" && ! -L "$POST_SETUP_TARGET/src/app/.env" ]]; then
   PASS=$((PASS + 1))
+  echo "  PASS: copied nested env file"
 else
-  echo "  FAIL: src/app/.env not symlinked"
   FAIL=$((FAIL + 1))
+  echo "  FAIL: copied nested env file"
 fi
 
 # .env.example is tracked — should NOT be symlinked (it's already in the worktree via git)

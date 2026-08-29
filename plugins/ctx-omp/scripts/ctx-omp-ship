@@ -1,0 +1,81 @@
+#!/usr/bin/env node
+import { spawn } from "node:child_process";
+import { realpath } from "node:fs/promises";
+import path from "node:path";
+
+const deferredRun = (file, args, cwd) => {
+  const deferred = Promise.withResolvers();
+  const child = spawn(file, args, { cwd, stdio: ["ignore", "pipe", "pipe"] });
+  let stdout = ""; let stderr = "";
+  child.stdout.on("data", (chunk) => { stdout += String(chunk); });
+  child.stderr.on("data", (chunk) => { stderr += String(chunk); });
+  child.on("error", (error) => deferred.resolve({ code: 1, stdout, stderr: `${stderr}${error.message}` }));
+  child.on("close", (code) => deferred.resolve({ code: code ?? 1, stdout, stderr }));
+  return deferred.promise;
+};
+const git = async (cwd, ...args) => {
+  const result = await deferredRun("git", ["-C", cwd, ...args]);
+  if (result.code) throw new Error(result.stderr.trim() || `git ${args[0]} failed`);
+  return result.stdout.trim();
+};
+const same = (actual, expected) => actual.length === expected.length && actual.every((value, index) => value === expected[index]);
+const safeFiles = (files) => Array.isArray(files) && files.length > 0 && files.length <= 1000 && files.every((file) => typeof file === "string" && file && !file.includes("\0") && !path.posix.isAbsolute(file) && !file.split("/").includes(".."));
+const result = (operation, data) => process.stdout.write(`${JSON.stringify({ ok: true, schemaVersion: 1, operation, data })}\n`);
+const exit = (message, code) => { process.stderr.write(`${message}\n`); process.exitCode = code; };
+
+async function prepare(request) {
+  if (!safeFiles(request.files) || typeof request.cwd !== "string" || typeof request.message !== "string") throw new Error("invalid ship_prepare request");
+  const files = [...new Set(request.files.map((file) => path.posix.normalize(file)))].sort();
+  if (!same(files, [...request.files].sort())) throw new Error("files must be normalized and unique");
+  const root = await realpath(await git(request.cwd, "rev-parse", "--show-toplevel"));
+  const currentBranch = await git(root, "branch", "--show-current");
+  if (!currentBranch) throw new Error("cannot ship a detached HEAD");
+  const staged = (await git(root, "diff", "--cached", "--name-only")).split("\n").filter(Boolean).sort();
+  if (staged.some((file) => !files.includes(file))) throw new Error("index contains paths outside the requested shipment");
+  await git(root, "add", "--", ...files);
+  const finalIndex = (await git(root, "diff", "--cached", "--name-only")).split("\n").filter(Boolean).sort();
+  if (!same(finalIndex, files)) throw new Error("requested files do not exactly match the staged index");
+  await git(root, "commit", "-m", request.message, "--", ...files);
+  const commitSha = await git(root, "rev-parse", "HEAD");
+  const committed = (await git(root, "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD")).split("\n").filter(Boolean).sort();
+  if (!same(committed, files)) throw new Error("commit path set changed during shipment preparation");
+  const finalBranch = await git(root, "branch", "--show-current"); const headSha = await git(root, "rev-parse", "HEAD");
+  if (finalBranch !== currentBranch || headSha !== commitSha) throw new Error("repository state changed during shipment preparation");
+  result("ship_prepare", { repositoryRoot: root, branch: currentBranch, commitSha, headSha, files });
+}
+async function publish(request) {
+  const shipment = request.shipment;
+  if (!shipment || shipment.schemaVersion !== 1 || shipment.canonicalPayload?.operation !== "publish_prepared_shipment" || shipment.commitSha !== shipment.headSha) throw new Error("invalid immutable shipment");
+  const root = await realpath(shipment.repositoryRoot); const currentBranch = await git(root, "branch", "--show-current"); const currentHead = await git(root, "rev-parse", "HEAD");
+  if (currentBranch !== shipment.branch || currentHead !== shipment.headSha) throw new Error("prepared repository state changed");
+  const pushed = await deferredRun("git", ["-C", root, "push", "origin", `${shipment.headSha}:refs/heads/${shipment.branch}`]);
+  if (pushed.code) { exit(pushed.stderr.trim() || "push failed", 40); return; }
+  const payload = shipment.canonicalPayload;
+  const existing = await deferredRun("gh", ["pr", "view", "--head", shipment.branch, "--json", "number,url,isDraft"], root);
+  if (!existing.code) {
+    const pr = JSON.parse(existing.stdout); result("ship_publish", { shipmentId: shipment.shipmentId, headSha: shipment.headSha, push: "pushed", pullRequest: { number: pr.number, url: pr.url, created: false, draft: Boolean(pr.isDraft) } }); return;
+  }
+  const args = ["pr", "create", "--base", payload.base, "--title", payload.title, "--body", payload.body]; if (payload.draft) args.push("--draft");
+  const created = await deferredRun("gh", args, root);
+  if (created.code) { exit(created.stderr.trim() || "pull request creation failed", 41); return; }
+  const url = created.stdout.trim().split("\n").find((line) => /^https:\/\/github\.com\//.test(line));
+  const inspected = await deferredRun("gh", ["pr", "view", "--head", shipment.branch, "--json", "number,url,isDraft"], root);
+  if (!url || inspected.code) { exit("could not confirm created pull request", 41); return; }
+  const pr = JSON.parse(inspected.stdout); result("ship_publish", { shipmentId: shipment.shipmentId, headSha: shipment.headSha, push: "pushed", pullRequest: { number: pr.number, url: pr.url, created: true, draft: Boolean(pr.isDraft) } });
+}
+
+try {
+  let input = "";
+  for await (const chunk of process.stdin) input += String(chunk);
+  const request = JSON.parse(input);
+  if (!request || request.schemaVersion !== 1) throw new Error("expected schemaVersion 1 request");
+  const expectedKeys = request.operation === "ship_prepare"
+    ? ["cwd", "files", "message", "operation", "schemaVersion"]
+    : request.operation === "ship_publish"
+      ? ["operation", "schemaVersion", "shipment"]
+      : [];
+  if (Object.keys(request).sort().join("\u0000") !== expectedKeys.sort().join("\u0000")) throw new Error("shipping helper request has unexpected keys");
+  if (request.operation === "ship_prepare") await prepare(request);
+  else if (request.operation === "ship_publish") await publish(request);
+  else throw new Error("unsupported shipping operation");
+} catch (error) { exit(error instanceof Error ? error.message : "shipping helper failed", 1); }

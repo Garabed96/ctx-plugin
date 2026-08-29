@@ -133,7 +133,7 @@ OUTPUT=$(bash "$SCRIPT_DIR/park-scan.sh" 2>/dev/null)
 assert_contains "finds spec artifact" "$OUTPUT" "spec|docs/specs/test-spec.md"
 
 # With skill log
-mkdir -p .claude
+mkdir -p .codex
 echo "2026-04-01T12:00:00Z|ctx-brainstorm|main" > .codex/skill-invocations.log
 OUTPUT=$(bash "$SCRIPT_DIR/park-scan.sh" --clean-log 2>/dev/null)
 assert_contains "reads skill log" "$OUTPUT" "ctx-brainstorm"
@@ -295,25 +295,25 @@ echo "NESTED_SECRET=123" > src/app/.env
 git worktree add -b post-setup-test "$TEMP_DIR/post-setup-target" origin/main 2>/dev/null
 POST_SETUP_TARGET="$TEMP_DIR/post-setup-target"
 
-# Happy path: symlink env files, skip deps
+# Happy path: copies ignored env files, skips deps
 OUTPUT=$(bash "$SCRIPT_DIR/worktree-post-setup.sh" --source "$POST_SETUP_REPO" --target "$POST_SETUP_TARGET" --skip-deps 2>/dev/null)
 assert_contains "env_count=2" "$OUTPUT" "env_count=2"
 assert_contains "deps=skipped" "$OUTPUT" "deps=skipped"
 
-# Verify symlinks exist
-if [[ -L "$POST_SETUP_TARGET/.env.local" ]]; then
-  echo "  PASS: .env.local symlinked"
+# Verify copied env files exist as regular files
+if [[ -f "$POST_SETUP_TARGET/.env.local" && ! -L "$POST_SETUP_TARGET/.env.local" ]]; then
+  echo "  PASS: .env.local copied"
   PASS=$((PASS + 1))
 else
-  echo "  FAIL: .env.local not symlinked"
+  echo "  FAIL: .env.local not copied"
   FAIL=$((FAIL + 1))
 fi
 
-if [[ -L "$POST_SETUP_TARGET/src/app/.env" ]]; then
-  echo "  PASS: src/app/.env symlinked"
+if [[ -f "$POST_SETUP_TARGET/src/app/.env" && ! -L "$POST_SETUP_TARGET/src/app/.env" ]]; then
+  echo "  PASS: src/app/.env copied"
   PASS=$((PASS + 1))
 else
-  echo "  FAIL: src/app/.env not symlinked"
+  echo "  FAIL: src/app/.env not copied"
   FAIL=$((FAIL + 1))
 fi
 
