@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Factory Portfolio</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #0a0e17;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1.25rem;
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+  }
+  .top-bar-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+  .top-bar-subtitle {
+    font-size: 0.72rem;
+    color: #64748b;
+    margin-left: 0.5rem;
+  }
+  .top-bar-subtitle.active-scope {
+    color: #94a3b8;
+    font-weight: 600;
+  }
+  .toolbar {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto 180px 160px;
+    gap: 0.6rem;
+    padding: 1rem 1.25rem 0;
+  }
+  .all-pages-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    min-height: 37px;
+    padding: 0 0.75rem;
+    border: 1px solid #334155;
+    border-radius: 7px;
+    background: #0f172a;
+    color: #c7d2fe;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.76rem;
+    font-weight: 650;
+    white-space: nowrap;
+  }
+  .all-pages-btn:hover,
+  .all-pages-btn:focus {
+    border-color: #818cf8;
+    outline: none;
+  }
+  .all-pages-btn.visible {
+    display: inline-flex;
+  }
+  .toolbar input,
+  .toolbar select {
+    width: 100%;
+    background: #0f172a;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+    border-radius: 7px;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.78rem;
+    font-family: inherit;
+  }
+  .toolbar input:focus,
+  .toolbar select:focus {
+    outline: none;
+    border-color: #818cf8;
+    box-shadow: 0 0 0 1px #818cf8;
+  }
+  @media (max-width: 760px) {
+    .toolbar {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+  .grouped {
+    display: grid;
+    gap: 1.35rem;
+    padding: 1.25rem;
+  }
+  .group-section {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .group-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0 0.1rem 0.15rem;
+  }
+  .group-title {
+    color: #e2e8f0;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .group-count {
+    color: #94a3b8;
+    font-size: 0.76rem;
+    font-weight: 600;
+  }
+  .group-view {
+    background: transparent;
+    border: 1px solid #334155;
+    border-radius: 5px;
+    color: #c7d2fe;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 650;
+    padding: 0.24rem 0.55rem;
+  }
+  .group-view:hover,
+  .group-view:focus {
+    border-color: #818cf8;
+    outline: none;
+  }
+  .group-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1rem;
+  }
+
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .card:hover {
+    border-color: #818cf8;
+    box-shadow: 0 0 0 1px #818cf8;
+  }
+
+  .card-thumb {
+    position: relative;
+    width: 100%;
+    min-height: 168px;
+    overflow: hidden;
+    background: #020617;
+  }
+  .card-thumb iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1280px;
+    height: 720px;
+    transform: scale(0.234375);
+    transform-origin: top left;
+    border: none;
+    pointer-events: none;
+  }
+
+  .card-body {
+    padding: 0.85rem 0.95rem;
+  }
+  .card-name {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    margin-bottom: 0.55rem;
+    line-height: 1.25;
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    font-size: 0.72rem;
+    padding: 0.18rem 0.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    white-space: nowrap;
+    line-height: 1.15;
+  }
+  .badge-versions {
+    background: #1e1b4b;
+    color: #a5b4fc;
+    border: 1px solid #312e81;
+  }
+  .badge-group {
+    background: #172554;
+    color: #93c5fd;
+    border: 1px solid #1d4ed8;
+  }
+  .badge-selected {
+    background: #042f2e;
+    color: #5eead4;
+    border: 1px solid #115e59;
+  }
+  .badge-time {
+    color: #94a3b8;
+    font-size: 0.72rem;
+    font-weight: 600;
+    margin-left: auto;
+  }
+
+  .empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    color: #475569;
+    font-size: 0.9rem;
+    text-align: center;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div style="display:flex;align-items:baseline;">
+    <span class="top-bar-title">Factory Portfolio</span>
+    <span class="top-bar-subtitle" id="page-count"></span>
+  </div>
+</div>
+
+<div class="toolbar">
+  <input id="page-search" type="search" placeholder="Search pages, groups, selected options..." oninput="updateFilters()" />
+  <button class="all-pages-btn" id="all-pages-btn" type="button" onclick="clearCategory()">All pages</button>
+  <select id="category-filter" onchange="updateFilters()">
+    <option value="">All categories</option>
+  </select>
+  <select id="sort-select" onchange="updateFilters()">
+    <option value="updated-desc">Newest</option>
+    <option value="updated-asc">Oldest</option>
+    <option value="name-asc">Name A-Z</option>
+    <option value="name-desc">Name Z-A</option>
+    <option value="category-asc">Category A-Z</option>
+  </select>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="grouped" id="grouped" style="display:none;"></div>
+<div class="empty" id="empty" style="display:none;">
+  <p>No pages yet.<br>Use the factory to brainstorm your first page.</p>
+</div>
+
+<script>
+var allPages = [];
+var filters = { query: '', category: '', sort: 'updated-desc' };
+
+function buildFactoryHref(page) {
+  return '/factory/' + page.split('/').map(function(part) {
+    return encodeURIComponent(part);
+  }).join('/');
+}
+
+function relativeTime(iso) {
+  if (!iso) return '';
+  var diff = Date.now() - new Date(iso).getTime();
+  var mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  var hours = Math.floor(mins / 60);
+  if (hours < 24) return hours + 'h ago';
+  var days = Math.floor(hours / 24);
+  return days + 'd ago';
+}
+
+function compareText(a, b) {
+  return String(a || '').localeCompare(String(b || ''), undefined, { sensitivity: 'base', numeric: true });
+}
+
+function getPageTime(page) {
+  return page && page.lastModified ? new Date(page.lastModified).getTime() : 0;
+}
+
+function getPageGroup(page) {
+  return page.group || 'Ungrouped';
+}
+
+function updateCategoryOptions(pages) {
+  var select = document.getElementById('category-filter');
+  var current = select.value;
+  var groups = [];
+  var seen = {};
+  pages.forEach(function(page) {
+    var group = page.group || 'Ungrouped';
+    if (!seen[group]) {
+      seen[group] = true;
+      groups.push(group);
+    }
+  });
+  groups.sort(compareText);
+  select.innerHTML = '';
+  var all = document.createElement('option');
+  all.value = '';
+  all.textContent = 'All categories';
+  select.appendChild(all);
+  groups.forEach(function(group) {
+    var opt = document.createElement('option');
+    opt.value = group;
+    opt.textContent = group;
+    select.appendChild(opt);
+  });
+  select.value = seen[current] ? current : '';
+  filters.category = select.value;
+}
+
+function hasCategoryOption(value) {
+  var select = document.getElementById('category-filter');
+  for (var i = 0; i < select.options.length; i++) {
+    if (select.options[i].value === value) return true;
+  }
+  return false;
+}
+
+function applyUrlFilters() {
+  var params = new URLSearchParams(window.location.search);
+  var category = params.get('category') || '';
+  var select = document.getElementById('category-filter');
+  select.value = category && hasCategoryOption(category) ? category : '';
+  filters.category = select.value;
+}
+
+function syncCategoryUrl(mode) {
+  var url = new URL(window.location.href);
+  if (filters.category) {
+    url.searchParams.set('category', filters.category);
+  } else {
+    url.searchParams.delete('category');
+  }
+  var method = mode === 'replace' ? 'replaceState' : 'pushState';
+  window.history[method]({}, '', url.pathname + url.search);
+}
+
+function clearCategory() {
+  document.getElementById('category-filter').value = '';
+  filters.category = '';
+  syncCategoryUrl('push');
+  renderCards(getFilteredPages());
+}
+
+function getFilteredPages() {
+  var query = (filters.query || '').trim().toLowerCase();
+  var category = filters.category || '';
+  var pages = allPages.filter(function(page) {
+    var group = page.group || 'Ungrouped';
+    var matchesCategory = !category || group === category;
+    var haystack = [
+      group,
+      page.page,
+      page.name,
+      page.selectedOption,
+      page.latestFile
+    ].join(' ').toLowerCase();
+    return matchesCategory && (!query || haystack.indexOf(query) !== -1);
+  });
+
+  pages.sort(function(a, b) {
+    if (filters.sort === 'updated-asc') return getPageTime(a) - getPageTime(b);
+    if (filters.sort === 'name-asc') return compareText(a.name || a.page, b.name || b.page);
+    if (filters.sort === 'name-desc') return compareText(b.name || b.page, a.name || a.page);
+    if (filters.sort === 'category-asc') {
+      var groupCompare = compareText(a.group || 'Ungrouped', b.group || 'Ungrouped');
+      return groupCompare || compareText(a.name || a.page, b.name || b.page);
+    }
+    return getPageTime(b) - getPageTime(a);
+  });
+
+  return pages;
+}
+
+function updateFilters() {
+  filters.query = document.getElementById('page-search').value;
+  filters.category = document.getElementById('category-filter').value;
+  filters.sort = document.getElementById('sort-select').value;
+  syncCategoryUrl('push');
+  renderCards(getFilteredPages());
+}
+
+function selectCategory(group) {
+  document.getElementById('category-filter').value = group;
+  filters.category = group;
+  syncCategoryUrl('push');
+  renderCards(getFilteredPages());
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateHeader(pages) {
+  var title = document.querySelector('.top-bar-title');
+  var count = document.getElementById('page-count');
+  var allPagesBtn = document.getElementById('all-pages-btn');
+  var totalLabel = pages.length === 1 ? 'page' : 'pages';
+
+  if (filters.category) {
+    title.textContent = 'Factory / ' + filters.category;
+    count.textContent = pages.length + ' ' + totalLabel;
+    count.classList.add('active-scope');
+    allPagesBtn.classList.add('visible');
+  } else {
+    title.textContent = 'Factory Portfolio';
+    count.textContent = pages.length + ' of ' + allPages.length + (allPages.length === 1 ? ' page' : ' pages');
+    count.classList.remove('active-scope');
+    allPagesBtn.classList.remove('visible');
+  }
+}
+
+function isGroupedDefaultView() {
+  return !(filters.query || '').trim() && !filters.category && filters.sort === 'updated-desc';
+}
+
+function scaleThumbs() {
+  var thumbs = document.querySelectorAll('.card-thumb');
+  for (var i = 0; i < thumbs.length; i++) {
+    var thumb = thumbs[i];
+    var iframe = thumb.querySelector('iframe');
+    if (!iframe) continue;
+    var scale = thumb.clientWidth / 1280;
+    thumb.style.height = Math.max(168, Math.round(720 * scale)) + 'px';
+    iframe.style.transform = 'scale(' + scale + ')';
+  }
+}
+
+window.addEventListener('resize', scaleThumbs);
+
+function scheduleThumbScale() {
+  requestAnimationFrame(scaleThumbs);
+}
+
+function createCard(p) {
+  var card = document.createElement('div');
+  card.className = 'card';
+  card.onclick = function() { window.location.href = buildFactoryHref(p.page); };
+
+  var thumb = document.createElement('div');
+  thumb.className = 'card-thumb';
+  if (p.latestFile) {
+    var iframe = document.createElement('iframe');
+    iframe.src = '/prototype?file=' + encodeURIComponent(p.latestFile);
+    iframe.setAttribute('loading', 'lazy');
+    iframe.setAttribute('tabindex', '-1');
+    thumb.appendChild(iframe);
+  }
+  card.appendChild(thumb);
+
+  var body = document.createElement('div');
+  body.className = 'card-body';
+
+  var name = document.createElement('div');
+  name.className = 'card-name';
+  name.textContent = p.name || p.page;
+  body.appendChild(name);
+
+  var meta = document.createElement('div');
+  meta.className = 'card-meta';
+
+  var vBadge = document.createElement('span');
+  vBadge.className = 'badge badge-versions';
+  vBadge.textContent = p.versions + (p.versions === 1 ? ' version' : ' versions');
+  meta.appendChild(vBadge);
+
+  if (p.group && p.group !== 'Ungrouped') {
+    var gBadge = document.createElement('span');
+    gBadge.className = 'badge badge-group';
+    gBadge.textContent = p.group;
+    meta.appendChild(gBadge);
+  }
+
+  if (p.selectedOption) {
+    var sBadge = document.createElement('span');
+    sBadge.className = 'badge badge-selected';
+    sBadge.textContent = p.selectedOption;
+    meta.appendChild(sBadge);
+  }
+
+  if (p.lastModified) {
+    var time = document.createElement('span');
+    time.className = 'badge-time';
+    time.textContent = relativeTime(p.lastModified);
+    meta.appendChild(time);
+  }
+
+  body.appendChild(meta);
+  card.appendChild(body);
+  return card;
+}
+
+function renderFlatCards(grid, pages) {
+  pages.forEach(function(p) {
+    grid.appendChild(createCard(p));
+  });
+}
+
+function renderGroupedCards(groupedEl, pages) {
+  var groups = {};
+  pages.forEach(function(page) {
+    var group = getPageGroup(page);
+    if (!groups[group]) groups[group] = [];
+    groups[group].push(page);
+  });
+
+  var groupNames = Object.keys(groups).sort(function(a, b) {
+    return getPageTime(groups[b][0]) - getPageTime(groups[a][0]) || compareText(a, b);
+  });
+
+  groupNames.forEach(function(group) {
+    var section = document.createElement('section');
+    section.className = 'group-section';
+
+    var header = document.createElement('div');
+    header.className = 'group-header';
+
+    var titleWrap = document.createElement('div');
+    var title = document.createElement('div');
+    title.className = 'group-title';
+    title.textContent = group;
+    var groupCount = document.createElement('div');
+    groupCount.className = 'group-count';
+    groupCount.textContent = groups[group].length + (groups[group].length === 1 ? ' page' : ' pages');
+    titleWrap.appendChild(title);
+    titleWrap.appendChild(groupCount);
+    header.appendChild(titleWrap);
+
+    if (groups[group].length > 3) {
+      var viewButton = document.createElement('button');
+      viewButton.className = 'group-view';
+      viewButton.type = 'button';
+      viewButton.textContent = 'View all';
+      viewButton.onclick = function() {
+        selectCategory(group);
+      };
+      header.appendChild(viewButton);
+    }
+
+    section.appendChild(header);
+
+    var groupGrid = document.createElement('div');
+    groupGrid.className = 'group-grid';
+    groups[group].slice(0, 3).forEach(function(p) {
+      groupGrid.appendChild(createCard(p));
+    });
+    section.appendChild(groupGrid);
+    groupedEl.appendChild(section);
+  });
+}
+
+function renderCards(pages) {
+  var grid = document.getElementById('grid');
+  var groupedEl = document.getElementById('grouped');
+  var empty = document.getElementById('empty');
+  var count = document.getElementById('page-count');
+  grid.innerHTML = '';
+  groupedEl.innerHTML = '';
+
+  if (!pages || pages.length === 0) {
+    grid.style.display = 'none';
+    groupedEl.style.display = 'none';
+    empty.style.display = '';
+    count.textContent = allPages.length
+      ? (filters.category ? filters.category + ' · 0 pages' : '0 of ' + allPages.length + ' pages')
+      : '';
+    empty.querySelector('p').innerHTML = allPages.length
+      ? 'No pages match the current filters.'
+      : 'No pages yet.<br>Use the factory to brainstorm your first page.';
+    return;
+  }
+
+  empty.style.display = 'none';
+  updateHeader(pages);
+
+  if (isGroupedDefaultView()) {
+    grid.style.display = 'none';
+    groupedEl.style.display = 'grid';
+    renderGroupedCards(groupedEl, pages);
+  } else {
+    groupedEl.style.display = 'none';
+    grid.style.display = 'grid';
+    renderFlatCards(grid, pages);
+  }
+
+  scheduleThumbScale();
+}
+
+fetch('/api/page-status')
+  .then(function(r) { return r.json(); })
+  .then(function(pages) {
+    allPages = pages || [];
+    updateCategoryOptions(allPages);
+    applyUrlFilters();
+    syncCategoryUrl('replace');
+    renderCards(getFilteredPages());
+  })
+  .catch(function(err) {
+    document.getElementById('empty').style.display = '';
+    document.getElementById('empty').querySelector('p').textContent = 'Failed to load: ' + err.message;
+  });
+
+window.addEventListener('popstate', function() {
+  applyUrlFilters();
+  renderCards(getFilteredPages());
+});
+</script>
+</body>
+</html>

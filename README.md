@@ -35,6 +35,15 @@ No re-explaining. No lost context. No "wait, what were we doing?"
 /plugin install ctx@ctx-plugin
 ```
 
+### Oh My Pi
+
+```text
+/marketplace add Garabed96/ctx-plugin
+/marketplace install ctx-omp@ctx-plugin
+```
+
+Restart the OMP session after installation so its extension tools and typed lifecycle hooks load. The OMP adapter exposes 28 CTX skills, three named agents, and `ctx_paths`, `ctx_workflow`, and `ctx_remote_approval`. Its supported shipping sequence is `ship_preflight` → local `ship_prepare` → interactive, final-HEAD-bound approval → `ship_publish`. The direct-command hook blocks only top-level model-issued `bash` forms of `gh pr create`, GitHub `/pulls` `gh api`, and GitHub `/pulls` `curl`; it does not claim to intercept scripts, `bash -c`, other clients, user shells, or external applications.
+
 **Platform:** macOS (tmux, iTerm2, Terminal.app). Core skills are POSIX-compatible. Windows untested.
 
 ## How I use it
@@ -76,7 +85,7 @@ Either can come first. Once the direction is clear, move to brainstorm.
 
 The plugin separates **judgment** from **execution**:
 
-- **Skills** (29) — markdown instruction sets that handle decisions: when to create a worktree, what context to preserve, which risk signals matter
+- **Skills** (28) — markdown instruction sets that handle decisions: when to create a worktree, what context to preserve, which risk signals matter
 - **Scripts** (11) — shell scripts that handle deterministic operations: git worktrees, artifact scanning, PR creation. Args in, structured output out
 - **Agents** (3) — fresh-context subagents dispatched by `ctx-execute` for implementation and review
 - **Hooks** (7) — guardrails that fire automatically: block edits outside your worktree, prevent direct pushes to main, detect altitude oscillation

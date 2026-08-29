@@ -1,0 +1,110 @@
+#!/usr/bin/env node
+import { spawn } from "node:child_process";
+import { mkdir, readFile, readdir, realpath, rename, rm, stat, writeFile } from "node:fs/promises";
+import path from "node:path";
+
+const fail = (message, code = 1) => { process.stderr.write(`${message}\n`); process.exitCode = code; };
+const run = (file, args, cwd) => {
+  const deferred = Promise.withResolvers();
+  const child = spawn(file, args, { cwd, stdio: ["ignore", "pipe", "pipe"] });
+  let stdout = ""; let stderr = "";
+  child.stdout.on("data", (chunk) => { stdout += String(chunk); });
+  child.stderr.on("data", (chunk) => { stderr += String(chunk); });
+  child.on("error", (error) => deferred.resolve({ code: 1, stdout, stderr: `${stderr}${error.message}` }));
+  child.on("close", (code) => deferred.resolve({ code: code ?? 1, stdout, stderr }));
+  return deferred.promise;
+};
+const git = async (cwd, ...args) => {
+  const result = await run("git", ["-C", cwd, ...args]);
+  if (result.code) throw new Error(result.stderr.trim() || `git ${args[0]} failed`);
+  return result.stdout.trim();
+};
+const reply = (operation, data) => process.stdout.write(`${JSON.stringify({ ok: true, schemaVersion: 1, operation, data })}\n`);
+const listFiles = async (root, base = root) => {
+  const entries = await readdir(root, { withFileTypes: true });
+  const result = [];
+  for (const entry of entries) {
+    if ([".git", "node_modules"].includes(entry.name)) continue;
+    const full = path.join(root, entry.name);
+    if (entry.isDirectory()) result.push(...await listFiles(full, base));
+    else result.push(path.relative(base, full));
+  }
+  return result;
+};
+const repository = async (cwd) => realpath(await git(cwd, "rev-parse", "--show-toplevel"));
+const branch = async (root) => (await git(root, "branch", "--show-current")) || "detached";
+const profileLog = (request) => typeof request.profileRoot === "string" ? path.join(request.profileRoot, "ctx", "skill-invocations.log") : undefined;
+
+async function grab(request) {
+  const root = await repository(request.cwd); const handoff = path.join(root, "docs", "ctx", "park.md");
+  let source = handoff;
+  try { await stat(source); } catch {
+    const directory = path.dirname(handoff); const archives = (await readdir(directory).catch(() => [])).filter((file) => /^park-\d{4}-\d{2}-\d{2}(?:-\d+)?\.md$/.test(file)).sort().reverse();
+    if (!archives[0]) return reply("grab_context", { status: "no_handoff", branch: await branch(root), worktree: root, gitLog: [] });
+    source = path.join(directory, archives[0]);
+  }
+  await readFile(source, "utf8"); let archive;
+  if (!request.noArchive && source === handoff) {
+    const date = new Date().toISOString().slice(0, 10); archive = path.join(path.dirname(handoff), `park-${date}.md`); let suffix = 1;
+    while (await stat(archive).then(() => true).catch(() => false)) archive = path.join(path.dirname(handoff), `park-${date}-${suffix++}.md`);
+    await rename(handoff, archive);
+  }
+  reply("grab_context", { status: source === handoff ? "archived" : "restored", branch: await branch(root), worktree: root, ...(archive ? { archive } : {}), handoff: source, gitLog: (await git(root, "log", "--oneline", "-10")).split("\n").filter(Boolean) });
+}
+async function scanPark(request) {
+  const root = await repository(request.cwd); const files = await listFiles(root); const artifacts = files.filter((file) => /^(docs\/(?:ctx|specs|plans)|playground\/)/.test(file)).slice(0, 1000).map((file) => path.join(root, file));
+  const log = profileLog(request); const skillInvocations = log ? (await readFile(log, "utf8").catch(() => "")).split("\n").filter(Boolean).slice(0, 1000) : [];
+  if (request.cleanSkillLog && log) await rm(log, { force: true });
+  reply("scan_park", { branch: await branch(root), worktree: root, handoffPath: path.join(root, "docs", "ctx", "park.md"), artifacts, skillInvocations });
+}
+async function createWorktree(request) {
+  const root = await repository(request.cwd); const target = path.join(path.dirname(root), `${path.basename(root)}-${request.name}`); const nextBranch = `${request.prefix}${request.name}`;
+  if (await stat(target).then(() => true).catch(() => false)) throw new Error(`worktree already exists: ${target}`);
+  await git(root, "fetch", "origin", request.base); await git(root, "worktree", "add", "-b", nextBranch, target, `origin/${request.base}`);
+  reply("create_worktree", { path: await realpath(target), branch: nextBranch, base: request.base, deps: request.skipDeps ? "skipped" : "not_required" });
+}
+async function postSetup(request) {
+  const source = await realpath(request.source); const target = await realpath(request.target); let envCount = 0;
+  for (const relative of await listFiles(source)) {
+    if (!/(^|\/)\.env[^/]*$/.test(relative)) continue;
+    const origin = path.join(source, relative); const destination = path.join(target, relative);
+    if (await stat(destination).then(() => true).catch(() => false)) continue;
+    const ignored = await run("git", ["-C", source, "check-ignore", "-q", origin]);
+    if (ignored.code !== 0) continue;
+    await mkdir(path.dirname(destination), { recursive: true }); await writeFile(destination, await readFile(origin)); envCount += 1;
+  }
+  reply("post_setup_worktree", { envCount, deps: request.skipDeps ? "skipped" : "not_required" });
+}
+async function openWorktree(request) { reply("open_worktree", { path: await realpath(request.path), launchCommand: ["omp"], launched: false }); }
+async function killWorktree(request) {
+  const target = await realpath(request.worktreePath); const root = await repository(target); const nextBranch = await branch(target);
+  const primary = (await git(root, "worktree", "list", "--porcelain")).split("\n").find((line) => line.startsWith("worktree "))?.slice("worktree ".length);
+  if (primary && await realpath(primary) === target) throw new Error("refusing to remove the primary worktree");
+  let stoppedPort;
+  if (request.port) { const pids = await run("lsof", ["-ti", `tcp:${request.port}`]); if (!pids.code && pids.stdout.trim()) { await run("kill", ["-TERM", ...pids.stdout.trim().split("\n")]); stoppedPort = request.port; } }
+  await git(root, "worktree", "remove", request.detach ? "--force" : "--force", target); await git(root, "branch", "-D", nextBranch);
+  reply("kill_worktree", { worktreePath: target, branch: nextBranch, branchDeleted: true, ...(stoppedPort ? { stoppedPort } : {}) });
+}
+async function preflight(request) {
+  const root = await repository(request.cwd);
+  const current = await branch(root);
+  const changedSources = await Promise.all([
+    git(root, "diff", "--name-only", `${request.base}...HEAD`),
+    git(root, "diff", "--name-only"),
+    git(root, "diff", "--cached", "--name-only"),
+    git(root, "ls-files", "--others", "--exclude-standard"),
+  ]);
+  const changed = [...new Set(changedSources.flatMap((output) => output.split("\n").filter(Boolean)))].sort().slice(0, 1000);
+  const prodFiles = []; for (const file of changed) { if (!/\.(?:[cm]?[jt]sx?|py|rb|go|rs|java|kt|swift)$/.test(file)) continue; const lines = (await readFile(path.join(root, file), "utf8").catch(() => "")).split("\n").length - 1; prodFiles.push({ path: file, lines }); }
+  const riskSignals = changed.filter((file) => /auth|security|payment|migration/i.test(file)).map((file) => ({ code: "sensitive-file", message: `Review sensitive change: ${file}` }));
+  reply("ship_preflight", { branch: current, onBaseBranch: current === request.base, prodFiles, riskSignals });
+}
+
+let request;
+try {
+  let input = "";
+  for await (const chunk of process.stdin) input += String(chunk);
+  request = JSON.parse(input);
+  if (!request || request.schemaVersion !== 1 || typeof request.operation !== "string") throw new Error("expected schemaVersion 1 workflow request");
+  ({ grab_context: grab, scan_park: scanPark, create_worktree: createWorktree, post_setup_worktree: postSetup, open_worktree: openWorktree, kill_worktree: killWorktree, ship_preflight: preflight }[request.operation] ?? (() => { throw new Error("unsupported ordinary operation"); }))(request).catch((error) => fail(error instanceof Error ? error.message : "workflow helper failed"));
+} catch (error) { fail(error instanceof Error ? error.message : "workflow helper failed"); }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.9.18 (2026-08-29)
+
+- **First-class Oh My Pi runtime adapter** — adds the `ctx-omp` plugin with 28 CTX skills, three bounded task agents, native profile/repository path resolution, validated local workflow operations, lifecycle policy hooks, and final-HEAD-bound interactive approval for remote shipping. The shared parity manifest records intentional runtime differences while preserving user-visible outcomes across Claude, Codex, and OMP.
+
 ## 0.2.9.17 (2026-08-25)
 
 - **Editor-agnostic worktree handoffs** — Codex `ctx-worktree` and `ctx-resume` no longer open WebStorm. The WebStorm-only `ctx-open` skill and helper are removed from both runtimes, while Claude keeps its terminal/Claude worktree handoff.
